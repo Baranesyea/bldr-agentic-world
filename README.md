@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BLDR - Agentic World
+
+A community and course platform with a Netflix-style UI, built for Hebrew-speaking audiences. BLDR provides an immersive learning experience with dark glassmorphism design, RTL layout, and a comprehensive admin panel.
+
+## Tech Stack
+
+- **Framework:** Next.js 15 (App Router)
+- **UI:** React 19, TypeScript, inline styles
+- **Database:** Drizzle ORM
+- **Design:** Dark theme with glassmorphism, RTL Hebrew interface
+
+## Page Structure
+
+### Platform (User-Facing)
+
+| Page | Path | Description |
+|------|------|-------------|
+| Dashboard | `/dashboard` | Main overview with activity feed and next event banner |
+| Courses | `/courses` | Netflix-style course catalog |
+| Course Detail | `/courses/[courseId]` | Individual course with lesson list |
+| Lesson | `/courses/[courseId]/lessons/[lessonId]` | Lesson player |
+| Notebook | `/notebook` | Personal notes |
+| Calendar | `/calendar` | Events and scheduling |
+| Profile | `/profile` | User profile |
+| Q&A | `/qa` | Community questions and answers |
+| Chat | `/chat` | Messaging |
+
+### Admin Panel
+
+| Page | Path | Description |
+|------|------|-------------|
+| Admin Dashboard | `/admin` | Admin overview |
+| Manage Courses | `/admin/courses` | Course CRUD |
+| Manage Users | `/admin/users` | User management |
+| Manage Q&A | `/admin/qa` | Moderate questions |
+| Activity Feed | `/admin/activity-feed` | Activity management |
+| Theme | `/admin/theme` | Theme customization |
+| API Docs | `/admin/api-docs` | API documentation |
+
+### Auth
+
+- `/login` — Login page
+- `/register` — Registration page
+
+### API Routes
+
+- `GET/POST /api/courses`
+- `GET/POST /api/notes`
+- `GET/POST /api/users`
+- `GET/POST /api/activity-feed`
+- `GET/POST /api/events`
+- `GET/POST /api/questions`
+
+## UI Components
+
+Reusable components in `src/components/ui/`: Banner, Card, Progress, Avatar, Spotlight, Badge, Button, Input.
+
+Layout components in `src/components/layout/`: Sidebar, Next Event Banner.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Install dependencies
+npm install
+
+# Run development server (port 3005)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3005](http://localhost:3005) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## License
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private

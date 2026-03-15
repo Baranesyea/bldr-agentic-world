@@ -1,26 +1,211 @@
 @import "tailwindcss";
 
+/* ============================================
+   BLDR | Agentic World — Design System
+   Brand: Electric Blue + Dark Premium
+   ============================================ */
+
+/* Hebrew Font — FbAbsoluti */
+@font-face {
+  font-family: 'FbAbsoluti';
+  src: url('/fonts/FbAbsolutiHeb-LIght.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'FbAbsoluti';
+  src: url('/fonts/FbAbsolutiHeb-LIght.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'FbAbsoluti';
+  src: url('/fonts/FbAbsolutiHeb-Black.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'FbAbsoluti';
+  src: url('/fonts/FbAbsolutiHeb-Black.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'FbAbsoluti';
+  src: url('/fonts/FbAbsolutiHeb-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050510;
+  --foreground: #f0f0f5;
+  --primary: #0000FF;
+  --primary-light: #3333FF;
+  --primary-dark: #0000CC;
+  --primary-glow: rgba(0, 0, 255, 0.15);
+  --surface: #0a0a1a;
+  --surface-light: #12122a;
+  --surface-border: rgba(255, 255, 255, 0.06);
+  --surface-border-hover: rgba(255, 255, 255, 0.12);
+  --text-primary: #f0f0f5;
+  --text-secondary: rgba(240, 240, 245, 0.6);
+  --text-muted: rgba(240, 240, 245, 0.35);
+  --accent-green: #00C853;
+  --accent-amber: #FFB300;
+  --accent-red: #FF3D00;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --font-heading-en: 'Merriweather', serif;
+  --font-body: 'FbAbsoluti', system-ui, sans-serif;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #050510;
+  --color-foreground: #f0f0f5;
+  --color-primary: #0000FF;
+  --color-primary-light: #3333FF;
+  --color-primary-dark: #0000CC;
+  --color-primary-glow: rgba(0, 0, 255, 0.15);
+  --color-surface: #0a0a1a;
+  --color-surface-light: #12122a;
+  --color-surface-border: rgba(255, 255, 255, 0.06);
+  --color-surface-border-hover: rgba(255, 255, 255, 0.12);
+  --color-text-primary: #f0f0f5;
+  --color-text-secondary: rgba(240, 240, 245, 0.6);
+  --color-text-muted: rgba(240, 240, 245, 0.35);
+  --color-accent-green: #00C853;
+  --color-accent-amber: #FFB300;
+  --color-accent-red: #FF3D00;
+  --font-sans: 'FbAbsoluti', system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Global styles */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hebrew headings use FbAbsoluti Black */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-body);
+  font-weight: 700;
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Glass morphism utility */
+.glass {
+  background: rgba(10, 10, 26, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--surface-border);
+}
+
+.glass-light {
+  background: rgba(18, 18, 42, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--surface-border);
+}
+
+/* Glow effects */
+.glow-blue {
+  box-shadow: 0 0 20px rgba(0, 0, 255, 0.15), 0 0 60px rgba(0, 0, 255, 0.05);
+}
+
+.glow-blue-strong {
+  box-shadow: 0 0 30px rgba(0, 0, 255, 0.25), 0 0 80px rgba(0, 0, 255, 0.1);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.6) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-blue {
+  background: linear-gradient(135deg, #3333FF 0%, #0000FF 50%, #0000CC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Spotlight gradient background */
+.spotlight {
+  position: relative;
+  overflow: hidden;
+}
+.spotlight::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 40%, rgba(0, 0, 255, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-blue {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 0, 255, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(0, 0, 255, 0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+.animate-pulse-blue {
+  animation: pulse-blue 2s infinite;
 }
