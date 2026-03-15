@@ -14,6 +14,7 @@ import {
   PlayIcon,
   LockIcon,
 } from "@/components/ui/icons";
+import VideoPlayer from "@/components/ui/video-player";
 
 // ── Types ──
 interface CourseLesson {
@@ -43,6 +44,10 @@ interface Course {
   title: string;
   description: string;
   chapters: CourseChapter[];
+}
+
+function isDirectVideoUrl(url: string): boolean {
+  return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
 }
 
 function convertToEmbedUrl(url: string): string {
@@ -453,6 +458,9 @@ export default function LessonViewPage() {
         }}>
           {/* Video */}
           <div style={{ background: "#000", borderRadius: "16px", overflow: "hidden", marginBottom: "16px" }}>
+            {isDirectVideoUrl(currentLesson.videoUrl) ? (
+              <VideoPlayer src={currentLesson.videoUrl} />
+            ) : (
             <div style={{ position: "relative", paddingBottom: "56.25%" }}>
               {embedUrl ? (
                 <iframe
@@ -552,6 +560,7 @@ export default function LessonViewPage() {
                 </div>
               )}
             </div>
+            )}
           </div>
 
           {/* Title + Mark Complete */}
