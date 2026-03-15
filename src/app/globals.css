@@ -90,11 +90,21 @@
   --font-sans: 'FbAbsoluti', system-ui, sans-serif;
 }
 
-/* Global styles */
+/* Force scrollbar always visible to prevent layout shift */
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+/* Global styles — FbAbsoluti is the default for everything */
+* {
+  font-family: 'FbAbsoluti', system-ui, sans-serif;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body);
+  font-family: 'FbAbsoluti', system-ui, sans-serif;
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -102,8 +112,12 @@ body {
 
 /* Hebrew headings use FbAbsoluti Black */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-body);
+  font-family: 'FbAbsoluti', system-ui, sans-serif;
   font-weight: 700;
+}
+
+input, textarea, select, button {
+  font-family: 'FbAbsoluti', system-ui, sans-serif;
 }
 
 /* RTL Support */

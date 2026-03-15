@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { CalendarIcon } from "@/components/ui/icons";
 
 interface NextEventBannerProps {
   event?: { title: string; date: string; time: string; hasRsvped?: boolean } | null;
@@ -16,7 +17,7 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
       display: "flex", alignItems: "center", justifyContent: "space-between",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-        <span style={{ fontSize: "20px" }}>📅</span>
+        <span style={{ display: "flex", alignItems: "center" }}><CalendarIcon size={20} /></span>
         <div>
           <p style={{ fontSize: "14px", fontWeight: 700, color: "#f0f0f5" }}>האירוע הבא: {event.title}</p>
           <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)" }}>{event.date} — {event.time}</p>

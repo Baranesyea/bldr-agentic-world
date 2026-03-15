@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { PlayIcon, LockIcon, CheckIcon, ChevronDownIcon, ClockIcon, ArrowLeftIcon } from "@/components/ui/icons";
 
 const courseData = {
   id: "1",
@@ -61,9 +62,9 @@ export default function CourseViewPage() {
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 20% 80%, rgba(0,0,255,0.1) 0%, transparent 50%)" }} />
         <div style={{ position: "relative", maxWidth: "900px", margin: "0 auto" }}>
           <Link href="/courses" style={{ fontSize: "13px", color: "rgba(240,240,245,0.35)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px", marginBottom: "16px" }}>
-            ← חזרה לקורסים
+            <ArrowLeftIcon size={14} /> חזרה לקורסים
           </Link>
-          <h1 style={{ fontSize: "36px", fontWeight: 900, color: "#f0f0f5", marginBottom: "8px" }}>{courseData.title}</h1>
+          <h1 style={{ fontSize: "36px", fontWeight: 900, color: "#f0f0f5", marginBottom: "8px", fontFamily: "var(--font-heading-en)" }}>{courseData.title}</h1>
           <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.6)", marginBottom: "20px", maxWidth: "600px", lineHeight: 1.6 }}>{courseData.description}</p>
 
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -77,7 +78,7 @@ export default function CourseViewPage() {
               </div>
             </div>
             <Link href={`/courses/${params.courseId}/lessons/l6`} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#0000FF", color: "white", padding: "10px 24px", borderRadius: "12px", fontWeight: 600, fontSize: "14px", textDecoration: "none", boxShadow: "0 0 20px rgba(0,0,255,0.3)" }}>
-              ▶ המשך מאיפה שהפסקת
+              <PlayIcon size={14} /> המשך מאיפה שהפסקת
             </Link>
           </div>
         </div>
@@ -98,8 +99,8 @@ export default function CourseViewPage() {
                   style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", background: "none", border: "none", cursor: chapter.isLocked ? "default" : "pointer", textAlign: "right" }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <span style={{ fontSize: "16px", color: "rgba(240,240,245,0.35)", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
-                      {chapter.isLocked ? "🔒" : "▾"}
+                    <span style={{ color: "rgba(240,240,245,0.35)", display: "flex", alignItems: "center", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
+                      {chapter.isLocked ? <LockIcon size={16} /> : <ChevronDownIcon size={16} />}
                     </span>
                     <span style={{ fontSize: "16px", fontWeight: 700, color: "#f0f0f5" }}>{chapter.title}</span>
                   </div>
@@ -121,7 +122,7 @@ export default function CourseViewPage() {
                       >
                         {/* Status Icon */}
                         <div style={{ width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: lesson.completed ? "rgba(0,200,83,0.15)" : "rgba(0,0,255,0.1)", flexShrink: 0 }}>
-                          <span style={{ fontSize: "14px" }}>{lesson.completed ? "✓" : "▶"}</span>
+                          {lesson.completed ? <CheckIcon size={14} color="#00C853" /> : <PlayIcon size={14} color="#3333FF" />}
                         </div>
 
                         {/* Title */}
@@ -132,7 +133,7 @@ export default function CourseViewPage() {
                         {/* Meta */}
                         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
                           {lesson.hasAssignment && <span style={{ fontSize: "11px", color: "#FFB300", background: "rgba(255,179,0,0.1)", padding: "2px 6px", borderRadius: "4px" }}>מטלה</span>}
-                          <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)" }}>⏱ {lesson.duration}</span>
+                          <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)", display: "inline-flex", alignItems: "center", gap: "4px" }}><ClockIcon size={12} /> {lesson.duration}</span>
                         </div>
                       </Link>
                     ))}

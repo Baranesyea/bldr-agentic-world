@@ -11,7 +11,7 @@ const channels = [
 const messages = [
   { id: "m1", user: "דני כהן", content: "מישהו ניסה את ה-Agent SDK החדש?", time: "10:32" },
   { id: "m2", user: "מיכל לוי", content: "כן! זה מטורף. בניתי סוכן שעונה על שאלות מ-docs שלי.", time: "10:35" },
-  { id: "m3", user: "ערן בראון", content: "שתפו פרויקטים ב-Show Your Work 🔥", time: "10:40", isAdmin: true },
+  { id: "m3", user: "ערן בראון", content: "שתפו פרויקטים ב-Show Your Work", time: "10:40", isAdmin: true },
   { id: "m4", user: "יוסי אברהם", content: "מישהו יודע איך לעשות streaming עם Agent SDK?", time: "10:45" },
   { id: "m5", user: "רונית שמש", content: "הנה דוגמה שעבדה לי: https://docs.anthropic.com/...", time: "10:48" },
 ];

@@ -1,38 +1,152 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { NotebookIcon } from "@/components/ui/icons";
 
-const notes = [
-  { id: "1", lesson: "MCP Servers — הגדרה ראשונה", course: "Mastering Claude Code", timestamp: "03:24", content: "צריך לוודא שה-MCP Server רץ לפני שמפעילים את Claude Code", createdAt: "לפני יומיים" },
-  { id: "2", lesson: "CLAUDE.md Best Practices", course: "Mastering Claude Code", timestamp: "07:15", content: "CLAUDE.md צריך להכיל: stack, conventions, ומה לא לעשות. לא יותר מדי ארוך.", createdAt: "לפני 3 ימים" },
-  { id: "3", lesson: "מבוא ל-Vibe Coding", course: "Vibe Coding Fundamentals", timestamp: "12:00", content: "Vibe Coding = לתאר מה אתה רוצה ולתת ל-AI לכתוב. המפתח הוא prompts טובים.", createdAt: "לפני שבוע" },
-  { id: "4", lesson: "Agent SDK — Quick Start", course: "Building AI Agents", timestamp: "05:30", content: "Agent SDK תומך ב-tools, memory, ו-multi-turn conversations מהקופסה", createdAt: "לפני שבוע" },
-];
+interface LessonNote {
+  id: string;
+  lessonId: string;
+  lessonTitle: string;
+  courseId: string;
+  courseName: string;
+  content: string;
+  timestamp: string;
+  createdAt: string;
+}
 
 export default function NotebookPage() {
+  const [notes, setNotes] = useState<LessonNote[]>([]);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    try {
+      const all: LessonNote[] = JSON.parse(localStorage.getItem("bldr_notes") || "[]");
+      setNotes(all);
+    } catch {}
+  }, []);
+
+  const courses = Array.from(new Set(notes.map((n) => n.courseName)));
+
+  const filtered = notes.filter((n) => {
+    const matchesSearch =
+      !search ||
+      n.content.toLowerCase().includes(search.toLowerCase()) ||
+      n.lessonTitle.toLowerCase().includes(search.toLowerCase()) ||
+      n.courseName.toLowerCase().includes(search.toLowerCase());
+    const matchesCourse = filter === "all" || n.courseName === filter;
+    return matchesSearch && matchesCourse;
+  });
+
+  const deleteNote = (noteId: string) => {
+    const updated = notes.filter((n) => n.id !== noteId);
+    localStorage.setItem("bldr_notes", JSON.stringify(updated));
+    setNotes(updated);
+  };
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+    if (diff === 0) return "היום";
+    if (diff === 1) return "אתמול";
+    if (diff < 7) return `לפני ${diff} ימים`;
+    if (diff < 30) return `לפני ${Math.floor(diff / 7)} שבועות`;
+    return d.toLocaleDateString("he-IL");
+  };
+
+  // Group by course
+  const grouped = filtered.reduce<Record<string, LessonNote[]>>((acc, n) => {
+    if (!acc[n.courseName]) acc[n.courseName] = [];
+    acc[n.courseName].push(n);
+    return acc;
+  }, {});
+
   return (
     <div style={{ padding: "32px", maxWidth: "900px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px" }}>📒 המחברת שלי</h1>
-      <p style={{ color: "rgba(240,240,245,0.6)", marginBottom: "24px", fontSize: "14px" }}>כל ההערות שלך ממוקם אחד</p>
+      <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px" }}>המחברת שלי</h1>
+      <p style={{ color: "rgba(240,240,245,0.6)", marginBottom: "24px", fontSize: "14px" }}>
+        כל ההערות שלך ממקום אחד · {notes.length} הערות
+      </p>
 
-      <div style={{ marginBottom: "24px" }}>
-        <input placeholder="חפש בהערות..." style={{ width: "100%", maxWidth: "400px", background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none" }} />
+      {/* Search + Filter */}
+      <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
+        <input
+          placeholder="חפש בהערות..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ flex: 1, minWidth: "200px", background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none" }}
+        />
+        {courses.length > 1 && (
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none", appearance: "none" as const, minWidth: "180px" }}
+          >
+            <option value="all">כל הקורסים</option>
+            {courses.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        )}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {notes.map((note) => (
-          <div key={note.id} style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-              <div>
-                <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#f0f0f5" }}>{note.lesson}</h3>
-                <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)" }}>{note.course} · ⏱ {note.timestamp}</p>
+      {/* Empty state */}
+      {notes.length === 0 && (
+        <div style={{ textAlign: "center", padding: "60px 20px" }}>
+          <div style={{ marginBottom: "16px", opacity: 0.3, display: "flex", justifyContent: "center" }}><NotebookIcon size={48} /></div>
+          <h2 style={{ fontSize: "18px", fontWeight: 600, color: "rgba(240,240,245,0.5)", marginBottom: "8px" }}>אין הערות עדיין</h2>
+          <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.3)", marginBottom: "20px" }}>
+            הוסף הערות מתוך שיעורים ותראה אותן כאן
+          </p>
+          <Link href="/courses" style={{ color: "#3333FF", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
+            עבור לקורסים →
+          </Link>
+        </div>
+      )}
+
+      {/* Notes grouped by course */}
+      {filtered.length > 0 && Object.entries(grouped).map(([courseName, courseNotes]) => (
+        <div key={courseName} style={{ marginBottom: "32px" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "rgba(240,240,245,0.5)", marginBottom: "12px", fontFamily: "var(--font-heading-en)" }}>
+            {courseName}
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {courseNotes.map((note) => (
+              <div key={note.id} style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px 20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                  <div>
+                    <Link
+                      href={`/courses/${note.courseId}/lessons/${note.lessonId}`}
+                      style={{ fontSize: "14px", fontWeight: 600, color: "#f0f0f5", textDecoration: "none" }}
+                    >
+                      {note.lessonTitle}
+                    </Link>
+                    <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)", marginTop: "2px" }}>
+                      {note.timestamp} · {formatDate(note.createdAt)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => deleteNote(note.id)}
+                    style={{ background: "none", border: "none", color: "rgba(240,240,245,0.2)", cursor: "pointer", fontSize: "16px", padding: "0 4px" }}
+                  >
+                    ×
+                  </button>
+                </div>
+                <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.6)", lineHeight: 1.6 }}>{note.content}</p>
               </div>
-              <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.35)" }}>{note.createdAt}</span>
-            </div>
-            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.6)", lineHeight: 1.6 }}>{note.content}</p>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
+
+      {/* No results for search */}
+      {notes.length > 0 && filtered.length === 0 && (
+        <div style={{ textAlign: "center", padding: "40px", color: "rgba(240,240,245,0.35)" }}>
+          <p>לא נמצאו הערות עבור &ldquo;{search}&rdquo;</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { QuestionIcon } from "@/components/ui/icons";
 
 const questions = [
   { id: "q1", title: "איך להשתמש ב-MCP Servers?", desc: "אני מנסה לחבר MCP Server ל-Claude Code אבל מקבל שגיאה בהתחברות...", status: "answered", tags: ["claude-code", "mcp"], time: "לפני 2 ימים" },
@@ -12,7 +13,7 @@ const questions = [
 export default function QAPage() {
   return (
     <div style={{ padding: "32px", maxWidth: "900px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px" }}>❓ שאלות ותשובות</h1>
+      <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}><QuestionIcon size={24} /> שאלות ותשובות</h1>
       <p style={{ color: "rgba(240,240,245,0.6)", marginBottom: "24px", fontSize: "14px" }}>שאל, קבל תשובות, ותרום ל-Knowledge Base</p>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
