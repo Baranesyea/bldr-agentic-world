@@ -223,3 +223,17 @@ input, textarea, select, button {
 .animate-pulse-blue {
   animation: pulse-blue 2s infinite;
 }
+
+@keyframes shine {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+.animate-shine {
+  animation: shine 14s linear infinite;
+}
+
+.bg-shine-size {
+  background-size: 300% 300%;
+}

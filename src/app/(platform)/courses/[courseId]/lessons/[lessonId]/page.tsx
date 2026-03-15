@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { LessonDiscussion } from "@/components/course/lesson-discussion";
 import {
   CheckIcon,
   NotebookIcon,
@@ -709,6 +710,16 @@ export default function LessonViewPage() {
               </Link>
             )}
           </div>
+
+          {/* Discussion / Q&A */}
+          {course && currentLesson && (
+            <LessonDiscussion
+              courseId={courseId}
+              lessonId={currentLesson.id}
+              lessonTitle={currentLesson.title}
+              courseName={course.title}
+            />
+          )}
         </div>
 
         {/* ── LEFT SIDEBAR: Notes ── */}

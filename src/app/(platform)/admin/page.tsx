@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { SettingsIcon, GraduationIcon, ImportIcon, LinkIcon, FeedbackIcon, UsersIcon, LightbulbIcon, BrainIcon, TerminalIcon, BeakerIcon } from "@/components/ui/icons";
+import { SettingsIcon, GraduationIcon, ImportIcon, LinkIcon, FeedbackIcon, UsersIcon, LightbulbIcon, BrainIcon, TerminalIcon, BeakerIcon, QuestionIcon } from "@/components/ui/icons";
 
 const iconMap: Record<string, React.ReactNode> = {
   "/admin/settings": <SettingsIcon size={28} />,
@@ -15,6 +15,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/knowledge": <BrainIcon size={28} />,
   "/admin/logs": <TerminalIcon size={28} />,
   "/admin/case-studies": <BeakerIcon size={28} />,
+  "/admin/qa": <QuestionIcon size={28} />,
 };
 
 const sections = [
@@ -67,6 +68,11 @@ const sections = [
     title: "מקרי בוחן",
     description: "ניהול בקשות למקרי בוחן, צפייה בסטטוס ומעקב אחר פניות",
     href: "/admin/case-studies",
+  },
+  {
+    title: "ניהול שאלות",
+    description: "ניהול שאלות מהפורום, מענה לתלמידים והעברת שאלות לבסיס הידע",
+    href: "/admin/qa",
   },
 ];
 
@@ -138,7 +144,8 @@ export default function AdminPage() {
             <div style={{ color: "#FFB300" }}>{"{"}</div>
             <div>&nbsp;&nbsp;<span style={{ color: "#3333FF" }}>&quot;title&quot;</span>: <span style={{ color: "#00C853" }}>&quot;כותרת העדכון&quot;</span>,</div>
             <div>&nbsp;&nbsp;<span style={{ color: "#3333FF" }}>&quot;description&quot;</span>: <span style={{ color: "#00C853" }}>&quot;תיאור מפורט של העדכון&quot;</span>,</div>
-            <div>&nbsp;&nbsp;<span style={{ color: "#3333FF" }}>&quot;icon&quot;</span>: <span style={{ color: "#00C853" }}>&quot;sparkles&quot;</span> <span style={{ color: "rgba(240,240,245,0.3)" }}>// sparkles | book | rocket | layers | calendar</span></div>
+            <div>&nbsp;&nbsp;<span style={{ color: "#3333FF" }}>&quot;icon&quot;</span>: <span style={{ color: "#00C853" }}>&quot;sparkles&quot;</span>, <span style={{ color: "rgba(240,240,245,0.3)" }}>// sparkles | book | rocket | layers | calendar</span></div>
+            <div>&nbsp;&nbsp;<span style={{ color: "#3333FF" }}>&quot;url&quot;</span>: <span style={{ color: "#00C853" }}>&quot;https://...&quot;</span> <span style={{ color: "rgba(240,240,245,0.3)" }}>// אופציונלי — קישור חיצוני</span></div>
             <div style={{ color: "#FFB300" }}>{"}"}</div>
             <div style={{ marginTop: "12px", color: "rgba(240,240,245,0.3)" }}>{"// שליחת מספר עדכונים בבת אחת"}</div>
             <div><span style={{ color: "#00C853" }}>POST</span> /api/news</div>

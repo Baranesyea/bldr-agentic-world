@@ -3,7 +3,17 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { BookIcon, FireIcon, TrophyIcon, PlayIcon } from "@/components/ui/icons";
+import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
 import { resolveImageUrl } from "@/lib/image-store";
+
+const MOCK_STUDENTS = [
+  { id: 1, name: "שירה כהן", designation: "סטודנטית", image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face" },
+  { id: 2, name: "דניאל לוי", designation: "מפתח", image: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop&crop=face" },
+  { id: 3, name: "נועה ברק", designation: "מעצבת UX", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face" },
+  { id: 4, name: "יונתן אברהם", designation: "יזם", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" },
+  { id: 5, name: "מיכל רוזן", designation: "מנהלת מוצר", image: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=100&h=100&fit=crop&crop=face" },
+  { id: 6, name: "אורי גולן", designation: "מהנדס תוכנה", image: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face" },
+];
 
 /** Image component that resolves idb:// URLs from IndexedDB */
 function ResolvedImg({ src, alt, style }: { src: string; alt: string; style: React.CSSProperties }) {
@@ -146,6 +156,12 @@ export default function DashboardPage() {
                 {featuredCourse.description.slice(0, 150)}
               </p>
             )}
+            <div style={{ marginBottom: "20px" }}>
+              <div style={{ width: "fit-content", marginRight: "20px" }}>
+                <AnimatedTooltip items={MOCK_STUDENTS} />
+              </div>
+              <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.4)", display: "block", marginTop: "8px" }}>32 סטודנטים לומדים עכשיו</span>
+            </div>
             <div style={{ display: "flex", gap: "12px" }}>
               <Link
                 href={firstLesson ? `/courses/${featuredCourse.id}/lessons/${firstLesson.id}` : `/courses/${featuredCourse.id}`}

@@ -1,11 +1,8 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
-import { motion, AnimatePresence, LayoutGroup, type PanInfo } from "framer-motion"
-import { cn } from "@/lib/utils"
-import { Grid3X3, Layers, LayoutList } from "lucide-react"
-
-export type LayoutMode = "stack" | "grid" | "list"
+import { motion, AnimatePresence, type PanInfo } from "framer-motion"
+import { ExternalLink } from "lucide-react"
 
 export interface CardData {
   id: string
@@ -13,19 +10,13 @@ export interface CardData {
   description: string
   icon?: ReactNode
   color?: string
+  url?: string
 }
 
 export interface MorphingCardStackProps {
   cards?: CardData[]
   className?: string
-  defaultLayout?: LayoutMode
   onCardClick?: (card: CardData) => void
-}
-
-const layoutIcons = {
-  stack: Layers,
-  grid: Grid3X3,
-  list: LayoutList,
 }
 
 const SWIPE_THRESHOLD = 50
@@ -33,19 +24,14 @@ const SWIPE_THRESHOLD = 50
 export function MorphingCardStack({
   cards = [],
   className,
-  defaultLayout = "stack",
   onCardClick,
 }: MorphingCardStackProps) {
-  const [layout, setLayout] = useState<LayoutMode>(defaultLayout)
-  const [expandedCard, setExpandedCard] = useState<string | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
 
-  if (!cards || cards.length === 0) {
-    return null
-  }
+  if (!cards || cards.length === 0) return null
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const { offset, velocity } = info
     const swipe = Math.abs(offset.x) * velocity.x
 
@@ -66,137 +52,120 @@ export function MorphingCardStack({
     return reordered.reverse()
   }
 
-  const getLayoutStyles = (stackPosition: number) => {
-    switch (layout) {
-      case "stack":
-        return {
-          top: stackPosition * 8,
-          left: stackPosition * 8,
-          zIndex: cards.length - stackPosition,
-          rotate: (stackPosition - 1) * 2,
-        }
-      case "grid":
-        return { top: 0, left: 0, zIndex: 1, rotate: 0 }
-      case "list":
-        return { top: 0, left: 0, zIndex: 1, rotate: 0 }
-    }
-  }
-
-  const containerStyles = {
-    stack: "relative h-64 w-64",
-    grid: "grid grid-cols-2 gap-3",
-    list: "flex flex-col gap-3",
-  }
-
-  const displayCards = layout === "stack" ? getStackOrder() : cards.map((c, i) => ({ ...c, stackPosition: i }))
+  const stackCards = getStackOrder()
 
   return (
-    <div className={cn("space-y-4", className)}>
-      <div className="flex items-center justify-center gap-1 rounded-lg bg-secondary/50 p-1 w-fit mx-auto">
-        {(Object.keys(layoutIcons) as LayoutMode[]).map((mode) => {
-          const Icon = layoutIcons[mode]
-          return (
-            <button
-              key={mode}
-              onClick={() => setLayout(mode)}
-              className={cn(
-                "rounded-md p-2 transition-all",
-                layout === mode
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary",
-              )}
-              aria-label={`Switch to ${mode} layout`}
-            >
-              <Icon className="h-4 w-4" />
-            </button>
-          )
-        })}
+    <div className={className} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" }}>
+      {/* Stack */}
+      <div style={{ position: "relative", width: "100%", maxWidth: "420px", height: "280px" }}>
+        <AnimatePresence mode="popLayout">
+          {stackCards.map((card) => {
+            const isTop = card.stackPosition === 0
+            const offset = card.stackPosition
+
+            return (
+              <motion.div
+                key={card.id}
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{
+                  opacity: offset > 2 ? 0 : 1 - offset * 0.15,
+                  scale: 1 - offset * 0.04,
+                  y: offset * 12,
+                  x: 0,
+                  zIndex: cards.length - offset,
+                  rotate: (offset - 0.5) * 1.5,
+                }}
+                exit={{ opacity: 0, scale: 0.8, x: -300 }}
+                transition={{ type: "spring", stiffness: 280, damping: 26 }}
+                drag={isTop ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.6}
+                onDragStart={() => setIsDragging(true)}
+                onDragEnd={handleDragEnd}
+                whileDrag={{ scale: 1.03, cursor: "grabbing", rotate: 0 }}
+                onClick={() => {
+                  if (isDragging) return
+                  if (card.url) {
+                    window.open(card.url, "_blank", "noopener,noreferrer")
+                  }
+                  onCardClick?.(card)
+                }}
+                style={{
+                  position: "absolute",
+                  width: "100%",
+                  minHeight: "220px",
+                  borderRadius: "20px",
+                  padding: "28px",
+                  background: card.color || "rgba(18,18,42,0.97)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  boxShadow: isTop ? "0 12px 40px rgba(0,0,0,0.4)" : "0 4px 12px rgba(0,0,0,0.2)",
+                  cursor: isTop ? (card.url ? "pointer" : "grab") : "default",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Content */}
+                <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
+                  {card.icon && (
+                    <div style={{
+                      width: "44px", height: "44px", borderRadius: "12px",
+                      background: "rgba(0,0,255,0.12)", display: "flex",
+                      alignItems: "center", justifyContent: "center",
+                      color: "rgba(140,140,255,0.9)", flexShrink: 0,
+                    }}>
+                      {card.icon}
+                    </div>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px", lineHeight: 1.3 }}>
+                      {card.title}
+                    </h3>
+                    <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.5)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>
+                      {card.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* URL button */}
+                {card.url && isTop && (
+                  <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-start" }}>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: "6px",
+                      fontSize: "12px", color: "#3333FF", fontWeight: 600,
+                      padding: "6px 14px", borderRadius: "8px",
+                      background: "rgba(0,0,255,0.08)", border: "1px solid rgba(0,0,255,0.15)",
+                    }}>
+                      <ExternalLink size={12} />
+                      קרא עוד
+                    </span>
+                  </div>
+                )}
+
+                {/* Swipe hint */}
+                {isTop && cards.length > 1 && (
+                  <div style={{ position: "absolute", bottom: "10px", left: 0, right: 0, textAlign: "center" }}>
+                    <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.2)" }}>החלק לניווט</span>
+                  </div>
+                )}
+              </motion.div>
+            )
+          })}
+        </AnimatePresence>
       </div>
 
-      <LayoutGroup>
-        <motion.div layout className={cn(containerStyles[layout], "mx-auto")}>
-          <AnimatePresence mode="popLayout">
-            {displayCards.map((card) => {
-              const styles = getLayoutStyles(card.stackPosition)
-              const isExpanded = expandedCard === card.id
-              const isTopCard = layout === "stack" && card.stackPosition === 0
-
-              return (
-                <motion.div
-                  key={card.id}
-                  layoutId={card.id}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{
-                    opacity: 1,
-                    scale: isExpanded ? 1.05 : 1,
-                    x: 0,
-                    ...styles,
-                  }}
-                  exit={{ opacity: 0, scale: 0.8, x: -200 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  drag={isTopCard ? "x" : false}
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={0.7}
-                  onDragStart={() => setIsDragging(true)}
-                  onDragEnd={handleDragEnd}
-                  whileDrag={{ scale: 1.02, cursor: "grabbing" }}
-                  onClick={() => {
-                    if (isDragging) return
-                    setExpandedCard(isExpanded ? null : card.id)
-                    onCardClick?.(card)
-                  }}
-                  className={cn(
-                    "cursor-pointer rounded-xl border border-border bg-card p-4",
-                    "hover:border-primary/50 transition-colors",
-                    layout === "stack" && "absolute w-56 h-48",
-                    layout === "stack" && isTopCard && "cursor-grab active:cursor-grabbing",
-                    layout === "grid" && "w-full aspect-square",
-                    layout === "list" && "w-full",
-                    isExpanded && "ring-2 ring-primary",
-                  )}
-                  style={{ backgroundColor: card.color || undefined }}
-                >
-                  <div className="flex items-start gap-3">
-                    {card.icon && (
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground">
-                        {card.icon}
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-card-foreground truncate">{card.title}</h3>
-                      <p className={cn(
-                        "text-sm text-muted-foreground mt-1",
-                        layout === "stack" && "line-clamp-3",
-                        layout === "grid" && "line-clamp-2",
-                        layout === "list" && "line-clamp-1",
-                      )}>
-                        {card.description}
-                      </p>
-                    </div>
-                  </div>
-                  {isTopCard && (
-                    <div className="absolute bottom-2 left-0 right-0 text-center">
-                      <span className="text-xs text-muted-foreground/50">החלק לניווט</span>
-                    </div>
-                  )}
-                </motion.div>
-              )
-            })}
-          </AnimatePresence>
-        </motion.div>
-      </LayoutGroup>
-
-      {layout === "stack" && cards.length > 1 && (
-        <div className="flex justify-center gap-1.5">
+      {/* Dot indicators */}
+      {cards.length > 1 && (
+        <div style={{ display: "flex", justifyContent: "center", gap: "6px" }}>
           {cards.map((_, index) => (
             <button
               key={index}
               onClick={() => setActiveIndex(index)}
-              className={cn(
-                "h-1.5 rounded-full transition-all",
-                index === activeIndex ? "w-4 bg-primary" : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50",
-              )}
-              aria-label={`Go to card ${index + 1}`}
+              style={{
+                height: "6px", borderRadius: "3px", border: "none", cursor: "pointer",
+                width: index === activeIndex ? "20px" : "6px",
+                background: index === activeIndex ? "#0000FF" : "rgba(240,240,245,0.2)",
+                transition: "all 0.3s",
+              }}
+              aria-label={`כרטיס ${index + 1}`}
             />
           ))}
         </div>

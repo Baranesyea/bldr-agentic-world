@@ -5,15 +5,16 @@ interface NewsItem {
   title: string;
   description: string;
   icon?: string;
+  url?: string;
   createdAt: string;
 }
 
 // In-memory store (persists during server lifetime)
 let newsStore: NewsItem[] = [
-  { id: "1", title: "Claude 4 שוחרר!", description: "הדור החדש של Claude הגיע עם יכולות מתקדמות — context window של מיליון טוקנים, כלים חדשים ועוד", icon: "sparkles", createdAt: new Date().toISOString() },
+  { id: "1", title: "Claude 4 שוחרר!", description: "הדור החדש של Claude הגיע עם יכולות מתקדמות — context window של מיליון טוקנים, כלים חדשים ועוד", icon: "sparkles", url: "https://www.anthropic.com", createdAt: new Date().toISOString() },
   { id: "2", title: "קורס חדש: Building AI Agents", description: "למד לבנות סוכני AI חכמים עם Claude Agent SDK. הקורס כולל 20 שיעורים ו-5 פרויקטים מעשיים", icon: "book", createdAt: new Date().toISOString() },
   { id: "3", title: "עדכון פלטפורמה", description: "הוספנו נגן וידאו מותאם, מערכת התראות חדשה ושיפורים בממשק הניהול", icon: "rocket", createdAt: new Date().toISOString() },
-  { id: "4", title: "MCP Servers — מדריך מקיף", description: "פרסמנו מדריך מקיף על Model Context Protocol שמסביר איך לחבר כלים חיצוניים", icon: "layers", createdAt: new Date().toISOString() },
+  { id: "4", title: "MCP Servers — מדריך מקיף", description: "פרסמנו מדריך מקיף על Model Context Protocol שמסביר איך לחבר כלים חיצוניים", icon: "layers", url: "https://modelcontextprotocol.io", createdAt: new Date().toISOString() },
   { id: "5", title: "מיטאפ קהילתי — מרץ", description: "המיטאפ הקרוב יתקיים ב-28 למרץ בשעה 18:00. הנושא: אוטומציות חכמות לעסקים", icon: "calendar", createdAt: new Date().toISOString() },
 ];
 
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
         title: item.title,
         description: item.description,
         icon: item.icon || "sparkles",
+        url: item.url || undefined,
         createdAt: new Date().toISOString(),
       };
 

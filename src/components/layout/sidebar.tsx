@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -39,7 +40,6 @@ const mainNav = [
   { label: "מקרי בוחן", href: "/case-studies", icon: BeakerIcon },
   { label: "תכנים נוספים", href: "/social", icon: SocialIcon },
   { label: "שאלות", href: "/qa", icon: QuestionIcon },
-  { label: "צ׳אט", href: "/chat", icon: ChatIcon },
   { label: "פרופיל", href: "/profile", icon: ProfileIcon },
 ];
 
@@ -52,6 +52,7 @@ const adminNav = [
   { label: "משתמשים", href: "/admin/users", icon: UsersIcon },
   { label: "רעיונות", href: "/admin/ideas", icon: LightbulbIcon },
   { label: "בסיס ידע", href: "/admin/knowledge", icon: BrainIcon },
+  { label: "ניהול שאלות", href: "/admin/qa", icon: QuestionIcon },
   { label: "לוג פרומפטים", href: "/admin/logs", icon: TerminalIcon },
   { label: "מקרי בוחן", href: "/admin/case-studies", icon: BeakerIcon },
 ];
@@ -71,12 +72,24 @@ interface Notification {
 
 export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {}) {
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check user role
+  React.useEffect(() => {
+    try {
+      const profile = JSON.parse(localStorage.getItem("bldr_user_profile") || "{}");
+      setIsAdmin(profile.role === "admin" || profile.role === "Architect");
+    } catch {
+      setIsAdmin(false);
+    }
+  }, []);
   const [internalCollapsed, setInternalCollapsed] = useState(true);
   const collapsed = collapsedProp ?? internalCollapsed;
   const toggleCollapse = onToggle ?? (() => setInternalCollapsed(!internalCollapsed));
   const width = collapsed ? 68 : 240;
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [viewAsUser, setViewAsUser] = useState(false);
   const [showNews, setShowNews] = useState(false);
   const [newsCards, setNewsCards] = useState<CardData[]>([]);
 
@@ -103,11 +116,12 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          const cards: CardData[] = data.map((n: { id: string; title: string; description: string; icon?: string }) => ({
+          const cards: CardData[] = data.map((n: { id: string; title: string; description: string; icon?: string; url?: string }) => ({
             id: n.id,
             title: n.title,
             description: n.description,
             icon: n.icon ? iconMap[n.icon] : undefined,
+            url: n.url,
           }));
           setNewsCards(cards);
         }
@@ -173,6 +187,39 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       backdropFilter: "blur(20px)",
       WebkitBackdropFilter: "blur(20px)",
     }}>
+      {/* Admin view toggle */}
+      {isAdmin && (
+        <div style={{
+          padding: collapsed ? "6px 4px" : "6px 12px",
+          borderBottom: "1px solid rgba(255,255,255,0.04)",
+          display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "space-between",
+          background: viewAsUser ? "rgba(255,179,0,0.06)" : "transparent",
+          transition: "background 0.2s",
+        }}>
+          {!collapsed && (
+            <span style={{ fontSize: "11px", color: viewAsUser ? "#FFB300" : "rgba(240,240,245,0.25)" }}>
+              {viewAsUser ? "מצב משתמש" : "מצב מנהל"}
+            </span>
+          )}
+          <button
+            onClick={() => setViewAsUser(!viewAsUser)}
+            title={viewAsUser ? "חזור למצב מנהל" : "צפה כמשתמש"}
+            style={{
+              width: "36px", height: "20px", borderRadius: "10px", border: "none",
+              cursor: "pointer", position: "relative",
+              background: viewAsUser ? "#FFB300" : "rgba(255,255,255,0.1)",
+              transition: "background 0.2s", flexShrink: 0,
+            }}
+          >
+            <div style={{
+              width: "14px", height: "14px", borderRadius: "50%", background: "white",
+              position: "absolute", top: "3px", transition: "left 0.2s",
+              ...(viewAsUser ? { left: "3px" } : { left: "19px" }),
+            }} />
+          </button>
+        </div>
+      )}
+
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: collapsed ? "64px" : "100px", padding: collapsed ? "0 12px" : "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", transition: "height 0.3s, padding 0.3s" }}>
         <Link href="/dashboard" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Image src="/logo.png" alt="BLDR" width={collapsed ? 36 : 160} height={collapsed ? 36 : 60} style={{ objectFit: "contain", transition: "all 0.3s" }} />
@@ -183,10 +230,14 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         {mainNav.map((item) => (
           <NavLink key={item.href} item={item} />
         ))}
-        <div style={{ margin: "12px 0", borderTop: "1px solid rgba(255,255,255,0.06)" }} />
-        {adminNav.map((item) => (
-          <NavLink key={item.href} item={item} />
-        ))}
+        {isAdmin && !viewAsUser && (
+          <>
+            <div style={{ margin: "12px 0", borderTop: "1px solid rgba(255,255,255,0.06)" }} />
+            {adminNav.map((item) => (
+              <NavLink key={item.href} item={item} />
+            ))}
+          </>
+        )}
       </nav>
 
       {/* News button */}
@@ -207,51 +258,62 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         </button>
       </div>
 
-      {/* News full-screen overlay */}
-      {showNews && (
+      {/* News full-screen overlay — rendered via portal to body */}
+      {showNews && typeof document !== "undefined" && createPortal(
         <div
-          onClick={() => setShowNews(false)}
+          onMouseDown={(e) => { if (e.target === e.currentTarget) setShowNews(false); }}
           style={{
-            position: "fixed", inset: 0, zIndex: 1000,
-            background: "rgba(0,0,0,0.6)",
-            backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+            position: "fixed", inset: 0, zIndex: 9999,
+            background: "rgba(0,0,0,0.7)",
+            backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            animation: "fadeIn 0.2s ease-out",
           }}
         >
+          <style>{`
+            @keyframes newsSlideIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+          `}</style>
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              width: "100%", maxWidth: "600px", maxHeight: "80vh",
-              background: "rgba(14,14,32,0.95)",
+              width: "90%", maxWidth: "700px", maxHeight: "85vh",
+              background: "rgba(10,10,26,0.97)",
               border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "24px", padding: "32px",
-              position: "relative", overflowY: "auto",
-              boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
-              animation: "slideUp 0.3s ease-out",
+              borderRadius: "24px", padding: "40px 48px",
+              position: "relative", overflow: "hidden",
+              boxShadow: "0 32px 100px rgba(0,0,0,0.6), 0 0 60px rgba(0,0,255,0.08)",
+              animation: "newsSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
             <button
               onClick={() => setShowNews(false)}
               style={{
                 position: "absolute", top: "16px", left: "16px",
-                background: "rgba(255,255,255,0.06)", border: "none",
+                background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: "50%", width: "36px", height: "36px",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", color: "rgba(240,240,245,0.6)",
+                cursor: "pointer", color: "rgba(240,240,245,0.5)",
+                transition: "background 0.2s",
               }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.12)"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
             >
               <CloseIcon size={16} />
             </button>
-            <h2 style={{
-              fontSize: "28px", fontWeight: 800, color: "#f0f0f5",
-              textAlign: "center", marginBottom: "24px",
-            }}>
-              מה חדש?
-            </h2>
+            <div style={{ textAlign: "center", marginBottom: "28px" }}>
+              <span style={{ fontSize: "32px", display: "block", marginBottom: "8px" }}>
+                <NewsIcon size={32} color="rgba(240,240,245,0.3)" />
+              </span>
+              <h2 style={{ fontSize: "26px", fontWeight: 800, color: "#f0f0f5" }}>
+                מה חדש?
+              </h2>
+              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.35)", marginTop: "4px" }}>
+                עדכונים אחרונים מהקהילה
+              </p>
+            </div>
             <MorphingCardStack cards={newsCards} defaultLayout="list" />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Notifications bell */}
