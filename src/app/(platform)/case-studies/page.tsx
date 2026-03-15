@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
+import { HeroVideoDialog } from "@/components/ui/hero-video-dialog";
 
 interface CaseStudy {
   id: string;
@@ -28,6 +29,11 @@ const GRADIENTS = [
   "linear-gradient(135deg, #3a0a2a, #ff2a8a)",
   "linear-gradient(135deg, #2a1a0a, #ffaa0a)",
 ];
+
+function extractYouTubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+  return match ? match[1] : null;
+}
 
 function toEmbedUrl(url: string): string {
   if (!url) return "";
@@ -89,14 +95,11 @@ const btnP: React.CSSProperties = {
 
 export default function CaseStudiesPage() {
   const [caseStudies, setCaseStudies] = useState<CaseStudy[]>([]);
-  const [selected, setSelected] = useState<CaseStudy | null>(null);
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
   const [formDesc, setFormDesc] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loaded, setLoaded] = useState(false);
-
-  const handleClose = useCallback(() => setSelected(null), []);
 
   useEffect(() => {
     try {
@@ -107,14 +110,6 @@ export default function CaseStudiesPage() {
     } catch {}
     setLoaded(true);
   }, []);
-
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") handleClose();
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [handleClose]);
 
   const handleSubmit = () => {
     if (!formName.trim() || !formEmail.trim() || !formDesc.trim()) return;
@@ -142,13 +137,32 @@ export default function CaseStudiesPage() {
   return (
     <div style={{ padding: "32px 40px", maxWidth: 1100, margin: "0 auto" }}>
       {/* Header */}
-      <div style={{ marginBottom: 40, textAlign: "center" }}>
-        <h1 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8 }}>
-          מקרי בוחן
-        </h1>
-        <p style={{ fontSize: 16, color: "rgba(240,240,245,0.5)", maxWidth: 500, margin: "0 auto" }}>
-          פתרונות אמיתיים שבנינו ללקוחות — צפו ולמדו
-        </p>
+      <div style={{ marginBottom: 40, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h1 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8 }}>
+            מקרי בוחן
+          </h1>
+          <p style={{ fontSize: 16, color: "rgba(240,240,245,0.5)" }}>
+            פתרונות אמיתיים שבנינו ללקוחות — צפו ולמדו
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            const el = document.getElementById("request-section");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
+          style={{
+            background: "#0000FF", color: "white", padding: "10px 24px",
+            borderRadius: "12px", fontWeight: 600, fontSize: "14px",
+            border: "none", cursor: "pointer",
+            boxShadow: "0 0 20px rgba(0,0,255,0.25)",
+            display: "flex", alignItems: "center", gap: "8px",
+            flexShrink: 0,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          הגש בקשה למקרה בוחן
+        </button>
       </div>
 
       {/* Gallery Grid */}
@@ -169,47 +183,14 @@ export default function CaseStudiesPage() {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20, marginBottom: 60 }}>
           {caseStudies.map((cs, i) => (
-            <div
-              key={cs.id}
-              style={cardS}
-              onClick={() => setSelected(cs)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(0,0,255,0.3)";
-                e.currentTarget.style.boxShadow = "0 0 24px rgba(0,0,255,0.1)";
-                e.currentTarget.style.transform = "translateY(-2px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
-                e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              {/* Thumbnail */}
-              <div style={{
-                height: 180,
-                background: GRADIENTS[i % GRADIENTS.length],
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative",
-              }}>
-                <div style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: "50%",
-                  background: "rgba(0,0,0,0.5)",
-                  border: "2px solid rgba(255,255,255,0.3)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backdropFilter: "blur(8px)",
-                  transition: "transform 0.2s",
-                }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="none">
-                    <polygon points="8 5 20 12 8 19 8 5" />
-                  </svg>
-                </div>
-              </div>
+            <div key={cs.id} style={cardS}>
+              {/* Video with HeroVideoDialog */}
+              <HeroVideoDialog
+                animationStyle="from-center"
+                videoSrc={toEmbedUrl(cs.videoUrl) + "?autoplay=1"}
+                thumbnailSrc={`https://img.youtube.com/vi/${extractYouTubeId(cs.videoUrl) || "dQw4w9WgXcQ"}/hqdefault.jpg`}
+                thumbnailAlt={cs.title}
+              />
 
               {/* Info */}
               <div style={{ padding: 20 }}>
@@ -223,7 +204,7 @@ export default function CaseStudiesPage() {
                   marginBottom: 12,
                   display: "-webkit-box",
                   WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
+                  WebkitBoxOrient: "vertical" as const,
                   overflow: "hidden",
                 }}>
                   {cs.description}
@@ -240,7 +221,7 @@ export default function CaseStudiesPage() {
       )}
 
       {/* Request a Case Study */}
-      <div style={{
+      <div id="request-section" style={{
         background: "rgba(255,255,255,0.03)",
         border: "1px solid rgba(255,255,255,0.06)",
         borderRadius: 16,
@@ -298,10 +279,9 @@ export default function CaseStudiesPage() {
         )}
       </div>
 
-      {/* Lightbox Modal */}
-      {selected && (
+      {/* Old lightbox removed — using HeroVideoDialog instead */}
+      {false && (
         <div
-          onClick={handleClose}
           style={{
             position: "fixed",
             inset: 0,
