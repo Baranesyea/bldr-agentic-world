@@ -109,7 +109,7 @@ export default function ProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  const generateCanvasAvatar = (gender: "male" | "female"): string => {
+  const generateCanvasAvatar = (gender: "male" | "female", refImage?: HTMLImageElement): string => {
     const canvas = document.createElement("canvas");
     canvas.width = 512;
     canvas.height = 512;
@@ -123,36 +123,56 @@ export default function ProfilePage() {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 512, 512);
 
-    // Subtle pattern
-    ctx.globalAlpha = 0.05;
-    for (let i = 0; i < 20; i++) {
+    if (refImage) {
+      // Draw reference image as base, cropped to circle area
+      ctx.save();
       ctx.beginPath();
-      ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 80 + 20, 0, Math.PI * 2);
-      ctx.fillStyle = "#fff";
+      ctx.arc(256, 256, 220, 0, Math.PI * 2);
+      ctx.clip();
+      // Cover the circle with the reference image
+      const scale = Math.max(440 / refImage.width, 440 / refImage.height);
+      const w = refImage.width * scale;
+      const h = refImage.height * scale;
+      ctx.drawImage(refImage, 256 - w / 2, 256 - h / 2, w, h);
+      ctx.restore();
+      // Overlay gradient for style
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 512);
+      ctx.globalAlpha = 1;
+    } else {
+      // Subtle pattern
+      ctx.globalAlpha = 0.05;
+      for (let i = 0; i < 20; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 80 + 20, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // Avatar silhouette
+      ctx.fillStyle = "rgba(255,255,255,0.15)";
+      ctx.beginPath();
+      ctx.arc(256, 180, 80, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(256, 420, 130, 150, 0, Math.PI, 0);
       ctx.fill();
     }
-    ctx.globalAlpha = 1;
 
-    // Avatar silhouette
-    ctx.fillStyle = "rgba(255,255,255,0.15)";
-    // Head
-    ctx.beginPath();
-    ctx.arc(256, 180, 80, 0, Math.PI * 2);
-    ctx.fill();
-    // Body
-    ctx.beginPath();
-    ctx.ellipse(256, 420, 130, 150, 0, Math.PI, 0);
-    ctx.fill();
-
-    // Initials
+    // Initials overlay
     const initials = profile.name.split(" ").map((w) => w[0]).join("").slice(0, 2);
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.font = "bold 120px sans-serif";
+    ctx.fillStyle = refImage ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.9)";
+    ctx.font = `bold ${refImage ? 80 : 120}px sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(initials, 256, 256);
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 8;
+    ctx.fillText(initials, 256, refImage ? 420 : 256);
+    ctx.shadowBlur = 0;
 
-    return canvas.toDataURL("image/png");
+    return canvas.toDataURL("image/jpeg", 0.7);
   };
 
   const handleGenerateAvatar = async (gender: "male" | "female") => {
@@ -160,42 +180,34 @@ export default function ProfilePage() {
     setGenerating(true);
     setGenError("");
 
-    // Check if API key exists
-    let apiKey = "";
+    // Get reference image from avatar settings
+    let referenceImageUrl = "";
     try {
-      const keys = JSON.parse(localStorage.getItem("bldr_api_keys") || "[]");
-      const nanoBanana = keys.find((k: { label: string; value: string }) =>
-        k.label.toLowerCase().includes("nano banana")
-      );
-      if (nanoBanana?.value) apiKey = nanoBanana.value;
+      const avatarSettings = JSON.parse(localStorage.getItem("bldr_avatar_settings") || "{}");
+      if (avatarSettings.referenceImageUrl) referenceImageUrl = avatarSettings.referenceImageUrl;
     } catch {}
 
-    // Always fallback to canvas for now — API integration pending
-    // When the real Nano Banana 2 API URL is configured, uncomment the API block below
-    /*
-    if (apiKey) {
+    // Try to load reference image
+    if (referenceImageUrl) {
       try {
-        let referenceImageUrl = "";
-        try {
-          const avatarSettings = JSON.parse(localStorage.getItem("bldr_avatar_settings") || "{}");
-          if (avatarSettings.referenceImageUrl) referenceImageUrl = avatarSettings.referenceImageUrl;
-        } catch {}
-        const res = await fetch("/api/generate-avatar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gender, apiKey, referenceImageUrl, userName: profile.name }),
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = referenceImageUrl;
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject();
+          setTimeout(reject, 5000); // 5s timeout
         });
-        const data = await res.json();
-        if (res.ok && data.imageUrl) {
-          saveProfile({ avatarUrl: data.imageUrl });
-          setGenerating(false);
-          return;
-        }
-      } catch {}
+        const url = generateCanvasAvatar(gender, img);
+        saveProfile({ avatarUrl: url });
+        setGenerating(false);
+        return;
+      } catch {
+        // Reference image failed to load, continue without it
+      }
     }
-    */
 
-    // Generate canvas avatar
+    // Generate without reference
     setTimeout(() => {
       const url = generateCanvasAvatar(gender);
       saveProfile({ avatarUrl: url });

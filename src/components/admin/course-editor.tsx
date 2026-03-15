@@ -8,6 +8,7 @@ import {
   type BrandSettings,
   type ThumbnailOptions,
 } from "@/lib/thumbnail-generator";
+import { storeImageIfDataUrl, resolveImageUrl } from "@/lib/image-store";
 
 // ── Types ──────────────────────────────────────────────────────────
 interface Lesson {
@@ -37,6 +38,7 @@ interface Course {
   title: string;
   description: string;
   status: "draft" | "active" | "coming_soon";
+  featured: boolean;
   thumbnailUrl: string;
   createdAt: string;
   updatedAt: string;
@@ -89,7 +91,6 @@ const btnP: React.CSSProperties = {
   fontSize: 14,
   fontWeight: 600,
   cursor: "pointer",
-  
   transition: "all 0.2s",
 };
 
@@ -137,6 +138,47 @@ const tagPill: React.CSSProperties = {
   border: "1px solid rgba(0,0,255,0.2)",
 };
 
+// ── Table cell input (borderless spreadsheet feel) ─────────────────
+const cellInputS: React.CSSProperties = {
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 4,
+  border: "1px solid transparent",
+  background: "transparent",
+  color: "#fff",
+  fontSize: 13,
+  outline: "none",
+  fontFamily: "inherit",
+  boxSizing: "border-box",
+  transition: "border-color 0.15s",
+};
+
+const cellFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+  e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
+  e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+};
+const cellBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  e.currentTarget.style.borderColor = "transparent";
+  e.currentTarget.style.background = "transparent";
+};
+
+const iconBtnS: React.CSSProperties = {
+  width: 26,
+  height: 26,
+  borderRadius: 6,
+  border: "1px solid rgba(255,255,255,0.06)",
+  background: "transparent",
+  color: "rgba(240,240,245,0.35)",
+  fontSize: 11,
+  cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontFamily: "inherit",
+  transition: "all 0.15s",
+  padding: 0,
+};
+
 // ── Helpers ────────────────────────────────────────────────────────
 function makeLesson(num: number): Lesson {
   return {
@@ -144,7 +186,7 @@ function makeLesson(num: number): Lesson {
     number: num,
     title: "",
     videoUrl: "",
-    duration: "",
+    duration: "—",
     description: "",
     skills: [],
     hasAssignment: false,
@@ -195,6 +237,7 @@ function getDefaultThumbStyle(): ThumbnailOptions["style"] {
 }
 
 function parseDuration(d: string): number {
+  if (!d || d === "—") return 0;
   const parts = d.split(":");
   if (parts.length === 2) return parseInt(parts[0] || "0") * 60 + parseInt(parts[1] || "0");
   return 0;
@@ -207,21 +250,120 @@ function formatTotalDuration(seconds: number): string {
   return `${m}m`;
 }
 
+// ── SkillsPills sub-component ──────────────────────────────────────
+function SkillsPills({
+  skills,
+  onChange,
+}: {
+  skills: string[];
+  onChange: (skills: string[]) => void;
+}) {
+  const [inputVal, setInputVal] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const addSkill = (raw: string) => {
+    const val = raw.trim();
+    if (!val || skills.length >= 3 || skills.includes(val)) return;
+    onChange([...skills, val]);
+  };
+
+  const removeSkill = (idx: number) => {
+    onChange(skills.filter((_, i) => i !== idx));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      // split by comma in case they pasted multiple
+      const parts = inputVal.split(",").map((s) => s.trim()).filter(Boolean);
+      let current = [...skills];
+      for (const p of parts) {
+        if (current.length >= 3) break;
+        if (!current.includes(p)) current.push(p);
+      }
+      onChange(current);
+      setInputVal("");
+    } else if (e.key === "Backspace" && inputVal === "" && skills.length > 0) {
+      removeSkill(skills.length - 1);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+        flexWrap: "wrap",
+        minHeight: 28,
+        cursor: "text",
+      }}
+      onClick={() => inputRef.current?.focus()}
+    >
+      {skills.map((s, i) => (
+        <span key={s + i} style={{ ...tagPill, fontSize: 10, padding: "1px 8px" }}>
+          {s}
+          <button
+            onClick={(e) => { e.stopPropagation(); removeSkill(i); }}
+            style={{
+              background: "none",
+              border: "none",
+              color: "rgba(140,140,255,0.6)",
+              cursor: "pointer",
+              fontSize: 10,
+              padding: "0 0 0 2px",
+              lineHeight: 1,
+              fontFamily: "inherit",
+            }}
+          >
+            ✕
+          </button>
+        </span>
+      ))}
+      {skills.length < 3 && (
+        <input
+          ref={inputRef}
+          style={{
+            ...cellInputS,
+            width: skills.length > 0 ? 80 : "100%",
+            flex: skills.length > 0 ? "1 1 60px" : undefined,
+            fontSize: 11,
+            padding: "3px 4px",
+          }}
+          placeholder={skills.length === 0 ? "הוסף תגית..." : ""}
+          value={inputVal}
+          onChange={(e) => setInputVal(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={cellFocus}
+          onBlur={(e) => {
+            cellBlur(e);
+            // commit on blur if there's text
+            if (inputVal.trim()) {
+              addSkill(inputVal);
+              setInputVal("");
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 // ── Component ──────────────────────────────────────────────────────
 export default function CourseEditor({ courseId }: { courseId?: string }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"draft" | "active" | "coming_soon">("draft");
+  const [featured, setFeatured] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [thumbStyle, setThumbStyle] = useState<ThumbnailOptions["style"]>("Gradient");
   const [chapters, setChapters] = useState<Chapter[]>([makeChapter(1)]);
-  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
-  const [expandedLessons, setExpandedLessons] = useState<Set<string>>(new Set());
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [generatingThumb, setGeneratingThumb] = useState(false);
-  const [generatingLessonThumb, setGeneratingLessonThumb] = useState<string | null>(null);
   const [customThumbUrl, setCustomThumbUrl] = useState("");
+  const [saveFlash, setSaveFlash] = useState(false);
+  const [displayThumbUrl, setDisplayThumbUrl] = useState("");
   const existingIdRef = useRef<string | null>(null);
   const createdAtRef = useRef<string>(new Date().toISOString());
 
@@ -242,11 +384,21 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
       setTitle(found.title);
       setDescription(found.description);
       setStatus(found.status);
+      setFeatured(found.featured || false);
       setThumbnailUrl(found.thumbnailUrl);
       setChapters(found.chapters.length > 0 ? found.chapters : [makeChapter(1)]);
     } catch {}
     setThumbStyle(getDefaultThumbStyle());
   }, [courseId]);
+
+  // Resolve idb:// thumbnail URLs for display
+  useEffect(() => {
+    if (thumbnailUrl.startsWith("idb://")) {
+      resolveImageUrl(thumbnailUrl).then((resolved) => setDisplayThumbUrl(resolved));
+    } else {
+      setDisplayThumbUrl(thumbnailUrl);
+    }
+  }, [thumbnailUrl]);
 
   // ── Chapter ops ────────────────────────────────────────────────
   const addChapter = () => {
@@ -271,14 +423,16 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
   };
 
   const updateChapterTitle = (idx: number, val: string) => {
-    setChapters((prev) => prev.map((ch, i) => i === idx ? { ...ch, title: val } : ch));
+    setChapters((prev) => prev.map((ch, i) => (i === idx ? { ...ch, title: val } : ch)));
   };
 
   // ── Lesson ops ─────────────────────────────────────────────────
   const addLesson = (chIdx: number) => {
     setChapters((prev) =>
       prev.map((ch, i) =>
-        i === chIdx ? { ...ch, lessons: [...ch.lessons, makeLesson(ch.lessons.length + 1)] } : ch
+        i === chIdx
+          ? { ...ch, lessons: [...ch.lessons, makeLesson(ch.lessons.length + 1)] }
+          : ch
       )
     );
   };
@@ -287,7 +441,12 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
     setChapters((prev) =>
       prev.map((ch, ci) =>
         ci === chIdx
-          ? { ...ch, lessons: ch.lessons.filter((_, li) => li !== lIdx).map((l, li) => ({ ...l, number: li + 1 })) }
+          ? {
+              ...ch,
+              lessons: ch.lessons
+                .filter((_, li) => li !== lIdx)
+                .map((l, li) => ({ ...l, number: li + 1 })),
+            }
           : ch
       )
     );
@@ -316,21 +475,17 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
     );
   };
 
-  // ── Toggle helpers ─────────────────────────────────────────────
-  const toggleChapter = (id: string) => {
-    setExpandedChapters((prev) => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
-  };
-
-  const toggleLesson = (id: string) => {
-    setExpandedLessons((prev) => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
+  // ── Quick-add row handler ─────────────────────────────────────
+  const handleQuickAdd = (chIdx: number, value: string) => {
+    if (!value.trim()) return;
+    setChapters((prev) =>
+      prev.map((ch, ci) => {
+        if (ci !== chIdx) return ch;
+        const newNum = ch.lessons.length + 1;
+        const newLesson = { ...makeLesson(newNum), title: value.trim() };
+        return { ...ch, lessons: [...ch.lessons, newLesson] };
+      })
+    );
   };
 
   // ── Thumbnail generation ──────────────────────────────────────
@@ -339,15 +494,21 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
   const getApiKey = (): string => {
     try {
       const keys = JSON.parse(localStorage.getItem("bldr_api_keys") || "[]");
-      const nb = keys.find((k: { label: string; value: string }) => k.label.toLowerCase().includes("nano banana"));
+      const nb = keys.find(
+        (k: { label: string; value: string }) => k.label.toLowerCase().includes("nano banana")
+      );
       return nb?.value || "";
-    } catch { return ""; }
+    } catch {
+      return "";
+    }
   };
 
   const getThumbDefaults = () => {
     try {
       return JSON.parse(localStorage.getItem("bldr_thumb_defaults") || "{}");
-    } catch { return {}; }
+    } catch {
+      return {};
+    }
   };
 
   const generateCourseThumbnail = useCallback(async () => {
@@ -360,7 +521,6 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
     const thumbDefaults = getThumbDefaults();
 
     if (apiKey) {
-      // Use API
       try {
         const res = await fetch("/api/generate-thumbnail", {
           method: "POST",
@@ -387,60 +547,22 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
       }
     }
 
-    // Fallback to canvas
-    const url = generateThumbnail(brand, {
+    // Fallback to canvas — store in IndexedDB, not localStorage
+    const dataUrl = generateThumbnail(brand, {
       title,
       subtitle: description.slice(0, 60),
       style: thumbStyle,
       size: "1280x720",
     });
-    setThumbnailUrl(url);
+    const storedRef = await storeImageIfDataUrl(dataUrl, "thumb");
+    setThumbnailUrl(storedRef);
     setCustomThumbUrl("");
     setGeneratingThumb(false);
-    if (!apiKey) setThumbError("לא הוגדר מפתח API — נוצרה תמונה מקומית. הגדר מפתח Nano Banana 2 בהגדרות.");
+    if (!apiKey)
+      setThumbError(
+        "לא הוגדר מפתח API — נוצרה תמונה מקומית. הגדר מפתח Nano Banana 2 בהגדרות."
+      );
   }, [title, description, thumbStyle]);
-
-  const generateLessonThumbnail = async (chIdx: number, lIdx: number, lessonTitle: string) => {
-    const lessonId = chapters[chIdx].lessons[lIdx].id;
-    setGeneratingLessonThumb(lessonId);
-
-    const apiKey = getApiKey();
-    const brand = getBrand();
-    const thumbDefaults = getThumbDefaults();
-
-    if (apiKey) {
-      try {
-        const res = await fetch("/api/generate-thumbnail", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: lessonTitle,
-            subtitle: "",
-            style: thumbStyle,
-            apiKey,
-            brand,
-            thumbDefaults,
-          }),
-        });
-        const data = await res.json();
-        if (res.ok && data.imageUrl) {
-          updateLesson(chIdx, lIdx, { thumbnailUrl: data.imageUrl });
-          setGeneratingLessonThumb(null);
-          return;
-        }
-      } catch {}
-    }
-
-    // Fallback to canvas
-    const url = generateThumbnail(brand, {
-      title: lessonTitle,
-      subtitle: "",
-      style: thumbStyle,
-      size: "400x225",
-    });
-    updateLesson(chIdx, lIdx, { thumbnailUrl: url });
-    setGeneratingLessonThumb(null);
-  };
 
   // ── Save ──────────────────────────────────────────────────────
   const saveCourse = (publishStatus?: "active") => {
@@ -449,6 +571,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
       title,
       description,
       status: publishStatus || status,
+      featured,
       thumbnailUrl,
       createdAt: createdAtRef.current,
       updatedAt: new Date().toISOString(),
@@ -458,6 +581,11 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
     const stored = localStorage.getItem("bldr_courses");
     let courses: Course[] = stored ? JSON.parse(stored) : [];
 
+    // If this course is featured, unfeatured all others
+    if (featured) {
+      courses = courses.map((c) => ({ ...c, featured: false }));
+    }
+
     if (existingIdRef.current) {
       courses = courses.map((c) => (c.id === existingIdRef.current ? course : c));
     } else {
@@ -465,9 +593,37 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
       courses.push(course);
     }
 
-    localStorage.setItem("bldr_courses", JSON.stringify(courses));
+    try {
+      localStorage.setItem("bldr_courses", JSON.stringify(courses));
+    } catch (e) {
+      // localStorage quota exceeded — try to save without thumbnails
+      const stripped = courses.map((c) => ({
+        ...c,
+        thumbnailUrl: c.thumbnailUrl?.startsWith("data:") ? "" : c.thumbnailUrl,
+        chapters: c.chapters.map((ch) => ({
+          ...ch,
+          lessons: ch.lessons.map((l) => ({
+            ...l,
+            thumbnailUrl: l.thumbnailUrl?.startsWith("data:") ? "" : (l.thumbnailUrl || ""),
+          })),
+        })),
+      }));
+      try {
+        localStorage.setItem("bldr_courses", JSON.stringify(stripped));
+        setThumbError("האחסון המקומי מלא — התמונות הממוזערות הוסרו. שקול להשתמש בכתובות URL חיצוניות.");
+      } catch {
+        setThumbError("האחסון המקומי מלא לחלוטין. נסה למחוק קורסים ישנים מעמוד ניהול הקורסים.");
+        return;
+      }
+    }
     setLastSaved(new Date().toLocaleTimeString());
-    if (publishStatus) setStatus("active");
+    if (publishStatus) {
+      setStatus(publishStatus);
+      router.push("/admin/courses");
+    } else {
+      setSaveFlash(true);
+      setTimeout(() => setSaveFlash(false), 2000);
+    }
   };
 
   // ── Stats ─────────────────────────────────────────────────────
@@ -476,20 +632,52 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
     (s, ch) => s + ch.lessons.reduce((ls, l) => ls + parseDuration(l.duration), 0),
     0
   );
-  const totalAssignments = chapters.reduce(
-    (s, ch) => s + ch.lessons.filter((l) => l.hasAssignment).length,
-    0
-  );
+
+  // ── QuickAddRow sub-component ─────────────────────────────────
+  function QuickAddRow({ chIdx, chNumber, lessonCount }: { chIdx: number; chNumber: number; lessonCount: number }) {
+    const [val, setVal] = useState("");
+    return (
+      <tr style={{ background: "transparent" }}>
+        <td style={{ padding: "4px 8px", fontSize: 11, color: "rgba(240,240,245,0.15)", textAlign: "center" }}>
+          {chNumber}.{lessonCount + 1}
+        </td>
+        <td style={{ padding: "4px 0" }}>
+          <input
+            style={{ ...cellInputS, fontSize: 12, color: "rgba(240,240,245,0.3)" }}
+            placeholder="הקלד שם שיעור ולחץ Enter..."
+            value={val}
+            onChange={(e) => setVal(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && val.trim()) {
+                handleQuickAdd(chIdx, val);
+                setVal("");
+              }
+            }}
+            onFocus={cellFocus}
+            onBlur={cellBlur}
+          />
+        </td>
+        <td />
+        <td />
+        <td />
+      </tr>
+    );
+  }
 
   return (
-    <div style={{ padding: "32px 40px", maxWidth: 960, margin: "0 auto", paddingBottom: 120 }}>
+    <div style={{ padding: "32px 40px", maxWidth: 1100, margin: "0 auto", paddingBottom: 120 }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <Link href="/admin/courses" style={{ fontSize: 13, color: "rgba(240,240,245,0.35)", textDecoration: "none" }}>
+        <Link
+          href="/admin/courses"
+          style={{ fontSize: 13, color: "rgba(240,240,245,0.35)", textDecoration: "none" }}
+        >
           קורסים
         </Link>
         <span style={{ color: "rgba(240,240,245,0.2)", margin: "0 8px" }}>/</span>
-        <span style={{ fontSize: 13, color: "rgba(240,240,245,0.6)" }}>{courseId ? "עריכת קורס" : "קורס חדש"}</span>
+        <span style={{ fontSize: 13, color: "rgba(240,240,245,0.6)" }}>
+          {courseId ? "עריכת קורס" : "קורס חדש"}
+        </span>
         <h1 style={{ fontSize: 28, fontWeight: 700, color: "#fff", marginTop: 8 }}>
           {courseId ? "עריכת קורס" : "צור קורס חדש"}
         </h1>
@@ -503,31 +691,75 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div>
             <label style={labelS}>שם הקורס *</label>
-            <input style={inputS} placeholder="לדוגמה: מאסטר באוטומציית AI" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <input
+              style={inputS}
+              placeholder="לדוגמה: מאסטר באוטומציית AI"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
           </div>
           <div>
             <label style={labelS}>תיאור הקורס</label>
-            <textarea style={{ ...inputS, minHeight: 100, resize: "vertical" }} placeholder="מה הסטודנטים ילמדו?" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <textarea
+              style={{ ...inputS, minHeight: 100, resize: "vertical" }}
+              placeholder="מה הסטודנטים ילמדו?"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </div>
           <div>
             <label style={labelS}>סטטוס</label>
-            <select style={selectS} value={status} onChange={(e) => setStatus(e.target.value as Course["status"])}>
+            <select
+              style={selectS}
+              value={status}
+              onChange={(e) => setStatus(e.target.value as Course["status"])}
+            >
               <option value="draft">טיוטה</option>
               <option value="active">פעיל</option>
               <option value="coming_soon">בקרוב</option>
             </select>
           </div>
 
+          {/* Featured toggle */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 12, background: featured ? "rgba(0,0,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${featured ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.04)"}` }}>
+            <div>
+              <p style={{ fontSize: 14, color: "#f0f0f5", marginBottom: 2 }}>קורס מומלץ (Hero)</p>
+              <p style={{ fontSize: 12, color: "rgba(240,240,245,0.35)" }}>יופיע בראש הדשבורד כקורס ראשי</p>
+            </div>
+            <button
+              onClick={() => setFeatured(!featured)}
+              style={{
+                width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer",
+                position: "relative", background: featured ? "#0000FF" : "rgba(255,255,255,0.1)", transition: "background 0.2s", flexShrink: 0,
+              }}
+            >
+              <div style={{ width: 18, height: 18, borderRadius: "50%", background: "white", position: "absolute", top: 3, transition: "left 0.2s", ...(featured ? { left: 3 } : { left: 23 }) }} />
+            </button>
+          </div>
+
           {/* Thumbnail */}
           <div>
             <label style={labelS}>תמונה ממוזערת לקורס</label>
-            <div style={{ padding: 20, borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}>
+            <div
+              style={{
+                padding: 20,
+                borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.06)",
+                background: "rgba(255,255,255,0.02)",
+              }}
+            >
               <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "flex-end" }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ ...labelS, fontSize: 12 }}>סגנון</label>
-                  <select style={selectS} value={thumbStyle} onChange={(e) => setThumbStyle(e.target.value as ThumbnailOptions["style"])}>
+                  <select
+                    style={selectS}
+                    value={thumbStyle}
+                    onChange={(e) => setThumbStyle(e.target.value as ThumbnailOptions["style"])}
+                  >
                     {(["Minimal", "Bold", "Cinematic", "Gradient"] as const).map((s) => (
-                      <option key={s} value={s}>{s}</option>
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -540,349 +772,445 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                 </button>
               </div>
 
-              {/* Status/Error */}
               {thumbError && (
-                <div style={{
-                  padding: "10px 14px",
-                  borderRadius: 8,
-                  background: thumbError.includes("מקומית") ? "rgba(255,179,0,0.08)" : "rgba(255,60,60,0.08)",
-                  border: `1px solid ${thumbError.includes("מקומית") ? "rgba(255,179,0,0.2)" : "rgba(255,60,60,0.2)"}`,
-                  marginBottom: 12,
-                  fontSize: 12,
-                  color: thumbError.includes("מקומית") ? "#FFB300" : "#FF3D00",
-                  lineHeight: 1.5,
-                }}>
+                <div
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: 8,
+                    background: thumbError.includes("מקומית")
+                      ? "rgba(255,179,0,0.08)"
+                      : "rgba(255,60,60,0.08)",
+                    border: `1px solid ${
+                      thumbError.includes("מקומית")
+                        ? "rgba(255,179,0,0.2)"
+                        : "rgba(255,60,60,0.2)"
+                    }`,
+                    marginBottom: 12,
+                    fontSize: 12,
+                    color: thumbError.includes("מקומית") ? "#FFB300" : "#FF3D00",
+                    lineHeight: 1.5,
+                  }}
+                >
                   {thumbError}
                 </div>
               )}
 
               {generatingThumb && (
                 <div style={{ textAlign: "center", padding: "24px 0" }}>
-                  <div style={{
-                    width: 32, height: 32, margin: "0 auto 12px",
-                    border: "3px solid rgba(0,0,255,0.15)", borderTopColor: "#0000FF",
-                    borderRadius: "50%", animation: "spin 0.8s linear infinite",
-                  }} />
-                  <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 13 }}>יוצר תמונה ממוזערת...</p>
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      margin: "0 auto 12px",
+                      border: "3px solid rgba(0,0,255,0.15)",
+                      borderTopColor: "#0000FF",
+                      borderRadius: "50%",
+                      animation: "spin 0.8s linear infinite",
+                    }}
+                  />
+                  <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 13 }}>
+                    יוצר תמונה ממוזערת...
+                  </p>
                   <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                 </div>
               )}
 
-              {!generatingThumb && thumbnailUrl ? (
+              {!generatingThumb && displayThumbUrl ? (
                 <div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={thumbnailUrl} alt="Thumbnail" style={{ width: "100%", borderRadius: 8, display: "block" }} />
+                  <img
+                    src={displayThumbUrl}
+                    alt="Thumbnail"
+                    style={{ width: "100%", borderRadius: 8, display: "block" }}
+                  />
                 </div>
               ) : (
-                <div style={{ textAlign: "center", padding: "24px 0" }}>
-                  <p style={{ color: "rgba(240,240,245,0.25)", fontSize: 13 }}>
-                    הזן כותרת ולחץ על צור כדי ליצור תמונה ממוזערת
-                  </p>
-                </div>
+                !generatingThumb && (
+                  <div style={{ textAlign: "center", padding: "24px 0" }}>
+                    <p style={{ color: "rgba(240,240,245,0.25)", fontSize: 13 }}>
+                      הזן כותרת ולחץ על צור כדי ליצור תמונה ממוזערת
+                    </p>
+                  </div>
+                )
               )}
 
-              <div style={{ marginTop: 12 }}>
-                <label style={{ ...labelS, fontSize: 12 }}>או הדבק כתובת URL מותאמת</label>
-                <input
-                  style={inputS}
-                  placeholder="https://..."
-                  value={customThumbUrl}
-                  onChange={(e) => {
-                    setCustomThumbUrl(e.target.value);
-                    if (e.target.value.trim()) setThumbnailUrl(e.target.value.trim());
-                  }}
-                />
+              <div style={{ marginTop: 12, display: "flex", gap: 12, alignItems: "flex-end" }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ ...labelS, fontSize: 12 }}>או הדבק כתובת URL</label>
+                  <input
+                    style={inputS}
+                    placeholder="https://..."
+                    value={customThumbUrl}
+                    onChange={(e) => {
+                      setCustomThumbUrl(e.target.value);
+                      if (e.target.value.trim()) setThumbnailUrl(e.target.value.trim());
+                    }}
+                  />
+                </div>
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    id="thumb-upload"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file || !file.type.startsWith("image/")) return;
+                      const reader = new FileReader();
+                      reader.onload = async () => {
+                        const ref = await storeImageIfDataUrl(reader.result as string, "thumb-upload");
+                        setThumbnailUrl(ref);
+                        setCustomThumbUrl("");
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                  <label htmlFor="thumb-upload" style={{
+                    ...btnSec,
+                    padding: "10px 16px",
+                    fontSize: 13,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    העלה תמונה
+                  </label>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Section B: Chapters & Lessons ──────────────────────── */}
+      {/* ── Section B: Table-based Chapters & Lessons ─────────── */}
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: 18, fontWeight: 600, color: "#fff", marginBottom: 16 }}>
-          פרקים ושיעורים
+          נושאים ושיעורים
         </h2>
 
-        {chapters.map((ch, chIdx) => {
-          const chExpanded = expandedChapters.has(ch.id);
-          return (
+        {chapters.map((ch, chIdx) => (
+          <div
+            key={ch.id}
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              borderRadius: 12,
+              marginBottom: 16,
+              overflow: "hidden",
+            }}
+          >
+            {/* Chapter header row */}
             <div
-              key={ch.id}
               style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "10px 16px",
                 background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 14,
-                marginBottom: 12,
-                overflow: "hidden",
+                borderRight: "3px solid rgba(0,0,255,0.6)",
               }}
             >
-              {/* Chapter header */}
-              <div
+              <span
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "14px 16px",
-                  cursor: "pointer",
-                  userSelect: "none",
-                  background: "rgba(255,255,255,0.02)",
-                }}
-                onClick={() => toggleChapter(ch.id)}
-              >
-                <span style={{
-                  transform: chExpanded ? "rotate(90deg)" : "rotate(0deg)",
-                  transition: "transform 0.2s",
-                  display: "inline-block",
+                  color: "rgba(0,0,255,0.8)",
                   fontSize: 12,
-                  color: "rgba(240,240,245,0.35)",
-                }}>
-                  ▶
-                </span>
-                <span style={{ color: "rgba(0,0,255,0.7)", fontSize: 12, fontWeight: 600 }}>
-                  CH {ch.number}
-                </span>
-                <input
+                  fontWeight: 700,
+                  minWidth: 48,
+                  textAlign: "center",
+                }}
+              >
+                נושא {ch.number}
+              </span>
+              <input
+                style={{
+                  ...cellInputS,
+                  flex: 1,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  padding: "8px 10px",
+                }}
+                placeholder="כותרת הנושא..."
+                value={ch.title}
+                onChange={(e) => updateChapterTitle(chIdx, e.target.value)}
+                onFocus={cellFocus}
+                onBlur={cellBlur}
+              />
+              <button
+                style={{
+                  ...btnSmall,
+                  background: "rgba(0,0,255,0.06)",
+                  border: "1px solid rgba(0,0,255,0.15)",
+                  color: "rgba(140,140,255,0.8)",
+                  fontSize: 11,
+                  padding: "5px 10px",
+                }}
+                onClick={() => addLesson(chIdx)}
+              >
+                + הוסף שיעור
+              </button>
+              <div style={{ display: "flex", gap: 3 }}>
+                <button
+                  style={iconBtnS}
+                  onClick={() => moveChapter(chIdx, -1)}
+                  disabled={chIdx === 0}
+                  title="הזז למעלה"
+                >
+                  ↑
+                </button>
+                <button
+                  style={iconBtnS}
+                  onClick={() => moveChapter(chIdx, 1)}
+                  disabled={chIdx === chapters.length - 1}
+                  title="הזז למטה"
+                >
+                  ↓
+                </button>
+                <button
                   style={{
-                    ...inputS,
-                    flex: 1,
-                    padding: "6px 12px",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    background: "transparent",
-                    border: "1px solid transparent",
+                    ...iconBtnS,
+                    border: "1px solid rgba(255,60,60,0.15)",
+                    color: "rgba(255,120,120,0.6)",
                   }}
-                  placeholder="כותרת הפרק..."
-                  value={ch.title}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => updateChapterTitle(chIdx, e.target.value)}
-                  onFocus={(e) => { e.currentTarget.style.border = "1px solid rgba(255,255,255,0.1)"; }}
-                  onBlur={(e) => { e.currentTarget.style.border = "1px solid transparent"; }}
-                />
-                <span style={{ fontSize: 11, color: "rgba(240,240,245,0.3)", whiteSpace: "nowrap" }}>
-                  {ch.lessons.length} שיעורים
-                </span>
-                <div style={{ display: "flex", gap: 4 }} onClick={(e) => e.stopPropagation()}>
-                  <button style={btnSmall} onClick={() => moveChapter(chIdx, -1)} disabled={chIdx === 0} title="הזז למעלה">↑</button>
-                  <button style={btnSmall} onClick={() => moveChapter(chIdx, 1)} disabled={chIdx === chapters.length - 1} title="הזז למטה">↓</button>
-                  <button style={btnSmallDanger} onClick={() => removeChapter(chIdx)} title="מחק פרק">✕</button>
-                </div>
+                  onClick={() => removeChapter(chIdx)}
+                  title="מחק נושא"
+                >
+                  ✕
+                </button>
               </div>
+            </div>
 
-              {/* Lessons */}
-              {chExpanded && (
-                <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "8px 16px 16px" }}>
-                  {ch.lessons.map((lesson, lIdx) => {
-                    const lExpanded = expandedLessons.has(lesson.id);
-                    return (
-                      <div
-                        key={lesson.id}
-                        style={{
-                          background: "rgba(255,255,255,0.02)",
-                          border: "1px solid rgba(255,255,255,0.05)",
-                          borderRadius: 10,
-                          marginBottom: 8,
-                          overflow: "hidden",
-                          transition: "all 0.2s",
-                        }}
-                      >
-                        {/* Lesson collapsed header */}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 10,
-                            padding: "10px 14px",
-                            cursor: "pointer",
-                            userSelect: "none",
-                          }}
-                          onClick={() => toggleLesson(lesson.id)}
-                        >
-                          <span style={{
-                            transform: lExpanded ? "rotate(90deg)" : "rotate(0deg)",
-                            transition: "transform 0.2s",
-                            display: "inline-block",
-                            fontSize: 10,
-                            color: "rgba(240,240,245,0.3)",
-                          }}>
-                            ▶
-                          </span>
-                          <span style={{ color: "rgba(240,240,245,0.3)", fontSize: 11, fontWeight: 600, minWidth: 28 }}>
-                            {ch.number}.{lesson.number}
-                          </span>
+            {/* Lessons table */}
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                tableLayout: "fixed",
+              }}
+            >
+              {/* Column header */}
+              <thead>
+                <tr
+                  style={{
+                    borderBottom: "1px solid rgba(255,255,255,0.05)",
+                  }}
+                >
+                  <th
+                    style={{
+                      width: 48,
+                      padding: "6px 8px",
+                      fontSize: 10,
+                      fontWeight: 500,
+                      color: "rgba(240,240,245,0.25)",
+                      textAlign: "center",
+                    }}
+                  >
+                    #
+                  </th>
+                  <th
+                    style={{
+                      padding: "6px 8px",
+                      fontSize: 10,
+                      fontWeight: 500,
+                      color: "rgba(240,240,245,0.25)",
+                      textAlign: "right",
+                    }}
+                  >
+                    שם השיעור
+                  </th>
+                  <th
+                    style={{
+                      width: "28%",
+                      padding: "6px 8px",
+                      fontSize: 10,
+                      fontWeight: 500,
+                      color: "rgba(240,240,245,0.25)",
+                      textAlign: "right",
+                    }}
+                  >
+                    כתובת URL
+                  </th>
+                  <th
+                    style={{
+                      width: "22%",
+                      padding: "6px 8px",
+                      fontSize: 10,
+                      fontWeight: 500,
+                      color: "rgba(240,240,245,0.25)",
+                      textAlign: "right",
+                    }}
+                  >
+                    תגיות (עד 3)
+                  </th>
+                  <th
+                    style={{
+                      width: 90,
+                      padding: "6px 8px",
+                      fontSize: 10,
+                      fontWeight: 500,
+                      color: "rgba(240,240,245,0.25)",
+                      textAlign: "center",
+                    }}
+                  >
+                    פעולות
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {ch.lessons.map((lesson, lIdx) => (
+                  <tr
+                    key={lesson.id}
+                    style={{
+                      background:
+                        lIdx % 2 === 0
+                          ? "transparent"
+                          : "rgba(255,255,255,0.015)",
+                      borderBottom: "1px solid rgba(255,255,255,0.03)",
+                      transition: "background 0.1s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background =
+                        lIdx % 2 === 0 ? "transparent" : "rgba(255,255,255,0.015)";
+                    }}
+                  >
+                    {/* Number */}
+                    <td
+                      style={{
+                        padding: "4px 8px",
+                        fontSize: 11,
+                        color: "rgba(240,240,245,0.3)",
+                        textAlign: "center",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {ch.number}.{lesson.number}
+                    </td>
 
-                          {/* Small thumbnail preview */}
-                          {lesson.thumbnailUrl && (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={lesson.thumbnailUrl} alt="" style={{ width: 40, height: 23, borderRadius: 4, objectFit: "cover" }} />
-                          )}
+                    {/* Title */}
+                    <td style={{ padding: "4px 0" }}>
+                      <input
+                        style={cellInputS}
+                        placeholder="כותרת השיעור..."
+                        value={lesson.title}
+                        onChange={(e) =>
+                          updateLesson(chIdx, lIdx, { title: e.target.value })
+                        }
+                        onFocus={cellFocus}
+                        onBlur={cellBlur}
+                      />
+                    </td>
 
-                          <input
+                    {/* Video URL */}
+                    <td style={{ padding: "4px 0" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <input
+                          style={{ ...cellInputS, fontSize: 12, fontFamily: "var(--font-heading-en)" }}
+                          placeholder="https://youtube.com/..."
+                          value={lesson.videoUrl}
+                          onChange={(e) =>
+                            updateLesson(chIdx, lIdx, { videoUrl: e.target.value })
+                          }
+                          onFocus={cellFocus}
+                          onBlur={cellBlur}
+                        />
+                        {lesson.duration && lesson.duration !== "—" && (
+                          <span
                             style={{
-                              ...inputS,
-                              flex: 1,
-                              padding: "4px 10px",
-                              fontSize: 13,
-                              background: "transparent",
-                              border: "1px solid transparent",
+                              fontSize: 10,
+                              color: "rgba(240,240,245,0.3)",
+                              whiteSpace: "nowrap",
+                              paddingLeft: 4,
+                              fontFamily: "var(--font-heading-en)",
                             }}
-                            placeholder="כותרת השיעור..."
-                            value={lesson.title}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) => updateLesson(chIdx, lIdx, { title: e.target.value })}
-                            onFocus={(e) => { e.currentTarget.style.border = "1px solid rgba(255,255,255,0.1)"; }}
-                            onBlur={(e) => { e.currentTarget.style.border = "1px solid transparent"; }}
-                          />
-                          <input
-                            style={{
-                              ...inputS,
-                              width: 70,
-                              padding: "4px 8px",
-                              fontSize: 12,
-                              textAlign: "center",
-                              background: "transparent",
-                              border: "1px solid transparent",
-                            }}
-                            placeholder="MM:SS"
-                            value={lesson.duration}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) => updateLesson(chIdx, lIdx, { duration: e.target.value })}
-                            onFocus={(e) => { e.currentTarget.style.border = "1px solid rgba(255,255,255,0.1)"; }}
-                            onBlur={(e) => { e.currentTarget.style.border = "1px solid transparent"; }}
-                          />
-                          <div style={{ display: "flex", gap: 4 }} onClick={(e) => e.stopPropagation()}>
-                            <button style={btnSmall} onClick={() => moveLesson(chIdx, lIdx, -1)} disabled={lIdx === 0}>↑</button>
-                            <button style={btnSmall} onClick={() => moveLesson(chIdx, lIdx, 1)} disabled={lIdx === ch.lessons.length - 1}>↓</button>
-                            <button style={btnSmallDanger} onClick={() => removeLesson(chIdx, lIdx)}>✕</button>
-                          </div>
-                        </div>
-
-                        {/* Lesson expanded details */}
-                        {lExpanded && (
-                          <div style={{
-                            borderTop: "1px solid rgba(255,255,255,0.04)",
-                            padding: "16px 14px",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 14,
-                          }}>
-                            <div>
-                              <label style={{ ...labelS, fontSize: 12 }}>כתובת וידאו</label>
-                              <input style={inputS} placeholder="https://..." value={lesson.videoUrl} onChange={(e) => updateLesson(chIdx, lIdx, { videoUrl: e.target.value })} />
-                            </div>
-                            <div>
-                              <label style={{ ...labelS, fontSize: 12 }}>תיאור</label>
-                              <textarea style={{ ...inputS, minHeight: 60, resize: "vertical" }} placeholder="תיאור השיעור..." value={lesson.description} onChange={(e) => updateLesson(chIdx, lIdx, { description: e.target.value })} />
-                            </div>
-                            <div>
-                              <label style={{ ...labelS, fontSize: 12 }}>כישורים / תגיות (מופרדים בפסיקים)</label>
-                              <input
-                                style={inputS}
-                                placeholder="לדוגמה: AI, אוטומציה, claude"
-                                value={lesson.skills.join(", ")}
-                                onChange={(e) => updateLesson(chIdx, lIdx, { skills: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })}
-                              />
-                              {lesson.skills.length > 0 && (
-                                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
-                                  {lesson.skills.map((s) => (
-                                    <span key={s} style={tagPill}>{s}</span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                              <label style={{ ...labelS, fontSize: 12, marginBottom: 0, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-                                <input
-                                  type="checkbox"
-                                  checked={lesson.hasAssignment}
-                                  onChange={(e) => updateLesson(chIdx, lIdx, { hasAssignment: e.target.checked })}
-                                  style={{ accentColor: "#0000FF" }}
-                                />
-                                כולל מטלה
-                              </label>
-                            </div>
-                            {lesson.hasAssignment && (
-                              <div>
-                                <label style={{ ...labelS, fontSize: 12 }}>טקסט המטלה</label>
-                                <textarea style={{ ...inputS, minHeight: 60, resize: "vertical" }} placeholder="תאר את המטלה..." value={lesson.assignmentText} onChange={(e) => updateLesson(chIdx, lIdx, { assignmentText: e.target.value })} />
-                              </div>
-                            )}
-                            <div>
-                              <label style={{ ...labelS, fontSize: 12 }}>קבצים מצורפים (שמות מופרדים בפסיקים)</label>
-                              <input style={inputS} placeholder="לדוגמה: slides.pdf, code.zip" value={lesson.attachments.join(", ")} onChange={(e) => updateLesson(chIdx, lIdx, { attachments: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })} />
-                            </div>
-                            <div>
-                              <label style={{ ...labelS, fontSize: 12 }}>הערות</label>
-                              <textarea style={{ ...inputS, minHeight: 60, resize: "vertical" }} placeholder="הערות פנימיות..." value={lesson.notes} onChange={(e) => updateLesson(chIdx, lIdx, { notes: e.target.value })} />
-                            </div>
-
-                            {/* Lesson Thumbnail */}
-                            <div>
-                              <label style={{ ...labelS, fontSize: 12 }}>תמונה ממוזערת לשיעור</label>
-                              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                <button
-                                  style={{ ...btnSmall, background: "rgba(0,0,255,0.1)", border: "1px solid rgba(0,0,255,0.2)", color: "rgba(140,140,255,1)" }}
-                                  disabled={!lesson.title.trim() || generatingLessonThumb === lesson.id}
-                                  onClick={() => generateLessonThumbnail(chIdx, lIdx, lesson.title)}
-                                >
-                                  {generatingLessonThumb === lesson.id ? "..." : "צור"}
-                                </button>
-                                <input
-                                  style={{ ...inputS, flex: 1, padding: "6px 10px", fontSize: 12 }}
-                                  placeholder="או הדבק כתובת URL..."
-                                  value={lesson.thumbnailUrl.startsWith("data:") ? "" : lesson.thumbnailUrl}
-                                  onChange={(e) => updateLesson(chIdx, lIdx, { thumbnailUrl: e.target.value })}
-                                />
-                              </div>
-                              {lesson.thumbnailUrl && (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={lesson.thumbnailUrl} alt="" style={{ width: 200, borderRadius: 6, marginTop: 8, display: "block" }} />
-                              )}
-                            </div>
-                          </div>
+                          >
+                            {lesson.duration}
+                          </span>
                         )}
                       </div>
-                    );
-                  })}
+                    </td>
 
-                  <button
-                    style={{ ...btnSmall, marginTop: 8, background: "rgba(0,0,255,0.06)", border: "1px solid rgba(0,0,255,0.15)", color: "rgba(140,140,255,0.8)" }}
-                    onClick={() => addLesson(chIdx)}
-                  >
-                    + הוסף שיעור
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                    {/* Skills */}
+                    <td style={{ padding: "4px 4px" }}>
+                      <SkillsPills
+                        skills={lesson.skills}
+                        onChange={(skills) => updateLesson(chIdx, lIdx, { skills })}
+                      />
+                    </td>
+
+                    {/* Actions */}
+                    <td style={{ padding: "4px 8px", textAlign: "center" }}>
+                      <div style={{ display: "flex", gap: 3, justifyContent: "center" }}>
+                        <button
+                          style={iconBtnS}
+                          onClick={() => moveLesson(chIdx, lIdx, -1)}
+                          disabled={lIdx === 0}
+                          title="הזז למעלה"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          style={iconBtnS}
+                          onClick={() => moveLesson(chIdx, lIdx, 1)}
+                          disabled={lIdx === ch.lessons.length - 1}
+                          title="הזז למטה"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          style={{
+                            ...iconBtnS,
+                            border: "1px solid rgba(255,60,60,0.15)",
+                            color: "rgba(255,120,120,0.6)",
+                          }}
+                          onClick={() => removeLesson(chIdx, lIdx)}
+                          title="מחק שיעור"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+
+                {/* Quick-add row */}
+                <QuickAddRow chIdx={chIdx} chNumber={ch.number} lessonCount={ch.lessons.length} />
+              </tbody>
+            </table>
+          </div>
+        ))}
 
         <button style={{ ...btnSec, marginTop: 8 }} onClick={addChapter}>
-          + הוסף פרק
+          + הוסף נושא
         </button>
       </div>
 
       {/* ── Section C: Sticky bottom bar ───────────────────────── */}
-      <div style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: "rgba(10,10,26,0.95)",
-        borderTop: "1px solid rgba(255,255,255,0.08)",
-        backdropFilter: "blur(20px)",
-        padding: "14px 40px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        zIndex: 50,
-      }}>
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: "rgba(10,10,26,0.98)",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+          backdropFilter: "blur(20px)",
+          padding: "14px 40px 14px 40px",
+          paddingRight: "108px", // sidebar width + padding
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          zIndex: 60, // above event banner
+        }}
+      >
         <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
           {[
-            { label: "פרקים", value: chapters.length },
+            { label: "נושאים", value: chapters.length },
             { label: "שיעורים", value: totalLessons },
             { label: "משך", value: formatTotalDuration(totalDurationSec) },
-            { label: "מטלות", value: totalAssignments },
           ].map((s) => (
             <div key={s.label} style={{ textAlign: "center" }}>
               <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>{s.value}</div>
@@ -890,7 +1218,9 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
             </div>
           ))}
           {lastSaved && (
-            <span style={{ fontSize: 11, color: "rgba(240,240,245,0.25)", marginLeft: 8 }}>
+            <span
+              style={{ fontSize: 11, color: "rgba(240,240,245,0.25)", marginLeft: 8 }}
+            >
               נשמר לאחרונה: {lastSaved}
             </span>
           )}
@@ -903,15 +1233,22 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
             ביטול
           </button>
           <button
-            style={{ ...btnSec, padding: "10px 20px" }}
+            style={{
+              ...btnSec,
+              padding: "10px 20px",
+              border: saveFlash ? "1px solid rgba(0,200,83,0.4)" : "1px solid rgba(0,0,255,0.3)",
+              color: saveFlash ? "#00C853" : "#3333FF",
+              background: saveFlash ? "rgba(0,200,83,0.1)" : "rgba(255,255,255,0.04)",
+              transition: "all 0.3s",
+            }}
             onClick={() => saveCourse()}
             disabled={!title.trim()}
           >
-            שמור קורס
+            {saveFlash ? "✓ נשמר" : "שמור קורס"}
           </button>
           <button
             style={{ ...btnP, padding: "10px 20px", opacity: title.trim() ? 1 : 0.4 }}
-            onClick={() => saveCourse("active")}
+            onClick={() => saveCourse(status === "draft" ? "active" : undefined)}
             disabled={!title.trim()}
           >
             שמור ופרסם

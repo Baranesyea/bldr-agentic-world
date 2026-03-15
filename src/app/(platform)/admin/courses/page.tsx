@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 
 interface Lesson {
@@ -30,6 +30,7 @@ interface Course {
   title: string;
   description: string;
   status: "draft" | "active" | "coming_soon";
+  featured?: boolean;
   thumbnailUrl: string;
   createdAt: string;
   updatedAt: string;
@@ -54,7 +55,6 @@ const btnPrimary: React.CSSProperties = {
   fontSize: 14,
   fontWeight: 600,
   cursor: "pointer",
-  
   transition: "all 0.2s",
   textDecoration: "none",
   display: "inline-block",
@@ -83,12 +83,40 @@ const statusColors: Record<string, { bg: string; color: string; border: string; 
 
 export default function CourseManagerPage() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [viewMode, setViewMode] = useState<"grid" | "order">("grid");
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem("bldr_courses");
-      if (stored) setCourses(JSON.parse(stored));
+      if (stored) {
+        let parsed: Course[] = JSON.parse(stored);
+        // Apply saved order
+        const orderStr = localStorage.getItem("bldr_course_order");
+        if (orderStr) {
+          const order: string[] = JSON.parse(orderStr);
+          parsed = sortByOrder(parsed, order);
+        }
+        setCourses(parsed);
+      }
     } catch {}
+  }, []);
+
+  const sortByOrder = (list: Course[], order: string[]): Course[] => {
+    const orderMap = new Map(order.map((id, i) => [id, i]));
+    return [...list].sort((a, b) => {
+      const ai = orderMap.has(a.id) ? orderMap.get(a.id)! : 9999;
+      const bi = orderMap.has(b.id) ? orderMap.get(b.id)! : 9999;
+      return ai - bi;
+    });
+  };
+
+  const saveOrder = useCallback((newCourses: Course[]) => {
+    const ids = newCourses.map((c) => c.id);
+    localStorage.setItem("bldr_course_order", JSON.stringify(ids));
+    localStorage.setItem("bldr_courses", JSON.stringify(newCourses));
   }, []);
 
   const deleteCourse = (id: string) => {
@@ -96,6 +124,8 @@ export default function CourseManagerPage() {
     const updated = courses.filter((c) => c.id !== id);
     setCourses(updated);
     localStorage.setItem("bldr_courses", JSON.stringify(updated));
+    const ids = updated.map((c) => c.id);
+    localStorage.setItem("bldr_course_order", JSON.stringify(ids));
   };
 
   const duplicateCourse = (course: Course) => {
@@ -107,7 +137,6 @@ export default function CourseManagerPage() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    // regenerate IDs
     dup.chapters = dup.chapters.map((ch: Chapter) => ({
       ...ch,
       id: crypto.randomUUID(),
@@ -116,9 +145,61 @@ export default function CourseManagerPage() {
     const updated = [...courses, dup];
     setCourses(updated);
     localStorage.setItem("bldr_courses", JSON.stringify(updated));
+    const ids = updated.map((c) => c.id);
+    localStorage.setItem("bldr_course_order", JSON.stringify(ids));
   };
 
   const totalLessons = (c: Course) => c.chapters.reduce((sum, ch) => sum + ch.lessons.length, 0);
+
+  // Drag & Drop handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDragIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    // Make the drag image slightly transparent
+    if (e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.setDragImage(e.currentTarget, 0, 0);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragIndex === null || dragIndex === index) {
+      setDropIndex(null);
+      return;
+    }
+    // Determine if we should show indicator above or below
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const targetIdx = e.clientY < midY ? index : index + 1;
+    if (targetIdx !== dragIndex && targetIdx !== dragIndex + 1) {
+      setDropIndex(targetIdx);
+    } else {
+      setDropIndex(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (dragIndex === null || dropIndex === null) {
+      setDragIndex(null);
+      setDropIndex(null);
+      return;
+    }
+    const newCourses = [...courses];
+    const [moved] = newCourses.splice(dragIndex, 1);
+    const insertAt = dropIndex > dragIndex ? dropIndex - 1 : dropIndex;
+    newCourses.splice(insertAt, 0, moved);
+    setCourses(newCourses);
+    saveOrder(newCourses);
+    setDragIndex(null);
+    setDropIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragIndex(null);
+    setDropIndex(null);
+  };
 
   return (
     <div style={{ padding: "32px 40px", maxWidth: 1100, margin: "0 auto" }}>
@@ -138,9 +219,39 @@ export default function CourseManagerPage() {
       </div>
 
       {/* Actions */}
-      <div style={{ display: "flex", gap: 12, marginBottom: 32 }}>
-        <Link href="/admin/courses/new" style={btnPrimary}>צור קורס חדש</Link>
-        <Link href="/admin/import-course" style={btnSecondary}>ייבוא מאקסל</Link>
+      <div style={{ display: "flex", gap: 12, marginBottom: 32, alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", gap: 12 }}>
+          <Link href="/admin/courses/new" style={btnPrimary}>צור קורס חדש</Link>
+          <Link href="/admin/import-course" style={btnSecondary}>ייבוא מאקסל</Link>
+        </div>
+        {courses.length > 0 && (
+          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 3, border: "1px solid rgba(255,255,255,0.06)" }}>
+            <button
+              onClick={() => setViewMode("grid")}
+              style={{
+                padding: "7px 16px", borderRadius: 8, border: "none", cursor: "pointer",
+                fontSize: 13, fontWeight: 500, fontFamily: "inherit",
+                background: viewMode === "grid" ? "rgba(0,0,255,0.2)" : "transparent",
+                color: viewMode === "grid" ? "#5555FF" : "rgba(240,240,245,0.4)",
+                transition: "all 0.2s",
+              }}
+            >
+              תצוגת כרטיסים
+            </button>
+            <button
+              onClick={() => setViewMode("order")}
+              style={{
+                padding: "7px 16px", borderRadius: 8, border: "none", cursor: "pointer",
+                fontSize: 13, fontWeight: 500, fontFamily: "inherit",
+                background: viewMode === "order" ? "rgba(0,0,255,0.2)" : "transparent",
+                color: viewMode === "order" ? "#5555FF" : "rgba(240,240,245,0.4)",
+                transition: "all 0.2s",
+              }}
+            >
+              סדר תכנים
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Course Grid */}
@@ -164,7 +275,7 @@ export default function CourseManagerPage() {
             <Link href="/admin/import-course" style={btnSecondary}>ייבוא מאקסל</Link>
           </div>
         </div>
-      ) : (
+      ) : viewMode === "grid" ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
           {courses.map((course) => {
             const st = statusColors[course.status] || statusColors.draft;
@@ -230,18 +341,11 @@ export default function CourseManagerPage() {
                     <Link
                       href={`/admin/courses/${course.id}/edit`}
                       style={{
-                        flex: 1,
-                        padding: "8px 0",
-                        borderRadius: 8,
+                        flex: 1, padding: "8px 0", borderRadius: 8,
                         border: "1px solid rgba(255,255,255,0.1)",
                         background: "rgba(255,255,255,0.04)",
-                        color: "rgba(240,240,245,0.6)",
-                        fontSize: 12,
-                        fontWeight: 500,
-                        cursor: "pointer",
-                        textDecoration: "none",
-                        textAlign: "center",
-                        display: "block",
+                        color: "rgba(240,240,245,0.6)", fontSize: 12, fontWeight: 500,
+                        cursor: "pointer", textDecoration: "none", textAlign: "center", display: "block",
                       }}
                     >
                       עריכה
@@ -249,15 +353,10 @@ export default function CourseManagerPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); duplicateCourse(course); }}
                       style={{
-                        flex: 1,
-                        padding: "8px 0",
-                        borderRadius: 8,
+                        flex: 1, padding: "8px 0", borderRadius: 8,
                         border: "1px solid rgba(255,255,255,0.1)",
                         background: "rgba(255,255,255,0.04)",
-                        color: "rgba(240,240,245,0.6)",
-                        fontSize: 12,
-                        fontWeight: 500,
-                        cursor: "pointer",
+                        color: "rgba(240,240,245,0.6)", fontSize: 12, fontWeight: 500, cursor: "pointer",
                       }}
                     >
                       שכפול
@@ -265,15 +364,10 @@ export default function CourseManagerPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteCourse(course.id); }}
                       style={{
-                        flex: 1,
-                        padding: "8px 0",
-                        borderRadius: 8,
+                        flex: 1, padding: "8px 0", borderRadius: 8,
                         border: "1px solid rgba(255,60,60,0.2)",
                         background: "rgba(255,60,60,0.06)",
-                        color: "rgba(255,120,120,0.8)",
-                        fontSize: 12,
-                        fontWeight: 500,
-                        cursor: "pointer",
+                        color: "rgba(255,120,120,0.8)", fontSize: 12, fontWeight: 500, cursor: "pointer",
                       }}
                     >
                       מחיקה
@@ -283,6 +377,118 @@ export default function CourseManagerPage() {
               </div>
             );
           })}
+        </div>
+      ) : (
+        /* ── Order Mode ── */
+        <div>
+          <div style={{
+            background: "rgba(0,0,255,0.06)", border: "1px solid rgba(0,0,255,0.15)",
+            borderRadius: 12, padding: "12px 16px", marginBottom: 20,
+            fontSize: 13, color: "rgba(240,240,245,0.5)", lineHeight: 1.6,
+          }}>
+            גרור את הקורסים כדי לשנות את סדר ההצגה בדשבורד. הקורס המומלץ (Hero) נקבע בעריכת הקורס ולא מושפע מהסדר.
+          </div>
+          <div ref={listRef} style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            {courses.map((course, index) => {
+              const st = statusColors[course.status] || statusColors.draft;
+              const lessons = totalLessons(course);
+              const isDragging = dragIndex === index;
+              const showDropAbove = dropIndex === index;
+              const showDropBelow = dropIndex === courses.length && index === courses.length - 1;
+
+              return (
+                <div key={course.id} style={{ position: "relative" }}>
+                  {/* Drop indicator above */}
+                  {showDropAbove && (
+                    <div style={{
+                      height: 2, background: "#0000FF",
+                      borderRadius: 1, margin: "0 16px",
+                      boxShadow: "0 0 8px rgba(0,0,255,0.5)",
+                    }} />
+                  )}
+                  <div
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={handleDrop}
+                    onDragEnd={handleDragEnd}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 14,
+                      padding: "12px 16px",
+                      background: isDragging ? "rgba(0,0,255,0.08)" : "rgba(255,255,255,0.03)",
+                      border: isDragging ? "1px solid rgba(0,0,255,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                      borderRadius: 12,
+                      marginBottom: 6,
+                      opacity: isDragging ? 0.5 : 1,
+                      transform: isDragging ? "scale(1.02)" : "scale(1)",
+                      transition: "opacity 0.2s, transform 0.2s, background 0.2s, border-color 0.2s",
+                      cursor: "grab",
+                    }}
+                  >
+                    {/* Drag handle — right side in RTL */}
+                    <div
+                      style={{
+                        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                        width: 24, minWidth: 24, height: 36,
+                        color: "rgba(240,240,245,0.2)", fontSize: 16, letterSpacing: 2,
+                        cursor: "grab", userSelect: "none",
+                        transition: "color 0.2s",
+                      }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "rgba(240,240,245,0.5)"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "rgba(240,240,245,0.2)"; }}
+                    >
+                      <span style={{ lineHeight: 0.7 }}>⋮⋮</span>
+                    </div>
+
+                    {/* Thumbnail */}
+                    <div style={{
+                      width: 52, height: 36, borderRadius: 6, flexShrink: 0, overflow: "hidden",
+                      background: course.thumbnailUrl ? `url(${course.thumbnailUrl}) center/cover` : "linear-gradient(135deg, #0a0a2a, #000044)",
+                    }} />
+
+                    {/* Title */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {course.title}
+                        </span>
+                        {course.featured && (
+                          <span style={{
+                            fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 6,
+                            background: "rgba(0,0,255,0.15)", color: "#5555FF", whiteSpace: "nowrap",
+                          }}>
+                            מומלץ
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Status */}
+                    <span style={{
+                      padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600,
+                      background: st.bg, color: st.color, border: `1px solid ${st.border}`,
+                      whiteSpace: "nowrap", flexShrink: 0,
+                    }}>
+                      {st.label}
+                    </span>
+
+                    {/* Lesson count */}
+                    <span style={{ fontSize: 12, color: "rgba(240,240,245,0.35)", whiteSpace: "nowrap", flexShrink: 0 }}>
+                      {lessons} שיעורים
+                    </span>
+                  </div>
+                  {/* Drop indicator below last item */}
+                  {showDropBelow && (
+                    <div style={{
+                      height: 2, background: "#0000FF",
+                      borderRadius: 1, margin: "0 16px",
+                      boxShadow: "0 0 8px rgba(0,0,255,0.5)",
+                    }} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

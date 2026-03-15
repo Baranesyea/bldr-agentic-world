@@ -391,12 +391,12 @@ export default function ImportCoursePage() {
           }}>
             <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(240,240,245,0.5)", marginBottom: 8 }}>עמודות נדרשות בקובץ:</p>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {["chapter_number", "chapter_title", "lesson_number", "lesson_title", "video_url", "duration"].map((col) => (
+              {["מספר_נושא", "שם_הנושא", "מספר_שיעור", "שם_השיעור", "כתובת_וידאו"].map((col) => (
                 <span key={col} style={{ background: "rgba(0,0,255,0.08)", color: "#3333FF", padding: "3px 10px", borderRadius: 6, fontSize: 11, fontFamily: "var(--font-heading-en)" }}>{col}</span>
               ))}
             </div>
             <p style={{ fontSize: 11, color: "rgba(240,240,245,0.3)", marginTop: 8 }}>
-              עמודות אופציונליות: description, has_assignment, assignment_text, skills, attachments, notes
+              עמודות אופציונליות: תיאור, מטלה, טקסט_מטלה, כישורים, קבצים, הערות
             </p>
           </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -15,63 +15,48 @@ import {
   LockIcon,
 } from "@/components/ui/icons";
 
-// ── Full course data ──
-const courseData = {
-  id: "1",
-  title: "Mastering Claude Code",
-  progress: 65,
-  totalLessons: 10,
-  completedLessons: 5,
-  chapters: [
-    {
-      id: "ch1",
-      title: "שבוע 1: יסודות",
-      isLocked: false,
-      lessons: [
-        { id: "l1", title: "מה זה Claude Code?", duration: "12:30", completed: true, hasAssignment: false },
-        { id: "l2", title: "התקנה והגדרות", duration: "18:45", completed: true, hasAssignment: false },
-        { id: "l3", title: "איך לכתוב CLAUDE.md", duration: "25:10", completed: true, hasAssignment: true },
-        { id: "l4", title: "פקודות בסיסיות", duration: "20:00", completed: true, hasAssignment: false },
-      ],
-    },
-    {
-      id: "ch2",
-      title: "שבוע 2: טכניקות מתקדמות",
-      isLocked: false,
-      lessons: [
-        { id: "l5", title: "Advanced Prompting", duration: "22:15", completed: true, hasAssignment: true },
-        { id: "l6", title: "עבודה עם MCP Servers", duration: "30:00", completed: false, hasAssignment: true },
-        { id: "l7", title: "Hooks ו-Automations", duration: "28:30", completed: false, hasAssignment: false },
-      ],
-    },
-    {
-      id: "ch3",
-      title: "שבוע 3: בניית סוכנים",
-      isLocked: true,
-      lessons: [
-        { id: "l8", title: "Agent SDK — יסודות", duration: "35:00", completed: false, hasAssignment: true },
-        { id: "l9", title: "Multi-Agent Systems", duration: "40:00", completed: false, hasAssignment: true },
-        { id: "l10", title: "פרויקט סיום", duration: "45:00", completed: false, hasAssignment: true },
-      ],
-    },
-  ],
-};
+// ── Types ──
+interface CourseLesson {
+  id: string;
+  number: number;
+  title: string;
+  videoUrl: string;
+  duration: string;
+  description: string;
+  skills: string[];
+  hasAssignment: boolean;
+  assignmentText: string;
+  attachments: string[];
+  notes: string;
+  thumbnailUrl: string;
+}
 
-// Flatten lessons for navigation
-const allLessons = courseData.chapters.flatMap((ch) => ch.lessons);
+interface CourseChapter {
+  id: string;
+  number: number;
+  title: string;
+  lessons: CourseLesson[];
+}
 
-const lessonDetails: Record<string, { description: string; videoUrl: string; assignment?: { instructions: string }; attachments: { name: string; size: string }[] }> = {
-  l1: { description: "מבוא ל-Claude Code — מה הכלי, למי הוא מיועד ואיך הוא משנה את צורת העבודה.", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", attachments: [] },
-  l2: { description: "התקנה צעד אחר צעד, הגדרות ראשוניות וקונפיגורציה.", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", attachments: [{ name: "Installation Guide.pdf", size: "1.2 MB" }] },
-  l3: { description: "למד לכתוב CLAUDE.md אפקטיבי שמכוון את הסוכן לעבודה מדויקת.", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", assignment: { instructions: "כתוב CLAUDE.md לפרויקט אישי שלך. שלח קישור ל-GitHub repo." }, attachments: [{ name: "CLAUDE.md Template.md", size: "15 KB" }] },
-  l4: { description: "פקודות בסיסיות לעבודה יומיומית עם Claude Code.", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", attachments: [{ name: "Commands Cheat Sheet.pdf", size: "800 KB" }] },
-  l5: { description: "טכניקות מתקדמות לכתיבת Prompts שמייצרים תוצאות מדויקות.", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", assignment: { instructions: "כתוב 5 prompts מתקדמים לתרחישים שונים. שלח כקובץ." }, attachments: [{ name: "Prompting Guide.pdf", size: "1.8 MB" }] },
-  l6: { description: "למד איך לחבר כלים חיצוניים ל-Claude Code באמצעות Model Context Protocol.", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", assignment: { instructions: "בנה MCP Server פשוט שמתחבר ל-API חיצוני. שלח קישור ל-GitHub repo." }, attachments: [{ name: "MCP Cheat Sheet.pdf", size: "2.1 MB" }, { name: "starter-template.zip", size: "450 KB" }] },
-  l7: { description: "אוטומציות והוקים — איך לבנות תהליכים אוטומטיים עם Claude Code.", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", attachments: [{ name: "Hooks Examples.zip", size: "320 KB" }] },
-  l8: { description: "מבוא ל-Agent SDK — בניית סוכנים חכמים מאפס.", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", assignment: { instructions: "בנה סוכן פשוט עם Agent SDK. שלח קישור לקוד." }, attachments: [{ name: "Agent SDK Docs.pdf", size: "3.5 MB" }] },
-  l9: { description: "מערכות מרובות סוכנים — ארכיטקטורה, תקשורת וניהול.", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", assignment: { instructions: "בנה מערכת של 2 סוכנים שעובדים יחד. שלח קישור." }, attachments: [{ name: "Multi-Agent Patterns.pdf", size: "2.8 MB" }] },
-  l10: { description: "פרויקט סיום — בנה מערכת שלמה עם כל מה שלמדת בקורס.", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", assignment: { instructions: "בנה פרויקט סיום שמשלב Claude Code, MCP, Hooks וסוכנים. הגש עד סוף השבוע." }, attachments: [{ name: "Final Project Brief.pdf", size: "500 KB" }] },
-};
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  chapters: CourseChapter[];
+}
+
+function convertToEmbedUrl(url: string): string {
+  if (!url) return "";
+  // Already an embed URL
+  if (url.includes("/embed/")) return url;
+  // youtube.com/watch?v=xxx
+  const watchMatch = url.match(/[?&]v=([^&]+)/);
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+  // youtu.be/xxx
+  const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  return url;
+}
 
 function formatTimestamp(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
@@ -97,19 +82,42 @@ export default function LessonViewPage() {
   const lessonId = params.lessonId as string;
   const courseId = params.courseId as string;
 
+  // Load course from localStorage
+  const [course, setCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const courses: Course[] = JSON.parse(localStorage.getItem("bldr_courses") || "[]");
+      const found = courses.find((c) => c.id === courseId) || null;
+      setCourse(found);
+    } catch {
+      setCourse(null);
+    }
+    setLoading(false);
+  }, [courseId]);
+
+  // Flatten all lessons for navigation
+  const allLessons = useMemo(() => {
+    if (!course) return [];
+    return course.chapters.flatMap((ch) => ch.lessons);
+  }, [course]);
+
   // Find current lesson
-  const currentLesson = allLessons.find((l) => l.id === lessonId) || allLessons[0];
-  const details = lessonDetails[currentLesson.id] || lessonDetails.l6;
-  const currentIndex = allLessons.findIndex((l) => l.id === currentLesson.id);
+  const currentLesson = useMemo(() => allLessons.find((l) => l.id === lessonId) || null, [allLessons, lessonId]);
+  const currentIndex = useMemo(() => (currentLesson ? allLessons.findIndex((l) => l.id === currentLesson.id) : -1), [allLessons, currentLesson]);
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
-  const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
+  const nextLesson = currentIndex >= 0 && currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
   // Find which chapter the current lesson belongs to
-  const currentChapterId = courseData.chapters.find((ch) => ch.lessons.some((l) => l.id === currentLesson.id))?.id || "ch1";
+  const currentChapterId = useMemo(() => {
+    if (!course || !currentLesson) return "";
+    return course.chapters.find((ch) => ch.lessons.some((l) => l.id === currentLesson.id))?.id || "";
+  }, [course, currentLesson]);
 
   // State
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
-  const [openChapters, setOpenChapters] = useState<string[]>([currentChapterId]);
+  const [openChapters, setOpenChapters] = useState<string[]>([]);
   const [noteText, setNoteText] = useState("");
   const [savedNotes, setSavedNotes] = useState<LessonNote[]>([]);
   const [videoTimer, setVideoTimer] = useState(0);
@@ -119,9 +127,18 @@ export default function LessonViewPage() {
   const [countdown, setCountdown] = useState(5);
   const [fadeIn, setFadeIn] = useState(true);
   const [autoPlayNext, setAutoPlayNext] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Open current chapter when it's known
+  useEffect(() => {
+    if (currentChapterId) {
+      setOpenChapters((prev) => prev.includes(currentChapterId) ? prev : [...prev, currentChapterId]);
+    }
+  }, [currentChapterId]);
 
   // Load completed lessons + notes + settings from localStorage
   useEffect(() => {
+    if (!currentLesson) return;
     try {
       const stored = JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]");
       setCompletedLessons(stored);
@@ -140,18 +157,18 @@ export default function LessonViewPage() {
     setShowToast(false);
     setShowCountdown(false);
     setCountdown(5);
+    setIsPlaying(false);
     setFadeIn(true);
     const t = setTimeout(() => setFadeIn(false), 600);
     return () => clearTimeout(t);
-  }, [currentLesson.id]);
+  }, [currentLesson?.id]);
 
   // Video timestamp timer — only runs when user clicks play (isPlaying)
-  const [isPlaying, setIsPlaying] = useState(false);
   useEffect(() => {
     if (!isPlaying) return;
     const interval = setInterval(() => setVideoTimer((prev) => prev + 1), 1000);
     return () => clearInterval(interval);
-  }, [currentLesson.id, isPlaying]);
+  }, [isPlaying]);
 
   const isLessonCompleted = useCallback(
     (id: string) => completedLessons.includes(id),
@@ -183,23 +200,23 @@ export default function LessonViewPage() {
 
   // Auto-complete after 30 seconds of playback (demo)
   useEffect(() => {
-    if (!isPlaying || autoCompleted || isLessonCompleted(currentLesson.id)) return;
+    if (!currentLesson || !isPlaying || autoCompleted || isLessonCompleted(currentLesson.id)) return;
     if (videoTimer >= 30) {
       markCompleted(currentLesson.id);
       setAutoCompleted(true);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }
-  }, [videoTimer, autoCompleted, currentLesson.id, isLessonCompleted, markCompleted]);
+  }, [videoTimer, autoCompleted, currentLesson?.id, isLessonCompleted, markCompleted, isPlaying]);
 
   // Auto-play next countdown
   useEffect(() => {
-    if (!autoCompleted || !autoPlayNext || !nextLesson || showCountdown) return;
+    if (!currentLesson || !autoCompleted || !autoPlayNext || !nextLesson || showCountdown) return;
     if (isLessonCompleted(currentLesson.id) && autoCompleted) {
       const t = setTimeout(() => setShowCountdown(true), 500);
       return () => clearTimeout(t);
     }
-  }, [autoCompleted, autoPlayNext, nextLesson, showCountdown, currentLesson.id, isLessonCompleted]);
+  }, [autoCompleted, autoPlayNext, nextLesson, showCountdown, currentLesson?.id, isLessonCompleted]);
 
   useEffect(() => {
     if (!showCountdown) return;
@@ -216,13 +233,13 @@ export default function LessonViewPage() {
   };
 
   const saveNote = () => {
-    if (!noteText.trim()) return;
+    if (!noteText.trim() || !currentLesson || !course) return;
     const note: LessonNote = {
       id: crypto.randomUUID(),
       lessonId: currentLesson.id,
       lessonTitle: currentLesson.title,
-      courseId: courseData.id,
-      courseName: courseData.title,
+      courseId: course.id,
+      courseName: course.title,
       content: noteText.trim(),
       timestamp: new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }),
       videoTimestamp: formatTimestamp(videoTimer),
@@ -242,12 +259,35 @@ export default function LessonViewPage() {
     setSavedNotes((prev) => prev.filter((n) => n.id !== noteId));
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 60px)", color: "rgba(240,240,245,0.5)", fontSize: "14px" }}>
+        טוען...
+      </div>
+    );
+  }
+
+  // Not found state
+  if (!course || !currentLesson) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 60px)", gap: "16px" }}>
+        <p style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5" }}>לא נמצא</p>
+        <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.5)" }}>הקורס או השיעור שביקשת לא נמצאו.</p>
+        <Link href="/dashboard" style={{ background: "#0000FF", color: "white", padding: "10px 24px", borderRadius: "10px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
+          חזרה לדאשבורד
+        </Link>
+      </div>
+    );
+  }
+
   // Compute progress
   const totalLessons = allLessons.length;
-  const doneLessons = allLessons.filter((l) => completedLessons.includes(l.id) || l.completed).length;
-  const progressPct = Math.round((doneLessons / totalLessons) * 100);
+  const doneLessons = allLessons.filter((l) => completedLessons.includes(l.id)).length;
+  const progressPct = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0;
 
-  const isCurrentCompleted = isLessonCompleted(currentLesson.id) || currentLesson.completed;
+  const isCurrentCompleted = isLessonCompleted(currentLesson.id);
+  const embedUrl = convertToEmbedUrl(currentLesson.videoUrl);
 
   return (
     <>
@@ -295,7 +335,7 @@ export default function LessonViewPage() {
                 fontFamily: "var(--font-heading-en)",
                 cursor: "pointer",
               }}>
-                {courseData.title}
+                {course.title}
               </h3>
             </Link>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
@@ -309,14 +349,14 @@ export default function LessonViewPage() {
 
           {/* Chapters */}
           <div style={{ flex: 1, padding: "0 8px 16px" }}>
-            {courseData.chapters.map((chapter) => {
+            {course.chapters.map((chapter) => {
               const isOpen = openChapters.includes(chapter.id);
-              const chDone = chapter.lessons.filter((l) => completedLessons.includes(l.id) || l.completed).length;
+              const chDone = chapter.lessons.filter((l) => completedLessons.includes(l.id)).length;
 
               return (
                 <div key={chapter.id} style={{ marginBottom: "4px" }}>
                   <button
-                    onClick={() => !chapter.isLocked && toggleChapter(chapter.id)}
+                    onClick={() => toggleChapter(chapter.id)}
                     style={{
                       width: "100%",
                       display: "flex",
@@ -325,26 +365,25 @@ export default function LessonViewPage() {
                       padding: "10px 8px",
                       background: "none",
                       border: "none",
-                      cursor: chapter.isLocked ? "default" : "pointer",
+                      cursor: "pointer",
                       textAlign: "right",
                       borderRadius: "8px",
-                      opacity: chapter.isLocked ? 0.4 : 1,
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <span style={{ color: "rgba(240,240,245,0.35)", display: "flex", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
-                        {chapter.isLocked ? <LockIcon size={13} /> : <ChevronDownIcon size={13} />}
+                        <ChevronDownIcon size={13} />
                       </span>
                       <span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(240,240,245,0.8)" }}>{chapter.title}</span>
                     </div>
                     <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.35)" }}>{chDone}/{chapter.lessons.length}</span>
                   </button>
 
-                  {isOpen && !chapter.isLocked && (
+                  {isOpen && (
                     <div style={{ padding: "0 4px 4px" }}>
                       {chapter.lessons.map((lesson) => {
                         const isCurrent = lesson.id === currentLesson.id;
-                        const isDone = completedLessons.includes(lesson.id) || lesson.completed;
+                        const isDone = completedLessons.includes(lesson.id);
                         return (
                           <Link
                             key={lesson.id}
@@ -415,12 +454,18 @@ export default function LessonViewPage() {
           {/* Video */}
           <div style={{ background: "#000", borderRadius: "16px", overflow: "hidden", marginBottom: "16px" }}>
             <div style={{ position: "relative", paddingBottom: "56.25%" }}>
-              <iframe
-                src={details.videoUrl}
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              {embedUrl ? (
+                <iframe
+                  src={embedUrl}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(240,240,245,0.3)", fontSize: "14px" }}>
+                  לא הוגדר סרטון לשיעור הזה
+                </div>
+              )}
               {/* Play overlay — click to start timer */}
               {!isPlaying && (
                 <div
@@ -539,11 +584,11 @@ export default function LessonViewPage() {
                 {isCurrentCompleted ? <><CheckIcon size={14} /> הושלם</> : "סמן כהושלם"}
               </button>
             </div>
-            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.6)", lineHeight: 1.6 }}>{details.description}</p>
+            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.6)", lineHeight: 1.6 }}>{currentLesson.description}</p>
           </div>
 
           {/* Assignment */}
-          {details.assignment && (
+          {currentLesson.hasAssignment && currentLesson.assignmentText && (
             <div style={{
               background: "#0a0a1a",
               border: "1px solid rgba(0,0,255,0.15)",
@@ -557,7 +602,7 @@ export default function LessonViewPage() {
                 <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#f0f0f5" }}>מטלה</h3>
               </div>
               <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.6)", marginBottom: "16px", lineHeight: 1.6 }}>
-                {details.assignment.instructions}
+                {currentLesson.assignmentText}
               </p>
               <input
                 placeholder="הדבק קישור כאן..."
@@ -591,7 +636,7 @@ export default function LessonViewPage() {
           )}
 
           {/* Attachments */}
-          {details.attachments.length > 0 && (
+          {currentLesson.attachments.length > 0 && (
             <div style={{
               background: "#0a0a1a",
               border: "1px solid rgba(255,255,255,0.06)",
@@ -602,12 +647,11 @@ export default function LessonViewPage() {
               <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#f0f0f5", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
                 <AttachmentIcon size={14} /> קבצים מצורפים
               </h3>
-              {details.attachments.map((file) => (
-                <div key={file.name} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px", borderRadius: "8px", cursor: "pointer", marginBottom: "4px" }}>
+              {currentLesson.attachments.map((fileName) => (
+                <div key={fileName} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px", borderRadius: "8px", cursor: "pointer", marginBottom: "4px" }}>
                   <DownloadIcon size={16} />
                   <div>
-                    <p style={{ fontSize: "13px", color: "#f0f0f5" }}>{file.name}</p>
-                    <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.35)" }}>{file.size}</p>
+                    <p style={{ fontSize: "13px", color: "#f0f0f5" }}>{fileName}</p>
                   </div>
                 </div>
               ))}

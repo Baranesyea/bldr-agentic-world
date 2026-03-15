@@ -17,10 +17,11 @@ export interface ThumbnailOptions {
   size: "1280x720" | "400x225" | "1080x1080";
 }
 
+// Reduced sizes to keep localStorage under quota (JPEG output)
 const SIZE_MAP: Record<string, [number, number]> = {
-  "1280x720": [1280, 720],
+  "1280x720": [640, 360],
   "400x225": [400, 225],
-  "1080x1080": [1080, 1080],
+  "1080x1080": [400, 400],
 };
 
 const DIRECTION_MAP: Record<string, [number, number, number, number]> = {
@@ -131,7 +132,7 @@ export function generateThumbnail(
     ctx.fillText(brand.brandName, w - 24, h - 20);
   }
 
-  return canvas.toDataURL("image/png");
+  return canvas.toDataURL("image/jpeg", 0.7);
 }
 
 function wrapText(

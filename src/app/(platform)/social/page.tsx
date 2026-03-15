@@ -20,6 +20,22 @@ export default function SocialPage() {
   const [instaPosts, setInstaPosts] = useState<InstaPost[]>([]);
   const [instaLoading, setInstaLoading] = useState(true);
 
+  // Load Instagram embed script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://www.instagram.com/embed.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => { try { document.body.removeChild(script); } catch {} };
+  }, []);
+
+  // Re-process Instagram embeds when posts load
+  useEffect(() => {
+    if (instaPosts.length > 0 && typeof window !== "undefined" && (window as unknown as Record<string, unknown>).instgrm) {
+      ((window as unknown as Record<string, { process: () => void }>).instgrm).Embeds.process();
+    }
+  }, [instaPosts]);
+
   useEffect(() => {
     fetch("/api/youtube-feed")
       .then((res) => {

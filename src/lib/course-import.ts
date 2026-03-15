@@ -45,25 +45,40 @@ export interface ParseResult {
   };
 }
 
-// ── Required columns ───────────────────────────────────────────────
+// ── Column definitions ────────────────────────────────────────────
 const REQUIRED_COLUMNS = [
-  "chapter_number",
-  "chapter_title",
-  "lesson_number",
-  "lesson_title",
-  "video_url",
-  "duration",
+  "מספר_נושא",
+  "שם_הנושא",
+  "מספר_שיעור",
+  "שם_השיעור",
+  "כתובת_וידאו",
 ];
 
 const ALL_COLUMNS = [
   ...REQUIRED_COLUMNS,
-  "description",
-  "has_assignment",
-  "assignment_text",
-  "skills",
-  "attachments",
-  "notes",
+  "תיאור",
+  "מטלה",
+  "טקסט_מטלה",
+  "כישורים",
+  "קבצים",
+  "הערות",
 ];
+
+// Alias map: English -> Hebrew
+const COLUMN_ALIASES: Record<string, string> = {
+  chapter_number: "מספר_נושא",
+  chapter_title: "שם_הנושא",
+  lesson_number: "מספר_שיעור",
+  lesson_title: "שם_השיעור",
+  video_url: "כתובת_וידאו",
+  duration: "משך",
+  description: "תיאור",
+  has_assignment: "מטלה",
+  assignment_text: "טקסט_מטלה",
+  skills: "כישורים",
+  attachments: "קבצים",
+  notes: "הערות",
+};
 
 // ── Parse file ─────────────────────────────────────────────────────
 export function parseFile(file: ArrayBuffer, fileName: string): ParseResult {
@@ -91,11 +106,18 @@ export function parseFile(file: ArrayBuffer, fileName: string): ParseResult {
     };
   }
 
-  // Normalize column headers: lowercase, trim, replace spaces with underscores
+  // Normalize column headers: trim, replace spaces with underscores
+  // Then map English aliases to Hebrew canonical names
   const rawHeaders = Object.keys(rawRows[0]);
   const headerMap: Record<string, string> = {};
   for (const h of rawHeaders) {
-    const normalized = h.trim().toLowerCase().replace(/\s+/g, "_");
+    let normalized = h.trim().replace(/\s+/g, "_");
+    // Check if it's an English alias and map to Hebrew
+    const lowered = normalized.toLowerCase();
+    if (COLUMN_ALIASES[lowered]) {
+      normalized = COLUMN_ALIASES[lowered];
+    }
+    // Keep Hebrew headers as-is (don't lowercase them)
     headerMap[h] = normalized;
   }
 
@@ -132,45 +154,42 @@ export function parseFile(file: ArrayBuffer, fileName: string): ParseResult {
   rows.forEach((row, idx) => {
     const rowNum = idx + 2; // 1-indexed + header
 
-    const chapterNum = Number(row.chapter_number);
-    const lessonNum = Number(row.lesson_number);
-    const chapterTitle = String(row.chapter_title || "").trim();
-    const lessonTitle = String(row.lesson_title || "").trim();
-    const videoUrl = String(row.video_url || "").trim();
-    const duration = String(row.duration || "").trim();
+    const chapterNum = Number(row["מספר_נושא"]);
+    const lessonNum = Number(row["מספר_שיעור"]);
+    const chapterTitle = String(row["שם_הנושא"] || "").trim();
+    const lessonTitle = String(row["שם_השיעור"] || "").trim();
+    const videoUrl = String(row["כתובת_וידאו"] || "").trim();
+    const duration = String(row["משך"] || "").trim() || "—";
 
     if (!chapterNum || isNaN(chapterNum)) {
-      errors.push({ row: rowNum, column: "chapter_number", message: `מספר פרק לא תקין`, severity: "error" });
+      errors.push({ row: rowNum, column: "מספר_נושא", message: "מספר נושא לא תקין", severity: "error" });
     }
     if (!chapterTitle) {
-      errors.push({ row: rowNum, column: "chapter_title", message: `כותרת פרק ריקה`, severity: "error" });
+      errors.push({ row: rowNum, column: "שם_הנושא", message: "שם נושא ריק", severity: "error" });
     }
     if (!lessonNum || isNaN(lessonNum)) {
-      errors.push({ row: rowNum, column: "lesson_number", message: `Invalid lesson number`, severity: "error" });
+      errors.push({ row: rowNum, column: "מספר_שיעור", message: "מספר שיעור לא תקין", severity: "error" });
     }
     if (!lessonTitle) {
-      errors.push({ row: rowNum, column: "lesson_title", message: `Empty lesson title`, severity: "error" });
+      errors.push({ row: rowNum, column: "שם_השיעור", message: "שם שיעור ריק", severity: "error" });
     }
     if (!videoUrl) {
-      errors.push({ row: rowNum, column: "video_url", message: `Empty video URL`, severity: "error" });
-    }
-    if (!duration) {
-      errors.push({ row: rowNum, column: "duration", message: `Empty duration`, severity: "warning" });
+      errors.push({ row: rowNum, column: "כתובת_וידאו", message: "כתובת וידאו ריקה", severity: "error" });
     }
 
     // Parse optional fields
-    const hasAssignment = String(row.has_assignment || "").toUpperCase() === "TRUE";
-    const assignmentText = String(row.assignment_text || "").trim() || undefined;
-    const skills = String(row.skills || "")
+    const hasAssignment = String(row["מטלה"] || "").toUpperCase() === "TRUE";
+    const assignmentText = String(row["טקסט_מטלה"] || "").trim() || undefined;
+    const skills = String(row["כישורים"] || "")
       .split(",")
       .map((s: string) => s.trim())
       .filter(Boolean);
-    const attachments = String(row.attachments || "")
+    const attachments = String(row["קבצים"] || "")
       .split(",")
       .map((s: string) => s.trim())
       .filter(Boolean);
-    const description = String(row.description || "").trim() || undefined;
-    const notes = String(row.notes || "").trim() || undefined;
+    const description = String(row["תיאור"] || "").trim() || undefined;
+    const notes = String(row["הערות"] || "").trim() || undefined;
 
     if (hasAssignment) withAssignments++;
     if (attachments.length > 0) withAttachments++;
@@ -218,88 +237,82 @@ export function parseFile(file: ArrayBuffer, fileName: string): ParseResult {
 export function generateTemplate(): ArrayBuffer {
   const data = [
     {
-      chapter_number: 1,
-      chapter_title: "Getting Started",
-      lesson_number: 1,
-      lesson_title: "Welcome & Overview",
-      video_url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      duration: "05:30",
-      description: "Introduction to the course and what you will learn",
-      has_assignment: "FALSE",
-      assignment_text: "",
-      skills: "intro, overview",
-      attachments: "",
-      notes: "",
+      מספר_נושא: 1,
+      שם_הנושא: "יסודות",
+      מספר_שיעור: 1,
+      שם_השיעור: "מבוא לקורס",
+      כתובת_וידאו: "https://www.youtube.com/watch?v=example1",
+      תיאור: "",
+      מטלה: "FALSE",
+      טקסט_מטלה: "",
+      כישורים: "מבוא, יסודות",
+      קבצים: "",
+      הערות: "",
     },
     {
-      chapter_number: 1,
-      chapter_title: "Getting Started",
-      lesson_number: 2,
-      lesson_title: "Setting Up Your Environment",
-      video_url: "https://www.youtube.com/embed/abc123",
-      duration: "12:45",
-      description: "Install all required tools and configure your workspace",
-      has_assignment: "TRUE",
-      assignment_text: "Install Node.js and create a new project",
-      skills: "setup, tools, node.js",
-      attachments: "setup-guide.pdf",
-      notes: "Make sure to use Node 20+",
+      מספר_נושא: 1,
+      שם_הנושא: "יסודות",
+      מספר_שיעור: 2,
+      שם_השיעור: "התקנה והגדרות",
+      כתובת_וידאו: "https://www.youtube.com/watch?v=example2",
+      תיאור: "",
+      מטלה: "TRUE",
+      טקסט_מטלה: "התקן את הכלים הנדרשים",
+      כישורים: "",
+      קבצים: "",
+      הערות: "",
     },
     {
-      chapter_number: 1,
-      chapter_title: "Getting Started",
-      lesson_number: 3,
-      lesson_title: "Core Concepts",
-      video_url: "https://www.youtube.com/embed/xyz789",
-      duration: "18:20",
-      description: "Understanding the fundamental building blocks",
-      has_assignment: "FALSE",
-      assignment_text: "",
-      skills: "concepts, fundamentals",
-      attachments: "",
-      notes: "",
+      מספר_נושא: 1,
+      שם_הנושא: "יסודות",
+      מספר_שיעור: 3,
+      שם_השיעור: "מושגים בסיסיים",
+      כתובת_וידאו: "https://www.youtube.com/watch?v=example3",
+      תיאור: "",
+      מטלה: "FALSE",
+      טקסט_מטלה: "",
+      כישורים: "",
+      קבצים: "",
+      הערות: "",
     },
     {
-      chapter_number: 2,
-      chapter_title: "Advanced Techniques",
-      lesson_number: 1,
-      lesson_title: "Deep Dive into APIs",
-      video_url: "https://www.youtube.com/embed/api101",
-      duration: "22:10",
-      description: "Learn how to work with REST and GraphQL APIs",
-      has_assignment: "TRUE",
-      assignment_text: "Build a simple API client",
-      skills: "api, rest, graphql",
-      attachments: "api-cheatsheet.pdf, postman-collection.json",
-      notes: "",
+      מספר_נושא: 2,
+      שם_הנושא: "טכניקות מתקדמות",
+      מספר_שיעור: 1,
+      שם_השיעור: "עבודה עם APIs",
+      כתובת_וידאו: "https://www.youtube.com/watch?v=example4",
+      תיאור: "",
+      מטלה: "TRUE",
+      טקסט_מטלה: "",
+      כישורים: "",
+      קבצים: "",
+      הערות: "",
     },
     {
-      chapter_number: 2,
-      chapter_title: "Advanced Techniques",
-      lesson_number: 2,
-      lesson_title: "Automation Workflows",
-      video_url: "https://www.youtube.com/embed/auto202",
-      duration: "15:55",
-      description: "Create powerful automation pipelines",
-      has_assignment: "TRUE",
-      assignment_text: "Automate a daily report generation task",
-      skills: "automation, workflows, pipelines",
-      attachments: "workflow-template.json",
-      notes: "Requires API lesson completion first",
+      מספר_נושא: 2,
+      שם_הנושא: "טכניקות מתקדמות",
+      מספר_שיעור: 2,
+      שם_השיעור: "אוטומציות",
+      כתובת_וידאו: "https://www.youtube.com/watch?v=example5",
+      תיאור: "",
+      מטלה: "FALSE",
+      טקסט_מטלה: "",
+      כישורים: "אוטומציה, תהליכים",
+      קבצים: "",
+      הערות: "",
     },
     {
-      chapter_number: 2,
-      chapter_title: "Advanced Techniques",
-      lesson_number: 3,
-      lesson_title: "Best Practices & Optimization",
-      video_url: "https://www.youtube.com/embed/best303",
-      duration: "14:00",
-      description: "Tips and tricks for production-ready code",
-      has_assignment: "FALSE",
-      assignment_text: "",
-      skills: "best-practices, optimization, performance",
-      attachments: "",
-      notes: "Final lesson - includes course summary",
+      מספר_נושא: 2,
+      שם_הנושא: "טכניקות מתקדמות",
+      מספר_שיעור: 3,
+      שם_השיעור: "טיפים מתקדמים",
+      כתובת_וידאו: "https://www.youtube.com/watch?v=example6",
+      תיאור: "",
+      מטלה: "FALSE",
+      טקסט_מטלה: "",
+      כישורים: "",
+      קבצים: "",
+      הערות: "",
     },
   ];
 
@@ -307,11 +320,11 @@ export function generateTemplate(): ArrayBuffer {
 
   // Set column widths
   ws["!cols"] = ALL_COLUMNS.map((col) => ({
-    wch: col === "description" || col === "assignment_text" ? 40 : col === "video_url" ? 45 : 20,
+    wch: col === "תיאור" || col === "טקסט_מטלה" ? 40 : col === "כתובת_וידאו" ? 45 : 20,
   }));
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Course Template");
+  XLSX.utils.book_append_sheet(wb, ws, "תבנית קורס");
 
   return XLSX.write(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer;
 }

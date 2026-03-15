@@ -398,6 +398,35 @@ export function TerminalIcon({ size = 18, color = "currentColor", ...rest }: Ico
   );
 }
 
+export function BellDotIcon({ size = 18, color = "currentColor", ...rest }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...rest}>
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      <circle cx="18" cy="4" r="3" fill="#0000FF" stroke="none" />
+    </svg>
+  );
+}
+
+export function BeakerIcon({ size = 18, color = "currentColor", ...rest }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...rest}>
+      <path d="M4.5 3h15" />
+      <path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3" />
+      <path d="M6 14h12" />
+    </svg>
+  );
+}
+
+export function CloseIcon({ size = 18, color = "currentColor", ...rest }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...rest}>
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
 export function WaveIcon({ size = 18, color = "currentColor", ...rest }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...rest}>

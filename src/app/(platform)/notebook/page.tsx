@@ -12,6 +12,7 @@ interface LessonNote {
   courseName: string;
   content: string;
   timestamp: string;
+  videoTimestamp?: string;
   createdAt: string;
 }
 
@@ -123,16 +124,40 @@ export default function NotebookPage() {
                     >
                       {note.lessonTitle}
                     </Link>
-                    <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)", marginTop: "2px" }}>
-                      {note.timestamp} · {formatDate(note.createdAt)}
-                    </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
+                      {note.videoTimestamp && (
+                        <span style={{ fontSize: "11px", fontWeight: 600, color: "#3333FF", background: "rgba(0,0,255,0.1)", padding: "2px 8px", borderRadius: "6px", fontFamily: "var(--font-heading-en)" }}>
+                          {note.videoTimestamp}
+                        </span>
+                      )}
+                      <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)" }}>
+                        {formatDate(note.createdAt)}
+                      </span>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => deleteNote(note.id)}
-                    style={{ background: "none", border: "none", color: "rgba(240,240,245,0.2)", cursor: "pointer", fontSize: "16px", padding: "0 4px" }}
-                  >
-                    ×
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <Link
+                      href={`/courses/${note.courseId}/lessons/${note.lessonId}`}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: "4px",
+                        fontSize: "11px", color: "#3333FF", textDecoration: "none",
+                        padding: "4px 10px", borderRadius: "6px",
+                        border: "1px solid rgba(0,0,255,0.2)", background: "rgba(0,0,255,0.06)",
+                        transition: "background 0.2s",
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "rgba(0,0,255,0.15)"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "rgba(0,0,255,0.06)"}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                      קח אותי לשם
+                    </Link>
+                    <button
+                      onClick={() => deleteNote(note.id)}
+                      style={{ background: "none", border: "none", color: "rgba(240,240,245,0.2)", cursor: "pointer", fontSize: "16px", padding: "0 4px" }}
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
                 <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.6)", lineHeight: 1.6 }}>{note.content}</p>
               </div>

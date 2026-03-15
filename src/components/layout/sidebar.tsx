@@ -24,17 +24,19 @@ import {
   BrainIcon,
   SocialIcon,
   TerminalIcon,
+  BellDotIcon,
+  BeakerIcon,
 } from "@/components/ui/icons";
 
 const mainNav = [
-  { label: "דשבורד", href: "/dashboard", icon: DashboardIcon },
-  { label: "קורסים", href: "/courses", icon: CoursesIcon },
+  { label: "דשבורד", href: "/dashboard", icon: CoursesIcon },
   { label: "מחברת", href: "/notebook", icon: NotebookIcon },
   { label: "לוח שנה", href: "/calendar", icon: CalendarIcon },
   { label: "תכנים נוספים", href: "/social", icon: SocialIcon },
   { label: "שאלות", href: "/qa", icon: QuestionIcon },
   { label: "צ׳אט", href: "/chat", icon: ChatIcon },
   { label: "פרופיל", href: "/profile", icon: ProfileIcon },
+  { label: "התראות", href: "/notifications", icon: BellDotIcon },
 ];
 
 const adminNav = [
@@ -47,6 +49,7 @@ const adminNav = [
   { label: "רעיונות", href: "/admin/ideas", icon: LightbulbIcon },
   { label: "בסיס ידע", href: "/admin/knowledge", icon: BrainIcon },
   { label: "לוג פרומפטים", href: "/admin/logs", icon: TerminalIcon },
+  { label: "מקרי בוחן", href: "/admin/case-studies", icon: BeakerIcon },
 ];
 
 interface SidebarProps {
@@ -97,9 +100,9 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       backdropFilter: "blur(20px)",
       WebkitBackdropFilter: "blur(20px)",
     }}>
-      <div style={{ display: "flex", alignItems: "center", height: "64px", padding: "0 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <Link href="/dashboard">
-          <Image src="/logo.png" alt="BLDR" width={collapsed ? 36 : 100} height={collapsed ? 36 : 40} style={{ objectFit: "contain" }} />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: collapsed ? "64px" : "100px", padding: collapsed ? "0 12px" : "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", transition: "height 0.3s, padding 0.3s" }}>
+        <Link href="/dashboard" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Image src="/logo.png" alt="BLDR" width={collapsed ? 36 : 160} height={collapsed ? 36 : 60} style={{ objectFit: "contain", transition: "all 0.3s" }} />
         </Link>
       </div>
 

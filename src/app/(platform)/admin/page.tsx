@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { SettingsIcon, GraduationIcon, ImportIcon, LinkIcon, FeedbackIcon, UsersIcon, LightbulbIcon, BrainIcon, TerminalIcon } from "@/components/ui/icons";
+import { SettingsIcon, GraduationIcon, ImportIcon, LinkIcon, FeedbackIcon, UsersIcon, LightbulbIcon, BrainIcon, TerminalIcon, BeakerIcon } from "@/components/ui/icons";
 
 const iconMap: Record<string, React.ReactNode> = {
   "/admin/settings": <SettingsIcon size={28} />,
@@ -14,6 +14,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/ideas": <LightbulbIcon size={28} />,
   "/admin/knowledge": <BrainIcon size={28} />,
   "/admin/logs": <TerminalIcon size={28} />,
+  "/admin/case-studies": <BeakerIcon size={28} />,
 };
 
 const sections = [
@@ -61,6 +62,11 @@ const sections = [
     title: "לוג פרומפטים",
     description: "מעקב אחר כל הפרומפטים שיצאו מהמערכת, סטטוס ותשובות מה-API",
     href: "/admin/logs",
+  },
+  {
+    title: "מקרי בוחן",
+    description: "ניהול בקשות למקרי בוחן, צפייה בסטטוס ומעקב אחר פניות",
+    href: "/admin/case-studies",
   },
 ];
 
