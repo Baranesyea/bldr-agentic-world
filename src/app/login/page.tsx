@@ -142,7 +142,7 @@ export default function LoginPage() {
                 marginTop: 12,
                 lineHeight: 1.7,
               }}>
-                המועדון של הבונים — קורסים, כלים וקהילה לעולם ה-AI
+                מועדון לאנשים שבונים בעידן האג׳נטי
               </p>
             </div>
 
