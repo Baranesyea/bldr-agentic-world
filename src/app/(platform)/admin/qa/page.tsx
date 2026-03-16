@@ -110,7 +110,7 @@ export default function AdminQAPage() {
     reload();
   };
 
-  const handleStatusChange = (questionId: string, status: string) => {
+  const handleStatusChange = (questionId: string, status: "pending" | "answered" | "closed") => {
     updateQuestionStatus(questionId, status);
     reload();
   };
@@ -284,7 +284,7 @@ export default function AdminQAPage() {
                     <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
                       <select
                         value={q.status}
-                        onChange={(e) => handleStatusChange(q.id, e.target.value)}
+                        onChange={(e) => handleStatusChange(q.id, e.target.value as "pending" | "answered" | "closed")}
                         style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "6px 12px", color: "#f0f0f5", fontSize: "12px", outline: "none", cursor: "pointer" }}
                       >
                         <option value="pending">ממתין</option>

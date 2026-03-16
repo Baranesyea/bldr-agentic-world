@@ -312,7 +312,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
                 עדכונים אחרונים מהקהילה
               </p>
             </div>
-            <MorphingCardStack cards={newsCards} defaultLayout="list" />
+            <MorphingCardStack cards={newsCards} />
           </div>
         </div>,
         document.body

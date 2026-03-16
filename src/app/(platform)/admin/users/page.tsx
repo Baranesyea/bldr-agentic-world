@@ -537,7 +537,7 @@ export default function AdminUsersPage() {
                                     onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                                   >
                                     <span style={{ color: "rgba(240,240,245,0.4)", display: "flex", transition: "transform 0.2s", transform: isCourseExpanded ? "rotate(90deg)" : "rotate(0deg)" }}>
-                                      <ChevronLeftIcon size={14} />
+                                      <ChevronRightIcon size={14} />
                                     </span>
                                     <span style={{ fontSize: "14px", fontWeight: 600, color: "#f0f0f5", fontFamily: "var(--font-heading-en)" }}>
                                       {cp.courseTitle}

@@ -77,6 +77,7 @@ export default function QAPage() {
       mediaUrls: [],
       createdAt: new Date().toISOString(),
       isAdmin: false,
+      replies: [],
     });
     setAnswerText("");
     setQuestions(loadQuestions());

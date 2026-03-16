@@ -32,7 +32,8 @@ export default function SocialPage() {
   // Re-process Instagram embeds when posts load
   useEffect(() => {
     if (instaPosts.length > 0 && typeof window !== "undefined" && (window as unknown as Record<string, unknown>).instgrm) {
-      ((window as unknown as Record<string, { process: () => void }>).instgrm).Embeds.process();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ((window as any).instgrm).Embeds.process();
     }
   }, [instaPosts]);
 
