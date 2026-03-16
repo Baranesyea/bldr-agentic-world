@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { LinkIcon, ChevronDownIcon } from "@/components/ui/icons";
+import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import {
   loadWebhooks,
   saveWebhooks,
@@ -175,33 +176,7 @@ export default function WebhooksPage() {
                   </span>
                 </div>
                 {/* Toggle */}
-                <button
-                  onClick={() => updateWebhook(wh.id, { enabled: !wh.enabled })}
-                  style={{
-                    width: 40,
-                    height: 22,
-                    borderRadius: 11,
-                    border: "none",
-                    background: wh.enabled ? "#0000FF" : "rgba(255,255,255,0.1)",
-                    cursor: "pointer",
-                    position: "relative",
-                    transition: "background 0.2s",
-                    flexShrink: 0,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 16,
-                      height: 16,
-                      borderRadius: "50%",
-                      background: "#fff",
-                      position: "absolute",
-                      top: 3,
-                      transition: "right 0.2s, left 0.2s",
-                      ...(wh.enabled ? { left: 21, right: "auto" } : { left: 3, right: "auto" }),
-                    }}
-                  />
-                </button>
+                <ToggleSwitch checked={wh.enabled} onChange={(v) => updateWebhook(wh.id, { enabled: v })} size="sm" />
               </div>
 
               {/* URL */}

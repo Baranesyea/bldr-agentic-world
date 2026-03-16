@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { ToggleSwitch } from "@/components/ui/toggle-switch";
 
 interface TourStep {
   id: string;
@@ -332,21 +333,7 @@ export function OnboardingTour() {
               marginBottom: "20px",
             }}>
               <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)" }}>סיור עם סאונד</span>
-              <button
-                onClick={() => setSoundEnabled(!soundEnabled)}
-                style={{
-                  width: "40px", height: "22px", borderRadius: "11px", border: "none",
-                  cursor: "pointer", position: "relative",
-                  background: soundEnabled ? "#0000FF" : "rgba(255,255,255,0.1)",
-                  transition: "background 0.2s",
-                }}
-              >
-                <div style={{
-                  width: "16px", height: "16px", borderRadius: "50%", background: "white",
-                  position: "absolute", top: "3px", transition: "right 0.2s, left 0.2s",
-                  ...(soundEnabled ? { right: "3px" } : { right: "21px" }),
-                }} />
-              </button>
+              <ToggleSwitch checked={soundEnabled} onChange={setSoundEnabled} size="sm" />
             </div>
 
             <button

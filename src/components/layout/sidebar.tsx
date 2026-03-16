@@ -37,6 +37,7 @@ import { MorphingCardStack, type CardData } from "@/components/ui/morphing-card-
 import { useUser } from "@/hooks/useUser";
 import { createClient } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ToggleSwitch } from "@/components/ui/toggle-switch";
 
 const mainNav = [
   { label: "לימודים", href: "/dashboard", icon: CoursesIcon },
@@ -253,22 +254,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
               {viewAsUser ? "מצב משתמש" : "מצב מנהל"}
             </span>
           )}
-          <button
-            onClick={() => setViewAsUser(!viewAsUser)}
-            title={viewAsUser ? "חזור למצב מנהל" : "צפה כמשתמש"}
-            style={{
-              width: "36px", height: "20px", borderRadius: "4px", border: "none",
-              cursor: "pointer", position: "relative",
-              background: viewAsUser ? "#FFB300" : "rgba(255,255,255,0.1)",
-              transition: "background 0.2s", flexShrink: 0,
-            }}
-          >
-            <div style={{
-              width: "14px", height: "14px", borderRadius: "50%", background: "white",
-              position: "absolute", top: "3px", transition: "left 0.2s",
-              ...(viewAsUser ? { left: "3px" } : { left: "19px" }),
-            }} />
-          </button>
+          <ToggleSwitch checked={viewAsUser} onChange={setViewAsUser} activeColor="#FFB300" size="sm" />
         </div>
       )}
 
