@@ -271,11 +271,11 @@ export default function DashboardPage() {
                     {c.thumbnailUrl && (
                       <ResolvedImg src={c.thumbnailUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                     )}
-                    {/* Gradient overlay */}
+                    {/* Gradient overlay — full card darkening + strong bottom */}
                     <div style={{
                       position: "absolute",
                       inset: 0,
-                      background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 40%, transparent 100%)",
+                      background: "linear-gradient(to top, rgba(5,5,16,0.95) 0%, rgba(5,5,16,0.6) 35%, rgba(5,5,16,0.2) 60%, rgba(5,5,16,0.1) 100%)",
                     }} />
                     {/* Badge */}
                     {c.featured && (
