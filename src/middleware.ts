@@ -35,6 +35,7 @@ export async function middleware(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/login") &&
     !request.nextUrl.pathname.startsWith("/api") &&
     !request.nextUrl.pathname.startsWith("/invite") &&
+    !request.nextUrl.pathname.startsWith("/create-password") &&
     !request.nextUrl.pathname.startsWith("/trial-expired") &&
     !request.nextUrl.pathname.startsWith("/_next") &&
     request.nextUrl.pathname !== "/"

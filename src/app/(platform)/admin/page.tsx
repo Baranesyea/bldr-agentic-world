@@ -21,6 +21,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/webhooks": <LinkIcon size={28} />,
   "/admin/onboarding": <UsersIcon size={28} />,
   "/admin/content-ideas": <LightbulbIcon size={28} />,
+  "/admin/subscribers": <UsersIcon size={28} />,
 };
 
 const sections = [
@@ -103,6 +104,11 @@ const sections = [
     title: "רעיונות לתכנים",
     description: "ניהול רעיונות לתכנים — כותרות, תיאורים ונושאים לקורסים ופוסטים",
     href: "/admin/content-ideas",
+  },
+  {
+    title: "ניהול נרשמים",
+    description: "CRM — ניהול מנויים, היסטוריית חיובים ומעקב הכנסות",
+    href: "/admin/subscribers",
   },
 ];
 

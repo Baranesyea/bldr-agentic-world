@@ -48,11 +48,67 @@ export default function LoginPage() {
       setLoading(false);
       return;
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setError(error.message === "Invalid login credentials" ? "אימייל או סיסמה שגויים" : error.message);
         setLoading(false);
         return;
+      }
+
+      // Check subscriber access
+      const userEmail = authData.user?.email?.toLowerCase().trim() || email.toLowerCase().trim();
+
+      // Check if admin
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", authData.user?.id)
+        .single();
+
+      if (profile?.role === "admin") {
+        // Admins always pass
+      } else {
+        // Check subscribers table
+        const { data: subscriber } = await supabase
+          .from("subscribers")
+          .select("id, status")
+          .eq("email", userEmail)
+          .single();
+
+        if (subscriber && subscriber.status === "active") {
+          // Active subscriber — proceed
+        } else if (!subscriber) {
+          // Not a subscriber — check trial
+          const trialData = localStorage.getItem("bldr_trial");
+          if (trialData) {
+            try {
+              const trial = JSON.parse(trialData);
+              if (trial.expiresAt && new Date(trial.expiresAt) < new Date()) {
+                await supabase.auth.signOut();
+                router.push("/trial-expired");
+                return;
+              }
+              // Trial still valid — proceed
+            } catch {
+              // Invalid trial data — show error
+              setError("This email was not found in our subscriber list. You may have signed up with a different email.");
+              await supabase.auth.signOut();
+              setLoading(false);
+              return;
+            }
+          } else {
+            setError("This email was not found in our subscriber list. You may have signed up with a different email.");
+            await supabase.auth.signOut();
+            setLoading(false);
+            return;
+          }
+        } else {
+          // Subscriber exists but not active
+          setError("Your subscription is not active. Please renew to continue.");
+          await supabase.auth.signOut();
+          setLoading(false);
+          return;
+        }
       }
     }
 

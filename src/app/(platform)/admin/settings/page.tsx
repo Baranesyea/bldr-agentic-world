@@ -111,6 +111,16 @@ export default function SettingsPage() {
   const [avatar, setAvatar] = useState<AvatarSettings>(DEFAULT_AVATAR);
   const [avatarSaved, setAvatarSaved] = useState(false);
 
+  interface PaymentSettings {
+    monthlyPrice: number;
+    growWebhookSecret: string;
+  }
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>({
+    monthlyPrice: 99,
+    growWebhookSecret: "",
+  });
+  const [paymentSaved, setPaymentSaved] = useState(false);
+
   interface ThumbDefaults {
     defaultStyle: string;
     referenceUrls: string[];
@@ -134,6 +144,8 @@ export default function SettingsPage() {
       if (storedAvatar) setAvatar(JSON.parse(storedAvatar));
       const storedThumbDefaults = localStorage.getItem("bldr_thumb_defaults");
       if (storedThumbDefaults) setThumbDefaults(JSON.parse(storedThumbDefaults));
+      const storedPayment = localStorage.getItem("bldr_payment_settings");
+      if (storedPayment) setPaymentSettings(JSON.parse(storedPayment));
     } catch {
       // ignore
     }
@@ -613,6 +625,48 @@ export default function SettingsPage() {
           }}
         >
           {thumbDefaultsSaved ? "נשמר!" : "שמור ברירות מחדל"}
+        </button>
+      </div>
+
+      {/* ============ SECTION: PAYMENT & SUBSCRIPTIONS ============ */}
+      <div style={CARD_STYLE}>
+        <h2 style={HEADING_STYLE}>סליקה ומנויים</h2>
+        <p style={{ color: "rgba(240,240,245,0.5)", fontSize: "13px", marginBottom: "20px", lineHeight: 1.5 }}>
+          הגדרות תשלום וסליקה עבור Grow (Meshulam). הוובהוק URL הוא: <code style={{ background: "rgba(255,255,255,0.05)", padding: "2px 6px", borderRadius: 4, fontSize: 12, direction: "ltr", display: "inline-block" }}>/api/subscribers/webhook</code>
+        </p>
+
+        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginBottom: "20px" }}>
+          <div style={{ flex: 1, minWidth: "200px" }}>
+            <label style={LABEL_STYLE}>מחיר חודשי (₪)</label>
+            <input
+              type="number"
+              value={paymentSettings.monthlyPrice}
+              onChange={(e) => setPaymentSettings((p) => ({ ...p, monthlyPrice: parseFloat(e.target.value) || 0 }))}
+              style={INPUT_STYLE}
+              min={0}
+            />
+          </div>
+          <div style={{ flex: 2, minWidth: "250px" }}>
+            <label style={LABEL_STYLE}>Grow Webhook Secret</label>
+            <input
+              type="text"
+              value={paymentSettings.growWebhookSecret}
+              onChange={(e) => setPaymentSettings((p) => ({ ...p, growWebhookSecret: e.target.value }))}
+              placeholder="Secret key for webhook validation"
+              style={{ ...INPUT_STYLE, direction: "ltr" }}
+            />
+          </div>
+        </div>
+
+        <button
+          style={BTN_STYLE}
+          onClick={() => {
+            localStorage.setItem("bldr_payment_settings", JSON.stringify(paymentSettings));
+            setPaymentSaved(true);
+            setTimeout(() => setPaymentSaved(false), 1500);
+          }}
+        >
+          {paymentSaved ? "נשמר!" : "שמור הגדרות סליקה"}
         </button>
       </div>
 
