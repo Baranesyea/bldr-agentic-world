@@ -404,7 +404,16 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       {/* Logout + Collapse */}
       <div style={{ padding: "8px", paddingBottom: "16px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
         <button
+          id="logout-btn"
           onClick={async () => {
+            // Show full-screen logout overlay
+            const overlay = document.createElement("div");
+            overlay.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(5,5,16,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);";
+            overlay.innerHTML = '<div style="text-align:center"><div style="width:32px;height:32px;border:2px solid rgba(255,255,255,0.15);border-top-color:#3333FF;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px"></div><p style="color:rgba(240,240,245,0.6);font-size:14px">מתנתק...</p></div>';
+            const style = document.createElement("style");
+            style.textContent = "@keyframes spin{to{transform:rotate(360deg)}}";
+            document.head.appendChild(style);
+            document.body.appendChild(overlay);
             await fetch("/api/auth/logout", { method: "POST" });
             window.location.replace("/login");
           }}
