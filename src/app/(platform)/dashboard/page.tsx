@@ -95,6 +95,16 @@ export default function DashboardPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#050510" }}>
+      <style>{`
+        @keyframes dashFadeUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes dashHeroFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
       {/* ── Stats Bar ── */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -122,6 +132,7 @@ export default function DashboardPage() {
         <div style={{
           position: "relative", height: "75vh", minHeight: "450px",
           overflow: "hidden", display: "flex", alignItems: "flex-end", padding: "48px",
+          animation: "dashHeroFade 0.8s ease-out",
         }}>
           {/* Background — use thumbnail or gradient */}
           {featuredCourse.thumbnailUrl ? (
@@ -210,7 +221,7 @@ export default function DashboardPage() {
         <div style={{ padding: "32px 48px 24px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "16px" }}>כל הקורסים</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
-            {nonFeaturedActive.map((c) => {
+            {nonFeaturedActive.map((c, idx) => {
               const lessonCount = c.chapters?.reduce((s, ch) => s + ch.lessons.length, 0) || 0;
               return (
                 <Link key={c.id} href={`/courses/${c.id}`} style={{ textDecoration: "none" }}>
@@ -223,6 +234,7 @@ export default function DashboardPage() {
                     border: "1px solid rgba(255,255,255,0.06)",
                     transition: "all 0.3s",
                     background: "linear-gradient(135deg, #0a0a2a, #000033)",
+                    animation: `dashFadeUp 0.6s ease-out ${0.15 * idx}s both`,
                   }}
                     onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.borderColor = "rgba(0,0,255,0.4)"; e.currentTarget.style.boxShadow = "0 8px 40px rgba(0,0,255,0.2)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.boxShadow = "none"; }}
@@ -275,10 +287,11 @@ export default function DashboardPage() {
             <span style={{ background: "rgba(255,179,0,0.15)", color: "#FFB300", padding: "2px 10px", borderRadius: "8px", fontSize: "12px", fontWeight: 600 }}>{comingSoonCourses.length}</span>
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-            {comingSoonCourses.map((c) => (
+            {comingSoonCourses.map((c, idx) => (
               <div key={c.id} style={{
                 background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)",
                 borderRadius: "14px", overflow: "hidden", opacity: 0.6,
+                animation: `dashFadeUp 0.6s ease-out ${0.15 * (idx + nonFeaturedActive.length)}s both`,
               }}>
                 <div style={{ position: "relative", paddingBottom: "56.25%", background: "linear-gradient(135deg, #0a0a2a, #0a0a20)" }}>
                   {c.thumbnailUrl && (

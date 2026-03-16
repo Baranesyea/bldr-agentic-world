@@ -33,7 +33,8 @@ function MediaThumbnail({ item, onDelete }: { item: MediaItem; onDelete: (id: st
   useEffect(() => {
     getImage(item.key).then((data) => {
       if (data) setSrc(data);
-    });
+      else console.warn("Media image not found in IndexedDB:", item.key);
+    }).catch((err) => console.error("Error loading media image:", item.key, err));
   }, [item.key]);
 
   return (
