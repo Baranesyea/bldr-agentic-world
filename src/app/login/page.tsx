@@ -116,15 +116,8 @@ export default function LoginPage() {
             width: "100%",
             animation: "fade-up 0.6s ease-out",
           }}>
-            {/* Welcome */}
-            <div style={{ marginBottom: 40 }}>
-              <p style={{
-                fontSize: 16,
-                color: "rgba(240,240,245,0.5)",
-                marginBottom: 8,
-              }}>
-                ברוכים הבאים ל-
-              </p>
+            {/* Title */}
+            <div style={{ marginBottom: 32, textAlign: "center" }}>
               <h1 style={{
                 fontFamily: "var(--font-merriweather), 'Merriweather', serif",
                 fontSize: 42,
