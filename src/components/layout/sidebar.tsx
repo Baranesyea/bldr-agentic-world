@@ -402,22 +402,26 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       </div>
 
       {/* Logout + Collapse */}
-      <div style={{ padding: "8px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: 4 }}>
+      <div style={{ padding: "8px", paddingBottom: "16px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
         <button
-          onClick={async () => {
-            const supabase = createClient();
-            await supabase.auth.signOut();
+          onClick={async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+              const supabase = createClient();
+              await supabase.auth.signOut();
+            } catch {}
             window.location.href = "/login";
           }}
           style={{
             display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 10,
-            width: "100%", height: "36px", padding: collapsed ? 0 : "0 12px",
-            borderRadius: "12px", background: "none", border: "none", color: "rgba(240,240,245,0.35)", cursor: "pointer", fontSize: "13px",
-            transition: "color 0.2s",
+            width: "100%", height: "40px", padding: collapsed ? 0 : "0 12px",
+            borderRadius: "12px", background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.15)", color: "#ff6b6b", cursor: "pointer", fontSize: "13px",
+            fontWeight: 600, transition: "background 0.2s",
           }}
           title="התנתק"
-          onMouseEnter={(e) => e.currentTarget.style.color = "#ff6b6b"}
-          onMouseLeave={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.35)"}
+          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,59,48,0.15)"}
+          onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,59,48,0.08)"}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />

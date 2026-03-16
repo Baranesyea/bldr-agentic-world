@@ -27,12 +27,13 @@ export function useUser() {
       setUser(user);
 
       if (user) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
           .single();
-        setProfile(data as Profile | null);
+        if (error) console.error("Profile fetch error:", error);
+        else setProfile(data as Profile | null);
       }
 
       setLoading(false);
