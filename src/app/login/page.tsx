@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { SplineScene } from "@/components/ui/spline";
 import { Spotlight } from "@/components/ui/spotlight";
+import { createClient } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,10 +14,58 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fullName, setFullName] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const supabase = createClient();
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    if (mode === "signup") {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName || email.split("@")[0] },
+        },
+      });
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+      // Auto login after signup
+      const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+      if (loginError) {
+        setError("נרשמת בהצלחה! בדוק את האימייל לאימות.");
+        setLoading(false);
+        return;
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setError(error.message === "Invalid login credentials" ? "אימייל או סיסמה שגויים" : error.message);
+        setLoading(false);
+        return;
+      }
+    }
+
     router.push("/dashboard");
+    router.refresh();
+  };
+
+  const handleGoogleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
   };
 
   const inputStyle = (name: string): React.CSSProperties => ({
@@ -66,7 +115,6 @@ export default function LoginPage() {
             {/* Welcome */}
             <div style={{ marginBottom: 40 }}>
               <p style={{
-                fontFamily: "'FbAbsoluti', system-ui, sans-serif",
                 fontSize: 16,
                 color: "rgba(240,240,245,0.5)",
                 marginBottom: 8,
@@ -85,7 +133,6 @@ export default function LoginPage() {
                 Agentic World
               </h1>
               <p style={{
-                fontFamily: "'FbAbsoluti', system-ui, sans-serif",
                 fontSize: 14,
                 color: "rgba(240,240,245,0.5)",
                 marginTop: 12,
@@ -104,18 +151,33 @@ export default function LoginPage() {
               backdropFilter: "blur(20px)",
             }}>
               <h2 style={{
-                fontFamily: "'FbAbsoluti', system-ui, sans-serif",
                 fontSize: 20,
                 fontWeight: 700,
                 color: "#f0f0f5",
                 marginTop: 0,
                 marginBottom: 24,
               }}>
-                התחברות
+                {mode === "login" ? "התחברות" : "הרשמה"}
               </h2>
+
+              {/* Error */}
+              {error && (
+                <div style={{
+                  background: "rgba(255,59,48,0.1)",
+                  border: "1px solid rgba(255,59,48,0.3)",
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                  marginBottom: 16,
+                  fontSize: 13,
+                  color: "#ff6b6b",
+                }}>
+                  {error}
+                </div>
+              )}
 
               {/* Google Button */}
               <button
+                onClick={handleGoogleLogin}
                 onMouseEnter={() => setHoveredBtn("google")}
                 onMouseLeave={() => setHoveredBtn(null)}
                 style={{
@@ -162,6 +224,18 @@ export default function LoginPage() {
 
               {/* Form */}
               <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {mode === "signup" && (
+                  <input
+                    type="text"
+                    placeholder="שם מלא"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    onFocus={() => setFocusedInput("name")}
+                    onBlur={() => setFocusedInput(null)}
+                    style={inputStyle("name")}
+                  />
+                )}
+
                 <input
                   type="email"
                   placeholder="כתובת אימייל"
@@ -170,6 +244,7 @@ export default function LoginPage() {
                   onFocus={() => setFocusedInput("email")}
                   onBlur={() => setFocusedInput(null)}
                   style={inputStyle("email")}
+                  required
                 />
 
                 <div style={{ position: "relative" }}>
@@ -181,6 +256,8 @@ export default function LoginPage() {
                     onFocus={() => setFocusedInput("password")}
                     onBlur={() => setFocusedInput(null)}
                     style={{ ...inputStyle("password"), paddingLeft: 48 }}
+                    required
+                    minLength={6}
                   />
                   <button
                     type="button"
@@ -214,18 +291,19 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
+                  disabled={loading}
                   onMouseEnter={() => setHoveredBtn("login")}
                   onMouseLeave={() => setHoveredBtn(null)}
                   style={{
                     width: "100%",
                     padding: "14px 16px",
-                    background: "#0000FF",
+                    background: loading ? "rgba(0,0,255,0.5)" : "#0000FF",
                     border: "none",
                     borderRadius: 12,
                     color: "#fff",
                     fontSize: 16,
                     fontWeight: 700,
-                    cursor: "pointer",
+                    cursor: loading ? "not-allowed" : "pointer",
                     marginTop: 4,
                     transition: "box-shadow 0.2s, background 0.2s, transform 0.15s",
                     boxShadow: hoveredBtn === "login"
@@ -234,20 +312,20 @@ export default function LoginPage() {
                     transform: hoveredBtn === "login" ? "translateY(-1px)" : "none",
                   }}
                 >
-                  התחבר
+                  {loading ? "..." : mode === "login" ? "התחבר" : "הירשם"}
                 </button>
               </form>
 
               {/* Links */}
               <div style={{ textAlign: "center", marginTop: 20 }}>
                 <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)", margin: "0 0 10px" }}>
-                  אין לך חשבון?{" "}
-                  <span style={{ color: "#3333FF", cursor: "pointer", fontWeight: 700 }}>
-                    הירשם
+                  {mode === "login" ? "אין לך חשבון?" : "כבר יש לך חשבון?"}{" "}
+                  <span
+                    onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}
+                    style={{ color: "#3333FF", cursor: "pointer", fontWeight: 700 }}
+                  >
+                    {mode === "login" ? "הירשם" : "התחבר"}
                   </span>
-                </p>
-                <p style={{ fontSize: 13, color: "rgba(240,240,245,0.3)", margin: 0, cursor: "pointer" }}>
-                  שכחת סיסמה?
                 </p>
               </div>
             </div>
@@ -269,18 +347,13 @@ export default function LoginPage() {
             justifyContent: "center",
           }}
         >
-          {/* Spline 3D Scene */}
           <div style={{ position: "absolute", inset: 0 }}>
             <SplineScene
               scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
               className="w-full h-full"
             />
           </div>
-
-          {/* Spotlight overlay */}
           <Spotlight className="z-10" size={400} />
-
-          {/* Text overlay */}
           <div style={{
             position: "relative",
             zIndex: 10,
@@ -308,8 +381,6 @@ export default function LoginPage() {
               by BLDR
             </p>
           </div>
-
-          {/* Logo at bottom */}
           <div style={{
             position: "absolute",
             bottom: 40,
@@ -321,7 +392,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Mobile responsive: hide left half */}
       <style>{`
         @media (max-width: 768px) {
           .login-hero-left {

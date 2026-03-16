@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/icons";
 import { Sparkles, BookOpen, Rocket, Layers, Calendar } from "lucide-react";
 import { MorphingCardStack, type CardData } from "@/components/ui/morphing-card-stack";
+import { useUser } from "@/hooks/useUser";
+import { createClient } from "@/lib/supabase";
 
 const mainNav = [
   { label: "לימודים", href: "/dashboard", icon: CoursesIcon },
@@ -74,17 +76,7 @@ interface Notification {
 export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // Check user role
-  React.useEffect(() => {
-    try {
-      const profile = JSON.parse(localStorage.getItem("bldr_user_profile") || "{}");
-      setIsAdmin(profile.role === "admin" || profile.role === "Architect");
-    } catch {
-      setIsAdmin(false);
-    }
-  }, []);
+  const { profile: userProfile, isAdmin } = useUser();
   const [internalCollapsed, setInternalCollapsed] = useState(true);
   const collapsed = collapsedProp ?? internalCollapsed;
   const toggleCollapse = onToggle ?? (() => setInternalCollapsed(!internalCollapsed));
@@ -409,8 +401,28 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         )}
       </div>
 
-      {/* Collapse toggle */}
-      <div style={{ padding: "8px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      {/* Logout + Collapse */}
+      <div style={{ padding: "8px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: 4 }}>
+        <button
+          onClick={async () => {
+            const supabase = createClient();
+            await supabase.auth.signOut();
+            router.push("/login");
+          }}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 10,
+            width: "100%", height: "36px", padding: collapsed ? 0 : "0 12px",
+            borderRadius: "12px", background: "none", border: "none", color: "rgba(240,240,245,0.35)", cursor: "pointer", fontSize: "13px",
+            transition: "color 0.2s",
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = "#ff6b6b"}
+          onMouseLeave={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.35)"}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          {!collapsed && "התנתק"}
+        </button>
         <button onClick={toggleCollapse} style={{
           display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "36px",
           borderRadius: "12px", background: "none", border: "none", color: "rgba(240,240,245,0.35)", cursor: "pointer", fontSize: "16px",
