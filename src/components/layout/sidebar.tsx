@@ -395,6 +395,12 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         {/* Notifications popup */}
         {showNotifications && (
           <>
+            <style>{`
+              @keyframes notifSlideIn {
+                from { opacity: 0; transform: translateX(20px); }
+                to { opacity: 1; transform: translateX(0); }
+              }
+            `}</style>
             <div onClick={() => setShowNotifications(false)} style={{ position: "fixed", inset: 0, zIndex: 98 }} />
             <div
               onMouseLeave={() => {
@@ -404,12 +410,12 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
                 if (notifLeaveTimerRef.current) { clearTimeout(notifLeaveTimerRef.current); notifLeaveTimerRef.current = null; }
               }}
               style={{
-              position: "absolute", bottom: "100%", right: collapsed ? "-280px" : "0",
+              position: "fixed", bottom: "80px", right: `${width + 16}px`,
               width: "320px", maxHeight: "400px", overflowY: "auto",
               background: "rgba(14,14,32,0.95)", backdropFilter: "blur(20px)",
               border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px",
               padding: "0", zIndex: 99, boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
-              marginBottom: "8px",
+              animation: "notifSlideIn 0.25s ease-out",
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
                 <span style={{ fontSize: "15px", fontWeight: 700, color: "#f0f0f5" }}>התראות</span>

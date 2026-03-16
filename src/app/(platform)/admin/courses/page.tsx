@@ -2,6 +2,23 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import { resolveImageUrl } from "@/lib/image-store";
+
+/** Image component that resolves idb:// URLs from IndexedDB */
+function ResolvedImg({ src, alt, style }: { src: string; alt: string; style: React.CSSProperties }) {
+  const [resolved, setResolved] = React.useState("");
+  React.useEffect(() => {
+    if (!src) return;
+    if (src.startsWith("idb://")) {
+      resolveImageUrl(src).then(setResolved);
+    } else {
+      setResolved(src);
+    }
+  }, [src]);
+  if (!resolved) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={resolved} alt={alt} style={style} />;
+}
 
 interface Lesson {
   id: string;
@@ -296,13 +313,16 @@ export default function CourseManagerPage() {
                 {/* Thumbnail */}
                 <div style={{
                   height: 160,
-                  background: course.thumbnailUrl ? `url(${course.thumbnailUrl}) center/cover` : "linear-gradient(135deg, #0a0a2a, #000044)",
+                  background: "linear-gradient(135deg, #0a0a2a, #000044)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   position: "relative",
+                  overflow: "hidden",
                 }}>
-                  {!course.thumbnailUrl && (
+                  {course.thumbnailUrl ? (
+                    <ResolvedImg src={course.thumbnailUrl} alt={course.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
                     <span style={{ fontSize: 16, fontWeight: 700, color: "rgba(240,240,245,0.15)" }}>
                       {course.title}
                     </span>
@@ -442,9 +462,14 @@ export default function CourseManagerPage() {
 
                     {/* Thumbnail */}
                     <div style={{
-                      width: 52, height: 36, borderRadius: 6, flexShrink: 0, overflow: "hidden",
-                      background: course.thumbnailUrl ? `url(${course.thumbnailUrl}) center/cover` : "linear-gradient(135deg, #0a0a2a, #000044)",
-                    }} />
+                      width: 60, height: 40, borderRadius: 6, flexShrink: 0, overflow: "hidden",
+                      background: "linear-gradient(135deg, #0a0a2a, #000044)",
+                      position: "relative",
+                    }}>
+                      {course.thumbnailUrl && (
+                        <ResolvedImg src={course.thumbnailUrl} alt={course.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", borderRadius: 6 }} />
+                      )}
+                    </div>
 
                     {/* Title */}
                     <div style={{ flex: 1, minWidth: 0 }}>

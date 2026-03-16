@@ -53,6 +53,7 @@ const DEMO_COURSES: Course[] = [
 export default function DashboardPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [userName, setUserName] = useState("ערן");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     try {
@@ -81,6 +82,10 @@ export default function DashboardPage() {
       const profile = JSON.parse(localStorage.getItem("bldr_user_profile") || "{}");
       if (profile.name) setUserName(profile.name.split(" ")[0]);
     } catch {}
+    try {
+      const cached = JSON.parse(localStorage.getItem("bldr_profile_cache") || "{}");
+      if (cached.role === "admin") setIsAdmin(true);
+    } catch {}
   }, []);
 
   const activeCourses = courses.filter((c) => c.status === "active");
@@ -104,6 +109,9 @@ export default function DashboardPage() {
           from { opacity: 0; }
           to { opacity: 1; }
         }
+        .course-card-wrap:hover .admin-edit-btn { opacity: 1 !important; }
+        .admin-edit-btn:hover { background: rgba(255,255,255,0.25) !important; }
+        .hero-edit-btn:hover { background: rgba(255,255,255,0.25) !important; }
       `}</style>
       {/* ── Stats Bar ── */}
       <div style={{
@@ -154,6 +162,27 @@ export default function DashboardPage() {
             </>
           )}
 
+          {/* Admin edit button on hero */}
+          {isAdmin && featuredCourse && (
+            <a
+              href={`/admin/courses/${featuredCourse.id}/edit`}
+              className="hero-edit-btn"
+              style={{
+                position: "absolute", top: 20, left: 20,
+                width: 40, height: 40, borderRadius: "50%",
+                background: "rgba(255,255,255,0.15)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                zIndex: 3, cursor: "pointer", textDecoration: "none",
+                transition: "background 0.2s",
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,245,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </a>
+          )}
           <div style={{ position: "relative", zIndex: 1, maxWidth: "550px" }}>
             <span style={{ background: "rgba(0,0,255,0.2)", color: "#3333FF", padding: "4px 12px", borderRadius: "8px", fontSize: "12px", fontWeight: 600, display: "inline-block", marginBottom: "12px" }}>
               קורס מומלץ
@@ -224,7 +253,7 @@ export default function DashboardPage() {
               const lessonCount = c.chapters?.reduce((s, ch) => s + ch.lessons.length, 0) || 0;
               return (
                 <Link key={c.id} href={`/courses/${c.id}`} style={{ textDecoration: "none" }}>
-                  <div style={{
+                  <div className="course-card-wrap" style={{
                     position: "relative",
                     borderRadius: 16,
                     overflow: "hidden",
@@ -256,6 +285,28 @@ export default function DashboardPage() {
                     <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "rgba(240,240,245,0.7)", padding: "4px 10px", borderRadius: 8, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>
                       {lessonCount} שיעורים
                     </span>
+                    {/* Admin edit button */}
+                    {isAdmin && (
+                      <a
+                        href={`/admin/courses/${c.id}/edit`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="admin-edit-btn"
+                        style={{
+                          position: "absolute", top: 12, right: 12,
+                          width: 32, height: 32, borderRadius: "50%",
+                          background: "rgba(255,255,255,0.15)",
+                          border: "1px solid rgba(255,255,255,0.2)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          zIndex: 3, cursor: "pointer", textDecoration: "none",
+                          opacity: 0, transition: "opacity 0.2s",
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,245,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </a>
+                    )}
                     {/* Text overlay */}
                     <div style={{
                       position: "absolute",
