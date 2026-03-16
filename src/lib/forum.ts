@@ -54,6 +54,18 @@ export function addQuestion(q: ForumQuestion): void {
   const all = loadQuestions();
   all.unshift(q);
   saveQuestions(all);
+
+  // Send webhook notification
+  import("./webhooks").then(({ sendWebhook }) => {
+    sendWebhook("forum_question_posted", {
+      firstName: q.userName,
+      lessonTitle: q.lessonTitle,
+      courseName: q.courseName,
+      question: q.content,
+      questionTitle: q.title,
+      link: `${window.location.origin}/courses/${q.courseId}/lessons/${q.lessonId}`,
+    }).catch(() => {});
+  });
 }
 
 function findAndAddReply(answers: ForumAnswer[], parentId: string, reply: ForumAnswer): boolean {
