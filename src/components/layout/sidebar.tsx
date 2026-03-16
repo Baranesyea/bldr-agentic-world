@@ -432,12 +432,14 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
           </svg>
           {!collapsed && "התנתק"}
         </button>
-        <button onClick={toggleCollapse} style={{
-          display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "36px",
-          borderRadius: "12px", background: "none", border: "none", color: "rgba(240,240,245,0.35)", cursor: "pointer", fontSize: "16px",
-        }}>
-          {collapsed ? <ChevronLeftIcon size={16} /> : <ChevronRightIcon size={16} />}
-        </button>
+        {collapsed && (
+          <button onClick={toggleCollapse} style={{
+            display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "36px",
+            borderRadius: "12px", background: "none", border: "none", color: "rgba(240,240,245,0.35)", cursor: "pointer", fontSize: "16px",
+          }}>
+            <ChevronLeftIcon size={16} />
+          </button>
+        )}
       </div>
     </aside>
   );
