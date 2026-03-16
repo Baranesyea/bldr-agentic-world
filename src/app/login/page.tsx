@@ -56,7 +56,6 @@ export default function LoginPage() {
       }
     }
 
-    setShowSpinner(true);
     router.push("/dashboard");
     router.refresh();
   };
@@ -86,11 +85,13 @@ export default function LoginPage() {
 
   return (
     <>
-      {showSpinner && <LoadingSpinner text="מתחבר..." />}
       <style>{`
         @keyframes fade-up {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
         @keyframes robotFadeIn {
           0% { opacity: 0; }
@@ -328,7 +329,12 @@ export default function LoginPage() {
                     transform: hoveredBtn === "login" ? "translateY(-1px)" : "none",
                   }}
                 >
-                  {loading ? "..." : mode === "login" ? "התחבר" : "הירשם"}
+                  {loading ? (
+                    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                      <span style={{ width: 18, height: 18, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} />
+                      {mode === "login" ? "מתחבר..." : "נרשם..."}
+                    </span>
+                  ) : mode === "login" ? "התחבר" : "הירשם"}
                 </button>
               </form>
 

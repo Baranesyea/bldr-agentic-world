@@ -30,6 +30,7 @@ import {
   NewsIcon,
   CloseIcon,
   TourIcon,
+  WhatsAppIcon,
 } from "@/components/ui/icons";
 import { Sparkles, BookOpen, Rocket, Layers, Calendar } from "lucide-react";
 import { MorphingCardStack, type CardData } from "@/components/ui/morphing-card-stack";
@@ -46,6 +47,7 @@ const mainNav = [
   { label: "שאלות", href: "/qa", icon: QuestionIcon },
   { label: "פרופיל", href: "/profile", icon: ProfileIcon },
   { label: "סיור", href: "#tour", icon: TourIcon },
+  { label: "קהילה", href: "#whatsapp", icon: WhatsAppIcon },
 ];
 
 const adminNav = [
@@ -159,15 +161,25 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
     const active = isActive(item.href);
     const Icon = item.icon;
 
-    if (item.href === "#tour") {
+    if (item.href === "#tour" || item.href === "#whatsapp") {
+      const handleClick = () => {
+        if (item.href === "#tour") {
+          localStorage.setItem("bldr_onboarding_trigger", "true");
+        } else {
+          try {
+            const s = JSON.parse(localStorage.getItem("bldr_whatsapp_settings") || "{}");
+            if (s.url) window.open(s.url, "_blank");
+          } catch {}
+        }
+      };
       return (
-        <button onClick={handleTourClick} style={{
+        <button onClick={handleClick} style={{
           display: "flex", alignItems: "center", gap: "12px",
           padding: collapsed ? "10px" : "10px 12px", borderRadius: "12px",
           fontSize: "14px", width: "100%",
           justifyContent: collapsed ? "center" : "flex-start",
           fontWeight: 400,
-          color: "rgba(240,240,245,0.6)",
+          color: item.href === "#whatsapp" ? "#25D366" : "rgba(240,240,245,0.6)",
           background: "transparent",
           border: "1px solid transparent",
           cursor: "pointer",

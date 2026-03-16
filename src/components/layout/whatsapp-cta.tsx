@@ -71,7 +71,7 @@ export function WhatsAppCTA() {
         onMouseLeave={() => setHovered(false)}
         style={{
           position: "fixed",
-          bottom: 80,
+          bottom: 130,
           left: 24,
           zIndex: 45,
           cursor: "pointer",
