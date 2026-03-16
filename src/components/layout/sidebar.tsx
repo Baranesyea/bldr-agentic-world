@@ -414,7 +414,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
               position: "fixed", bottom: "80px", right: `${width + 16}px`,
               width: "320px", maxHeight: "400px", overflowY: "auto",
               background: "rgba(14,14,32,0.95)", backdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px",
+              border: "1px solid rgba(255,255,255,0.08)", borderRadius: "6px",
               padding: "0", zIndex: 99, boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
               animation: "notifSlideIn 0.25s ease-out",
             }}>

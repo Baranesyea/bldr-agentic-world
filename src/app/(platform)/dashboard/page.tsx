@@ -184,7 +184,7 @@ export default function DashboardPage() {
             </a>
           )}
           <div style={{ position: "relative", zIndex: 1, maxWidth: "550px" }}>
-            <span style={{ background: "rgba(0,0,255,0.2)", color: "#3333FF", padding: "4px 12px", borderRadius: "8px", fontSize: "12px", fontWeight: 600, display: "inline-block", marginBottom: "12px" }}>
+            <span style={{ background: "rgba(0,0,255,0.2)", color: "#3333FF", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: 600, display: "inline-block", marginBottom: "12px" }}>
               קורס מומלץ
             </span>
             <h1 style={{ fontSize: "36px", fontWeight: 900, color: "#f0f0f5", lineHeight: 1.1, marginBottom: "12px", textShadow: "0 2px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)" }}>
@@ -206,7 +206,7 @@ export default function DashboardPage() {
                 href={firstLesson ? `/courses/${featuredCourse.id}/lessons/${firstLesson.id}` : `/courses/${featuredCourse.id}`}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: "8px",
-                  background: "#0000FF", color: "white", padding: "12px 28px", borderRadius: "12px",
+                  background: "#0000FF", color: "white", padding: "12px 28px", borderRadius: "4px",
                   fontWeight: 600, fontSize: "15px", textDecoration: "none",
                   boxShadow: "0 0 30px rgba(0,0,255,0.35)",
                 }}
@@ -217,7 +217,7 @@ export default function DashboardPage() {
                 href={`/courses/${featuredCourse.id}`}
                 style={{
                   background: "rgba(255,255,255,0.08)", color: "#f0f0f5", padding: "12px 28px",
-                  borderRadius: "12px", fontWeight: 600, fontSize: "15px",
+                  borderRadius: "4px", fontWeight: 600, fontSize: "15px",
                   border: "1px solid rgba(255,255,255,0.12)", textDecoration: "none",
                 }}
               >
@@ -236,7 +236,7 @@ export default function DashboardPage() {
           <h1 style={{ fontSize: "28px", fontWeight: 700, color: "rgba(240,240,245,0.5)" }}>ברוך הבא, {userName}!</h1>
           <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.3)" }}>עדיין אין קורסים. צור את הקורס הראשון שלך.</p>
           <Link href="/admin/courses/new" style={{
-            background: "#0000FF", color: "white", padding: "12px 28px", borderRadius: "12px",
+            background: "#0000FF", color: "white", padding: "12px 28px", borderRadius: "4px",
             fontWeight: 600, fontSize: "15px", textDecoration: "none", boxShadow: "0 0 30px rgba(0,0,255,0.35)",
           }}>
             צור קורס חדש
@@ -255,7 +255,7 @@ export default function DashboardPage() {
                 <Link key={c.id} href={`/courses/${c.id}`} style={{ textDecoration: "none" }}>
                   <div className="course-card-wrap" style={{
                     position: "relative",
-                    borderRadius: 16,
+                    borderRadius: 4,
                     overflow: "hidden",
                     minHeight: 220,
                     cursor: "pointer",
@@ -279,10 +279,10 @@ export default function DashboardPage() {
                     }} />
                     {/* Badge */}
                     {c.featured && (
-                      <span style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,255,0.35)", color: "#6666FF", padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>מומלץ</span>
+                      <span style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,255,0.35)", color: "#6666FF", padding: "4px 12px", borderRadius: 4, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>מומלץ</span>
                     )}
                     {/* Lesson count badge */}
-                    <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "rgba(240,240,245,0.7)", padding: "4px 10px", borderRadius: 8, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>
+                    <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "rgba(240,240,245,0.7)", padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>
                       {lessonCount} שיעורים
                     </span>
                     {/* Admin edit button */}
@@ -334,13 +334,13 @@ export default function DashboardPage() {
         <div style={{ padding: "16px 48px 48px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
             עולה בקרוב
-            <span style={{ background: "rgba(255,179,0,0.15)", color: "#FFB300", padding: "2px 10px", borderRadius: "8px", fontSize: "12px", fontWeight: 600 }}>{comingSoonCourses.length}</span>
+            <span style={{ background: "rgba(255,179,0,0.15)", color: "#FFB300", padding: "2px 10px", borderRadius: "4px", fontSize: "12px", fontWeight: 600 }}>{comingSoonCourses.length}</span>
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
             {comingSoonCourses.map((c, idx) => (
               <div key={c.id} style={{
                 background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: "14px", overflow: "hidden", opacity: 0.6,
+                borderRadius: "4px", overflow: "hidden", opacity: 0.6,
                 animation: `dashFadeUp 0.6s ease-out ${0.15 * (idx + nonFeaturedActive.length)}s both`,
               }}>
                 <div style={{ position: "relative", paddingBottom: "56.25%", background: "linear-gradient(135deg, #0a0a2a, #0a0a20)" }}>
@@ -348,7 +348,7 @@ export default function DashboardPage() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <ResolvedImg src={c.thumbnailUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
                   )}
-                  <span style={{ position: "absolute", top: 10, right: 10, background: "rgba(255,179,0,0.25)", color: "#FFB300", padding: "4px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600 }}>בקרוב</span>
+                  <span style={{ position: "absolute", top: 10, right: 10, background: "rgba(255,179,0,0.25)", color: "#FFB300", padding: "4px 14px", borderRadius: 4, fontSize: 12, fontWeight: 600 }}>בקרוב</span>
                 </div>
                 <div style={{ padding: "14px 16px" }}>
                   <h3 style={{ fontSize: "15px", fontWeight: 600, color: "rgba(240,240,245,0.5)", marginBottom: "6px" }}>{c.title}</h3>
