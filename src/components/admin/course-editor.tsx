@@ -8,7 +8,7 @@ import {
   type BrandSettings,
   type ThumbnailOptions,
 } from "@/lib/thumbnail-generator";
-import { storeImageIfDataUrl, resolveImageUrl } from "@/lib/image-store";
+import { storeImageIfDataUrl, resolveImageUrl, saveImage, getImage } from "@/lib/image-store";
 
 // ── Types ──────────────────────────────────────────────────────────
 interface Lesson {
@@ -366,6 +366,8 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
   const [displayThumbUrl, setDisplayThumbUrl] = useState("");
   const existingIdRef = useRef<string | null>(null);
   const createdAtRef = useRef<string>(new Date().toISOString());
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [mediaItems, setMediaItems] = useState<{ id: string; label: string; key: string; src: string }[]>([]);
 
   // Load existing course
   useEffect(() => {
@@ -399,6 +401,40 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
       setDisplayThumbUrl(thumbnailUrl);
     }
   }, [thumbnailUrl]);
+
+  // ── Media picker helpers ──────────────────────────────────────
+  const openMediaPicker = async () => {
+    try {
+      const registry: { id: string; label: string; key: string }[] = JSON.parse(localStorage.getItem("bldr_media_registry") || "[]");
+      const items = await Promise.all(
+        registry.map(async (item) => {
+          const data = await getImage(item.key);
+          return { ...item, src: data || "" };
+        })
+      );
+      setMediaItems(items.filter((i) => i.src));
+      setShowMediaPicker(true);
+    } catch {
+      setMediaItems([]);
+      setShowMediaPicker(true);
+    }
+  };
+
+  const selectMediaItem = (item: { key: string }) => {
+    setThumbnailUrl(`idb://${item.key}`);
+    setCustomThumbUrl("");
+    setShowMediaPicker(false);
+  };
+
+  const registerThumbInMedia = (idbRef: string, label: string) => {
+    try {
+      const key = idbRef.startsWith("idb://") ? idbRef.slice(6) : idbRef;
+      const registry: { id: string; label: string; key: string; createdAt: number }[] = JSON.parse(localStorage.getItem("bldr_media_registry") || "[]");
+      if (registry.some((r) => r.key === key)) return;
+      registry.unshift({ id: `media_${Date.now()}`, label, key, createdAt: Date.now() });
+      localStorage.setItem("bldr_media_registry", JSON.stringify(registry));
+    } catch {}
+  };
 
   // ── Chapter ops ────────────────────────────────────────────────
   const addChapter = () => {
@@ -861,6 +897,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                         const ref = await storeImageIfDataUrl(reader.result as string, "thumb-upload");
                         setThumbnailUrl(ref);
                         setCustomThumbUrl("");
+                        registerThumbInMedia(ref, file.name || "Course Thumbnail");
                       };
                       reader.readAsDataURL(file);
                     }}
@@ -878,7 +915,85 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                     העלה תמונה
                   </label>
                 </div>
+                <button
+                  type="button"
+                  onClick={openMediaPicker}
+                  style={{
+                    ...btnSec,
+                    padding: "10px 16px",
+                    fontSize: 13,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  בחר מספריית מדיה
+                </button>
               </div>
+
+              {/* Media Picker Modal */}
+              {showMediaPicker && (
+                <div
+                  onClick={() => setShowMediaPicker(false)}
+                  style={{
+                    position: "fixed", inset: 0, zIndex: 9999,
+                    background: "rgba(0,0,0,0.7)",
+                    backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    direction: "rtl",
+                  }}
+                >
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      width: "90%", maxWidth: 700, maxHeight: "80vh",
+                      background: "rgba(10,10,26,0.97)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: 20, padding: 0,
+                      boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
+                      overflow: "hidden", display: "flex", flexDirection: "column",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                      <h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f5", margin: 0 }}>בחר תמונה מהספרייה</h3>
+                      <button
+                        onClick={() => setShowMediaPicker(false)}
+                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(240,240,245,0.5)" }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                    <div style={{ flex: 1, overflowY: "auto", padding: 24 }}>
+                      {mediaItems.length === 0 ? (
+                        <p style={{ textAlign: "center", color: "rgba(240,240,245,0.3)", fontSize: 14, padding: "40px 0" }}>אין תמונות בספרייה</p>
+                      ) : (
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
+                          {mediaItems.map((item) => (
+                            <div
+                              key={item.id}
+                              onClick={() => selectMediaItem(item)}
+                              style={{
+                                cursor: "pointer", borderRadius: 10, overflow: "hidden",
+                                border: "2px solid rgba(255,255,255,0.06)",
+                                transition: "border-color 0.2s, transform 0.2s",
+                                background: "rgba(255,255,255,0.02)",
+                              }}
+                              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,255,0.5)"; e.currentTarget.style.transform = "scale(1.03)"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.transform = "scale(1)"; }}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={item.src} alt={item.label} style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", display: "block" }} />
+                              <div style={{ padding: "6px 8px", fontSize: 11, color: "rgba(240,240,245,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

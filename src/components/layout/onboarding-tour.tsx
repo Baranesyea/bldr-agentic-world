@@ -267,16 +267,22 @@ export function OnboardingTour() {
           direction: "rtl",
         }}>
           <div style={{
-            background: "rgba(10,10,30,0.95)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            position: "relative",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.12) 100%)",
+            border: "1px solid rgba(255,255,255,0.2)",
             borderRadius: "24px",
             padding: "48px 40px",
             maxWidth: "440px",
             width: "90%",
             textAlign: "center",
             animation: "onboardSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
-            boxShadow: "0 32px 100px rgba(0,0,0,0.6), 0 0 60px rgba(0,0,255,0.08)",
+            boxShadow: "0 32px 100px rgba(0,0,0,0.6), 0 0 60px rgba(0,0,255,0.08), inset 1px 1px 0 rgba(255,255,255,0.35), inset -1px -1px 0 rgba(255,255,255,0.15)",
+            backdropFilter: "blur(40px) saturate(1.8)",
+            WebkitBackdropFilter: "blur(40px) saturate(1.8)",
+            overflow: "hidden",
           }}>
+            {/* Specular highlight */}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)", borderRadius: "24px 24px 0 0", pointerEvents: "none" }} />
             {/* Tour icon */}
             <div style={{ marginBottom: "24px" }}>
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(51,51,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -411,18 +417,24 @@ export function OnboardingTour() {
           {spotlightRect && steps[currentStep] && (
             <div style={{
               ...getTooltipPosition(spotlightRect, steps[currentStep].position),
-              background: "rgba(10,10,30,0.95)",
-              border: "1px solid rgba(255,255,255,0.1)",
+              position: "fixed" as const,
+              background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.12) 100%)",
+              border: "1px solid rgba(255,255,255,0.2)",
               borderRadius: "16px",
               padding: "24px",
               maxWidth: "320px",
               width: "320px",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 1px 1px 0 rgba(255,255,255,0.35), inset -1px -1px 0 rgba(255,255,255,0.15)",
+              backdropFilter: "blur(40px) saturate(1.8)",
+              WebkitBackdropFilter: "blur(40px) saturate(1.8)",
               zIndex: 99992,
               pointerEvents: "auto",
               opacity: transitioning ? 0 : 1,
               transition: "opacity 0.25s",
+              overflow: "hidden",
             }}>
+              {/* Specular highlight */}
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%)", borderRadius: "16px 16px 0 0", pointerEvents: "none" }} />
               <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px" }}>
                 {steps[currentStep].title}
               </h3>

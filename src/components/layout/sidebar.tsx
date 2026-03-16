@@ -92,6 +92,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
   const [showNews, setShowNews] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [newsCards, setNewsCards] = useState<CardData[]>([]);
+  const notifLeaveTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load notifications
   React.useEffect(() => {
@@ -383,7 +384,14 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         {showNotifications && (
           <>
             <div onClick={() => setShowNotifications(false)} style={{ position: "fixed", inset: 0, zIndex: 98 }} />
-            <div style={{
+            <div
+              onMouseLeave={() => {
+                notifLeaveTimerRef.current = setTimeout(() => setShowNotifications(false), 500);
+              }}
+              onMouseEnter={() => {
+                if (notifLeaveTimerRef.current) { clearTimeout(notifLeaveTimerRef.current); notifLeaveTimerRef.current = null; }
+              }}
+              style={{
               position: "absolute", bottom: "100%", right: collapsed ? "-280px" : "0",
               width: "320px", maxHeight: "400px", overflowY: "auto",
               background: "rgba(14,14,32,0.95)", backdropFilter: "blur(20px)",
