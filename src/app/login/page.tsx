@@ -6,6 +6,7 @@ import Image from "next/image";
 import { SplineScene } from "@/components/ui/spline";
 import { Spotlight } from "@/components/ui/spotlight";
 import { createClient } from "@/lib/supabase";
+import { GradientDots } from "@/components/ui/gradient-dots";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -360,7 +361,18 @@ export default function LoginPage() {
             justifyContent: "center",
           }}
         >
-          <div style={{ position: "absolute", inset: 0 }}>
+          {/* Gradient dots background layer */}
+          <GradientDots
+            duration={20}
+            colorCycleDuration={8}
+            dotSize={6}
+            spacing={12}
+            backgroundColor="#050510"
+            style={{ zIndex: 0, opacity: 0.7 }}
+          />
+
+          {/* Spline 3D Robot */}
+          <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
             <SplineScene
               scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
               className="w-full h-full"
