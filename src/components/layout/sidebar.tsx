@@ -407,7 +407,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
           onClick={async () => {
             const supabase = createClient();
             await supabase.auth.signOut();
-            router.push("/login");
+            window.location.href = "/login";
           }}
           style={{
             display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 10,
@@ -415,6 +415,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
             borderRadius: "12px", background: "none", border: "none", color: "rgba(240,240,245,0.35)", cursor: "pointer", fontSize: "13px",
             transition: "color 0.2s",
           }}
+          title="התנתק"
           onMouseEnter={(e) => e.currentTarget.style.color = "#ff6b6b"}
           onMouseLeave={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.35)"}
         >
