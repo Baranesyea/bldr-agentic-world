@@ -53,15 +53,10 @@ const mainNav = [
 const adminNav = [
   { label: "ניהול", href: "/admin", icon: SettingsIcon },
   { label: "ניהול קורסים", href: "/admin/courses", icon: GraduationIcon },
-  { label: "קישורי פרומו", href: "/admin/promo-links", icon: LinkIcon },
-  { label: "ייבוא קורס", href: "/admin/import-course", icon: ImportIcon },
   { label: "פידבקים", href: "/admin/feedback", icon: FeedbackIcon },
   { label: "משתמשים", href: "/admin/users", icon: UsersIcon },
-  { label: "רעיונות", href: "/admin/ideas", icon: LightbulbIcon },
-  { label: "בסיס ידע", href: "/admin/knowledge", icon: BrainIcon },
-  { label: "ניהול שאלות", href: "/admin/qa", icon: QuestionIcon },
-  { label: "לוג פרומפטים", href: "/admin/logs", icon: TerminalIcon },
-  { label: "מקרי בוחן", href: "/admin/case-studies", icon: BeakerIcon },
+  { label: "רעיונות לתכנים", href: "/admin/content-ideas", icon: LightbulbIcon },
+  { label: "רעיונות לפיתוח", href: "/admin/ideas", icon: LightbulbIcon },
 ];
 
 interface SidebarProps {
