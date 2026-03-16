@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { SplineScene } from "@/components/ui/spline";
 import { Spotlight } from "@/components/ui/spotlight";
 import { createClient } from "@/lib/supabase";
 import { GradientDots } from "@/components/ui/gradient-dots";
+import { ParticleTextEffect } from "@/components/ui/particle-text-effect";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -87,6 +87,11 @@ export default function LoginPage() {
         @keyframes fade-up {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes robotFadeIn {
+          0% { opacity: 0; }
+          30% { opacity: 0; }
+          100% { opacity: 1; }
         }
       `}</style>
 
@@ -361,59 +366,36 @@ export default function LoginPage() {
             justifyContent: "center",
           }}
         >
-          {/* Gradient dots background layer */}
+          {/* Layer 0: Gradient dots */}
           <GradientDots
             duration={20}
             colorCycleDuration={8}
             dotSize={6}
             spacing={12}
             backgroundColor="#050510"
-            style={{ zIndex: 0, opacity: 0.7 }}
+            style={{ zIndex: 0 }}
           />
 
-          {/* Spline 3D Robot */}
-          <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
+          {/* Layer 1: Particle text — between dots and robot */}
+          <ParticleTextEffect
+            words={["Agentic", "World", "BLDR", "AI", "Build"]}
+            style={{ zIndex: 1, opacity: 0.5 }}
+          />
+
+          {/* Layer 2: Spline 3D Robot with fade-in */}
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 2,
+            animation: "robotFadeIn 2s ease-out forwards",
+            opacity: 0,
+          }}>
             <SplineScene
               scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
               className="w-full h-full"
             />
           </div>
+
+          {/* Layer 3: Spotlight */}
           <Spotlight className="z-10" size={400} />
-          <div style={{
-            position: "relative",
-            zIndex: 10,
-            textAlign: "center",
-            marginTop: "auto",
-            marginBottom: 100,
-            pointerEvents: "none",
-          }}>
-            <h2 style={{
-              fontFamily: "var(--font-merriweather), 'Merriweather', serif",
-              fontSize: 36,
-              fontWeight: 700,
-              color: "#fff",
-              textShadow: "0 0 30px rgba(0,0,255,0.35), 0 0 60px rgba(0,0,255,0.15)",
-              letterSpacing: 1,
-              margin: 0,
-            }}>
-              Agentic World
-            </h2>
-            <p style={{
-              fontSize: 14,
-              color: "rgba(240,240,245,0.35)",
-              marginTop: 8,
-            }}>
-              by BLDR
-            </p>
-          </div>
-          <div style={{
-            position: "absolute",
-            bottom: 40,
-            zIndex: 10,
-            opacity: 0.6,
-          }}>
-            <Image src="/logo.png" alt="BLDR" width={48} height={48} />
-          </div>
         </div>
       </div>
 
