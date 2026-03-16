@@ -404,12 +404,18 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       {/* Logout + Collapse */}
       <div style={{ padding: "8px", paddingBottom: "16px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
         <button
-          onClick={() => {
-            const form = document.createElement("form");
-            form.method = "POST";
-            form.action = "/api/auth/logout";
-            document.body.appendChild(form);
-            form.submit();
+          onClick={async () => {
+            // Clear Supabase session client-side
+            const supabase = createClient();
+            await supabase.auth.signOut();
+            // Clear all sb- cookies manually
+            document.cookie.split(";").forEach((c) => {
+              const name = c.trim().split("=")[0];
+              if (name.startsWith("sb-")) {
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+              }
+            });
+            window.location.replace("/login");
           }}
           style={{
             display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 10,

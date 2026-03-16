@@ -40,7 +40,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
     clearCollapseTimer();
     collapseTimerRef.current = setTimeout(() => {
       setSidebarCollapsed(true);
-    }, 4000);
+    }, 2000);
   }, [clearCollapseTimer]);
 
   return (
