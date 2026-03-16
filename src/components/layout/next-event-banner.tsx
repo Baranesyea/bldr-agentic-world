@@ -87,27 +87,27 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
     setDismissed(true);
   };
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleMouseMove = (e: React.MouseEvent) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    setMenuPos({ x: clickX });
-    setShowMenu(!showMenu);
-    // Clear any pending hide
-    if (hideTimer.current) clearTimeout(hideTimer.current);
+    const mouseX = e.clientX - rect.left;
+    setMenuPos({ x: mouseX });
   };
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = (e: React.MouseEvent) => {
     setHovered(true);
     if (hideTimer.current) clearTimeout(hideTimer.current);
+    // Open menu on hover
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    setMenuPos({ x: mouseX });
+    setShowMenu(true);
   };
 
   const handleMouseLeave = () => {
     setHovered(false);
-    // Keep menu open for 1.5s after mouse leaves
-    if (showMenu) {
-      hideTimer.current = setTimeout(() => setShowMenu(false), 1500);
-    }
+    hideTimer.current = setTimeout(() => setShowMenu(false), 1500);
   };
 
   const handleDownloadICS = (e: React.MouseEvent) => {
@@ -135,6 +135,13 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
 
   return (
     <>
+      <style>{`
+        @keyframes tooltipPop {
+          0% { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.85); }
+          60% { opacity: 1; transform: translateX(-50%) translateY(-2px) scale(1.03); }
+          100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
+      `}</style>
       <svg style={{ position: "absolute", width: 0, height: 0 }}>
         <filter id="glass-distortion-banner" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
           <feTurbulence type="fractalNoise" baseFrequency="0.001 0.005" numOctaves="1" seed="17" result="turbulence" />
@@ -149,7 +156,7 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
 
       <div
         ref={containerRef}
-        onClick={handleClick}
+        onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         style={{
@@ -253,11 +260,13 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
               position: "absolute",
               bottom: "calc(100% + 10px)",
               left: typeof menuLeft === "number" ? menuLeft : menuLeft,
-              transform: menuTransform,
+              transform: "translateX(-50%)",
               overflow: "hidden",
               borderRadius: 12,
               boxShadow: "0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.12), inset 0 1px 0 rgba(255,255,255,0.25)",
               minWidth: 200,
+              animation: "tooltipPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+              transition: "left 0.15s ease-out",
             }}
           >
             <div style={{
