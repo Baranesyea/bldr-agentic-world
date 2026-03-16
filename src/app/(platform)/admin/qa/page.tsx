@@ -104,6 +104,7 @@ export default function AdminQAPage() {
       mediaUrls: [],
       createdAt: new Date().toISOString(),
       isAdmin: true,
+      replies: [],
     });
     setAnswerTexts((prev) => ({ ...prev, [questionId]: "" }));
     reload();

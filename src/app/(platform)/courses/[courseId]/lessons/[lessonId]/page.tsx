@@ -711,18 +711,9 @@ export default function LessonViewPage() {
             )}
           </div>
 
-          {/* Discussion / Q&A */}
-          {course && currentLesson && (
-            <LessonDiscussion
-              courseId={courseId}
-              lessonId={currentLesson.id}
-              lessonTitle={currentLesson.title}
-              courseName={course.title}
-            />
-          )}
         </div>
 
-        {/* ── LEFT SIDEBAR: Notes ── */}
+        {/* ── LEFT SIDEBAR: Notes + Discussion ── */}
         <div style={{
           width: "300px",
           minWidth: "300px",
@@ -856,6 +847,18 @@ export default function LessonViewPage() {
               </div>
             ))}
           </div>
+
+          {/* Discussion / Q&A */}
+          {course && currentLesson && (
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <LessonDiscussion
+                courseId={courseId}
+                lessonId={currentLesson.id}
+                lessonTitle={currentLesson.title}
+                courseName={course.title}
+              />
+            </div>
+          )}
         </div>
       </div>
 

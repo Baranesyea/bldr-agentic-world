@@ -7,6 +7,7 @@ export interface ForumAnswer {
   mediaUrls: string[];
   createdAt: string;
   isAdmin: boolean;
+  replies: ForumAnswer[];
 }
 
 export interface ForumQuestion {
@@ -55,11 +56,27 @@ export function addQuestion(q: ForumQuestion): void {
   saveQuestions(all);
 }
 
-export function addAnswer(questionId: string, answer: ForumAnswer): void {
+function findAndAddReply(answers: ForumAnswer[], parentId: string, reply: ForumAnswer): boolean {
+  for (const a of answers) {
+    if (a.id === parentId) {
+      if (!a.replies) a.replies = [];
+      a.replies.push(reply);
+      return true;
+    }
+    if (a.replies && findAndAddReply(a.replies, parentId, reply)) return true;
+  }
+  return false;
+}
+
+export function addAnswer(questionId: string, answer: ForumAnswer, parentAnswerId?: string): void {
   const all = loadQuestions();
   const q = all.find(x => x.id === questionId);
   if (q) {
-    q.answers.push(answer);
+    if (parentAnswerId) {
+      findAndAddReply(q.answers, parentAnswerId, answer);
+    } else {
+      q.answers.push(answer);
+    }
     q.status = "answered";
     saveQuestions(all);
   }
