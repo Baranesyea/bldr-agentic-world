@@ -29,6 +29,7 @@ import {
   BeakerIcon,
   NewsIcon,
   CloseIcon,
+  TourIcon,
 } from "@/components/ui/icons";
 import { Sparkles, BookOpen, Rocket, Layers, Calendar } from "lucide-react";
 import { MorphingCardStack, type CardData } from "@/components/ui/morphing-card-stack";
@@ -44,6 +45,7 @@ const mainNav = [
   { label: "תכנים נוספים", href: "/social", icon: SocialIcon },
   { label: "שאלות", href: "/qa", icon: QuestionIcon },
   { label: "פרופיל", href: "/profile", icon: ProfileIcon },
+  { label: "סיור", href: "#tour", icon: TourIcon },
 ];
 
 const adminNav = [
@@ -149,9 +151,35 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
 
   const isActive = (href: string) => pathname === href || pathname?.startsWith(href + "/");
 
+  const handleTourClick = () => {
+    localStorage.setItem("bldr_onboarding_trigger", "true");
+  };
+
   const NavLink = ({ item }: { item: { label: string; href: string; icon: React.ComponentType<{ size?: number; color?: string }> } }) => {
     const active = isActive(item.href);
     const Icon = item.icon;
+
+    if (item.href === "#tour") {
+      return (
+        <button onClick={handleTourClick} style={{
+          display: "flex", alignItems: "center", gap: "12px",
+          padding: collapsed ? "10px" : "10px 12px", borderRadius: "12px",
+          fontSize: "14px", width: "100%",
+          justifyContent: collapsed ? "center" : "flex-start",
+          fontWeight: 400,
+          color: "rgba(240,240,245,0.6)",
+          background: "transparent",
+          border: "1px solid transparent",
+          cursor: "pointer",
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+        }}>
+          <span style={{ flexShrink: 0, display: "flex", alignItems: "center" }}><Icon size={18} /></span>
+          {!collapsed && <span>{item.label}</span>}
+        </button>
+      );
+    }
+
     return (
       <Link href={item.href} style={{
         display: "flex", alignItems: "center", gap: "12px",

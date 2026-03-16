@@ -8,6 +8,17 @@ interface IconProps {
 
 const defaultProps = { size: 18, color: "currentColor" };
 
+export function TourIcon({ size = 18, color = "currentColor", ...rest }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...rest}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+      <path d="M12 2c2.5 4 2.5 16 0 20" />
+    </svg>
+  );
+}
+
 export function DashboardIcon({ size = 18, color = "currentColor", ...rest }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...rest}>
