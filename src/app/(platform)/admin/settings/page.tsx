@@ -617,8 +617,8 @@ export default function SettingsPage() {
       </div>
 
       {/* WhatsApp CTA */}
-      <div style={SECTION_STYLE}>
-        <h2 style={SECTION_TITLE_STYLE}>WhatsApp CTA</h2>
+      <div style={CARD_STYLE}>
+        <h2 style={HEADING_STYLE}>WhatsApp CTA</h2>
         <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.4)", marginBottom: "16px" }}>
           כפתור הצטרפות לוואטסאפ שמוצג למשתמשים חדשים
         </p>
