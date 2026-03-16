@@ -110,7 +110,7 @@ export default function NotebookPage() {
       {/* Notes grouped by course */}
       {filtered.length > 0 && Object.entries(grouped).map(([courseName, courseNotes]) => (
         <div key={courseName} style={{ marginBottom: "32px" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "rgba(240,240,245,0.5)", marginBottom: "12px", fontFamily: "var(--font-heading-en)" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "rgba(240,240,245,0.5)", marginBottom: "12px" }}>
             {courseName}
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

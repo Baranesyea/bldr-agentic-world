@@ -338,7 +338,6 @@ export default function LessonViewPage() {
                 fontWeight: 700,
                 color: "#f0f0f5",
                 marginBottom: "4px",
-                fontFamily: "var(--font-heading-en)",
                 cursor: "pointer",
               }}>
                 {course.title}
@@ -801,7 +800,7 @@ export default function LessonViewPage() {
           </div>
 
           {/* Notes list */}
-          <div style={{ flex: 1, padding: "12px 16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: "8px" }}>
             {savedNotes.length === 0 && (
               <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.25)", textAlign: "center", marginTop: "24px" }}>
                 אין הערות עדיין לשיעור הזה
@@ -848,9 +847,9 @@ export default function LessonViewPage() {
             ))}
           </div>
 
-          {/* Discussion / Q&A */}
+          {/* Discussion / Q&A — below notes */}
           {course && currentLesson && (
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: "8px" }}>
               <LessonDiscussion
                 courseId={courseId}
                 lessonId={currentLesson.id}
@@ -859,6 +858,7 @@ export default function LessonViewPage() {
               />
             </div>
           )}
+
         </div>
       </div>
 

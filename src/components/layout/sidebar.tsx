@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   DashboardIcon,
   CoursesIcon,
@@ -68,10 +68,12 @@ interface Notification {
   time: string;
   read: boolean;
   type: string;
+  link?: string;
 }
 
 export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {}) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
 
   // Check user role
@@ -369,7 +371,22 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
                 notifications.slice(0, 10).map((n) => (
                   <div
                     key={n.id}
-                    onClick={() => markAsRead(n.id)}
+                    onClick={() => {
+                      markAsRead(n.id);
+                      // Navigate based on notification type
+                      const link = n.link || (
+                        n.type === "qa" ? "/admin/qa" :
+                        n.type === "feedback" ? "/admin/feedback" :
+                        n.type === "case_study" ? "/admin/case-studies" :
+                        n.type === "user" ? "/admin/users" :
+                        n.type === "course" ? "/admin/courses" :
+                        null
+                      );
+                      if (link) {
+                        setShowNotifications(false);
+                        router.push(link);
+                      }
+                    }}
                     style={{
                       padding: "12px 16px", cursor: "pointer",
                       borderBottom: "1px solid rgba(255,255,255,0.03)",

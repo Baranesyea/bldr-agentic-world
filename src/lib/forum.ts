@@ -134,6 +134,27 @@ export function transferToKnowledgeBase(questionId: string, editedQuestion?: str
   localStorage.setItem(KB_KEY, JSON.stringify(entries));
 }
 
+export function deleteQuestion(questionId: string): void {
+  const all = loadQuestions();
+  const filtered = all.filter(q => q.id !== questionId);
+  saveQuestions(filtered);
+}
+
+function removeAnswerRecursive(answers: ForumAnswer[], answerId: string): ForumAnswer[] {
+  return answers
+    .filter(a => a.id !== answerId)
+    .map(a => ({ ...a, replies: a.replies ? removeAnswerRecursive(a.replies, answerId) : [] }));
+}
+
+export function deleteAnswer(questionId: string, answerId: string): void {
+  const all = loadQuestions();
+  const q = all.find(x => x.id === questionId);
+  if (q) {
+    q.answers = removeAnswerRecursive(q.answers, answerId);
+    saveQuestions(all);
+  }
+}
+
 export function addForumNotification(title: string, lessonTitle: string): void {
   try {
     const notifs = JSON.parse(localStorage.getItem(NOTIF_KEY) || "[]");
@@ -143,6 +164,7 @@ export function addForumNotification(title: string, lessonTitle: string): void {
       time: "עכשיו",
       read: false,
       type: "qa",
+      link: "/admin/qa",
     });
     localStorage.setItem(NOTIF_KEY, JSON.stringify(notifs.slice(0, 50)));
   } catch {}

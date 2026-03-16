@@ -3,10 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   loadQuestions,
+  saveQuestions,
   addQuestion,
   addAnswer,
   searchKnowledgeBase,
   addForumNotification,
+  deleteQuestion,
+  deleteAnswer,
+  transferToKnowledgeBase,
   type ForumQuestion,
   type ForumAnswer,
 } from "@/lib/forum";
@@ -96,17 +100,30 @@ function countAllAnswers(answers: ForumAnswer[]): number {
   return count;
 }
 
+function collectAllAnswerTexts(answers: ForumAnswer[]): string[] {
+  const texts: string[] = [];
+  for (const a of answers) {
+    texts.push(a.content);
+    if (a.replies && a.replies.length > 0) texts.push(...collectAllAnswerTexts(a.replies));
+  }
+  return texts;
+}
+
 /* ── Nested Answer Component ── */
 function AnswerItem({
   answer,
   depth,
   questionId,
+  isAdmin,
   onReply,
+  onDeleteAnswer,
 }: {
   answer: ForumAnswer;
   depth: number;
   questionId: string;
+  isAdmin: boolean;
   onReply: (questionId: string, parentAnswerId: string, text: string) => void;
+  onDeleteAnswer: (questionId: string, answerId: string) => void;
 }) {
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
@@ -141,6 +158,25 @@ function AnswerItem({
             </span>
           )}
           <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 10 }}>{timeAgo(answer.createdAt)}</span>
+          {isAdmin && (
+            <button
+              onClick={() => onDeleteAnswer(questionId, answer.id)}
+              style={{
+                marginRight: "auto",
+                background: "rgba(255,60,60,0.1)",
+                border: "none",
+                color: "rgba(255,80,80,0.7)",
+                fontSize: 12,
+                cursor: "pointer",
+                borderRadius: 4,
+                padding: "1px 5px",
+                lineHeight: 1,
+              }}
+              title="מחק תשובה"
+            >
+              ×
+            </button>
+          )}
         </div>
         <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
           {answer.content}
@@ -213,7 +249,15 @@ function AnswerItem({
       {/* Nested replies */}
       {answer.replies &&
         answer.replies.map((r) => (
-          <AnswerItem key={r.id} answer={r} depth={depth + 1} questionId={questionId} onReply={onReply} />
+          <AnswerItem
+            key={r.id}
+            answer={r}
+            depth={depth + 1}
+            questionId={questionId}
+            isAdmin={isAdmin}
+            onReply={onReply}
+            onDeleteAnswer={onDeleteAnswer}
+          />
         ))}
     </div>
   );
@@ -231,6 +275,10 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
   const [answerTexts, setAnswerTexts] = useState<Record<string, string>>({});
   const [phase, setPhase] = useState<"idle" | "searching" | "found" | "success">("idle");
   const [kbAnswer, setKbAnswer] = useState("");
+  const [kbTransferId, setKbTransferId] = useState<string | null>(null);
+  const [kbEditQuestion, setKbEditQuestion] = useState("");
+  const [kbEditAnswer, setKbEditAnswer] = useState("");
+  const [kbSuccess, setKbSuccess] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
     const all = loadQuestions().filter((q) => q.courseId === courseId && q.lessonId === lessonId);
@@ -242,6 +290,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
   }, [refresh]);
 
   const user = getUserProfile();
+  const isAdmin = user.role === "admin" || user.role === "Architect";
 
   const resetForm = () => {
     setTitle("");
@@ -303,7 +352,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
       content: text,
       mediaUrls: [],
       createdAt: new Date().toISOString(),
-      isAdmin: user.role === "admin",
+      isAdmin: user.role === "admin" || user.role === "Architect",
       replies: [],
     };
     addAnswer(questionId, answer);
@@ -320,11 +369,36 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
       content: text,
       mediaUrls: [],
       createdAt: new Date().toISOString(),
-      isAdmin: user.role === "admin",
+      isAdmin: user.role === "admin" || user.role === "Architect",
       replies: [],
     };
     addAnswer(questionId, reply, parentAnswerId);
     refresh();
+  };
+
+  const handleDeleteQuestion = (questionId: string) => {
+    deleteQuestion(questionId);
+    if (expandedId === questionId) setExpandedId(null);
+    refresh();
+  };
+
+  const handleDeleteAnswer = (questionId: string, answerId: string) => {
+    deleteAnswer(questionId, answerId);
+    refresh();
+  };
+
+  const handleOpenKbTransfer = (q: ForumQuestion) => {
+    setKbTransferId(q.id);
+    setKbEditQuestion(q.title + "\n" + q.content);
+    setKbEditAnswer(collectAllAnswerTexts(q.answers).join("\n\n"));
+  };
+
+  const handleSubmitKbTransfer = () => {
+    if (!kbTransferId) return;
+    transferToKnowledgeBase(kbTransferId, kbEditQuestion, kbEditAnswer);
+    setKbSuccess(kbTransferId);
+    setKbTransferId(null);
+    setTimeout(() => setKbSuccess(null), 2500);
   };
 
   const inputStyle: React.CSSProperties = {
@@ -381,7 +455,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
   );
 
   return (
-    <div style={{ direction: "rtl" }}>
+    <div style={{ direction: "rtl", paddingBottom: 80 }}>
       <style>{`
         @keyframes searchPulse {
           0%, 100% { box-shadow: 0 0 20px rgba(0,0,255,0.3); }
@@ -419,7 +493,6 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
         {phase === "searching" && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 0", gap: 12 }}>
             <div style={{ position: "relative", width: 48, height: 48 }}>
-              {/* Pulsing orb */}
               <div
                 style={{
                   position: "absolute",
@@ -429,7 +502,6 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
                   animation: "searchPulse 1.5s ease-in-out infinite",
                 }}
               />
-              {/* Rotating dashed border */}
               <div
                 style={{
                   position: "absolute",
@@ -628,9 +700,105 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
                       {q.content}
                     </div>
 
+                    {/* Admin controls for question */}
+                    {isAdmin && (
+                      <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
+                        <button
+                          onClick={() => handleDeleteQuestion(q.id)}
+                          style={{
+                            padding: "3px 8px",
+                            background: "rgba(255,60,60,0.1)",
+                            border: "1px solid rgba(255,60,60,0.2)",
+                            borderRadius: 6,
+                            color: "rgba(255,80,80,0.8)",
+                            fontSize: 10,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                          }}
+                        >
+                          מחק שאלה
+                        </button>
+                        <button
+                          onClick={() => handleOpenKbTransfer(q)}
+                          style={{
+                            padding: "3px 8px",
+                            background: "rgba(0,100,255,0.1)",
+                            border: "1px solid rgba(0,100,255,0.2)",
+                            borderRadius: 6,
+                            color: "rgba(80,140,255,0.8)",
+                            fontSize: 10,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                          }}
+                        >
+                          העבר לבסיס ידע
+                        </button>
+                      </div>
+                    )}
+
+                    {/* KB Transfer inline form */}
+                    {kbTransferId === q.id && (
+                      <div
+                        style={{
+                          background: "rgba(0,100,255,0.05)",
+                          border: "1px solid rgba(0,100,255,0.15)",
+                          borderRadius: 8,
+                          padding: 10,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <label style={{ fontSize: 10, color: "rgba(240,240,245,0.5)", marginBottom: 4, display: "block" }}>שאלה</label>
+                        <textarea
+                          value={kbEditQuestion}
+                          onChange={(e) => setKbEditQuestion(e.target.value)}
+                          rows={2}
+                          style={{ ...inputStyle, resize: "vertical", minHeight: 40, marginBottom: 6 }}
+                        />
+                        <label style={{ fontSize: 10, color: "rgba(240,240,245,0.5)", marginBottom: 4, display: "block" }}>תשובה</label>
+                        <textarea
+                          value={kbEditAnswer}
+                          onChange={(e) => setKbEditAnswer(e.target.value)}
+                          rows={3}
+                          style={{ ...inputStyle, resize: "vertical", minHeight: 50, marginBottom: 6 }}
+                        />
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button onClick={handleSubmitKbTransfer} style={{ ...btnPrimary, fontSize: 10, padding: "5px 10px" }}>
+                            שלח לבסיס הידע
+                          </button>
+                          <button onClick={() => setKbTransferId(null)} style={{ ...btnSecondary, fontSize: 10, padding: "5px 10px" }}>
+                            ביטול
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* KB Transfer success */}
+                    {kbSuccess === q.id && (
+                      <div
+                        style={{
+                          background: "rgba(0,200,83,0.06)",
+                          border: "1px solid rgba(0,200,83,0.15)",
+                          borderRadius: 8,
+                          textAlign: "center",
+                          padding: 8,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <span style={{ color: "#00C853", fontWeight: 700, fontSize: 11 }}>הועבר לבסיס הידע בהצלחה!</span>
+                      </div>
+                    )}
+
                     {/* Answers */}
                     {q.answers.map((a) => (
-                      <AnswerItem key={a.id} answer={a} depth={0} questionId={q.id} onReply={handleNestedReply} />
+                      <AnswerItem
+                        key={a.id}
+                        answer={a}
+                        depth={0}
+                        questionId={q.id}
+                        isAdmin={isAdmin}
+                        onReply={handleNestedReply}
+                        onDeleteAnswer={handleDeleteAnswer}
+                      />
                     ))}
 
                     {/* Direct answer input */}
