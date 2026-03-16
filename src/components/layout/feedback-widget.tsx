@@ -98,7 +98,7 @@ export function FeedbackWidget() {
         onMouseLeave={() => setHover(false)}
         style={{
           position: "fixed",
-          bottom: 80,
+          bottom: 24,
           left: 24,
           zIndex: 50,
           width: 48,
@@ -139,7 +139,7 @@ export function FeedbackWidget() {
       <div
         style={{
           position: "fixed",
-          bottom: 80,
+          bottom: 24,
           left: 24,
           zIndex: 52,
           width: 380,

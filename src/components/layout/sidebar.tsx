@@ -173,21 +173,38 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
           } catch {}
         }
       };
+      const isWA = item.href === "#whatsapp";
       return (
-        <button onClick={handleClick} style={{
-          display: "flex", alignItems: "center", gap: "12px",
-          padding: collapsed ? "10px" : "10px 12px", borderRadius: "12px",
-          fontSize: "14px", width: "100%",
-          justifyContent: collapsed ? "center" : "flex-start",
-          fontWeight: 400,
-          color: item.href === "#whatsapp" ? "#25D366" : "rgba(240,240,245,0.6)",
-          background: "transparent",
-          border: "1px solid transparent",
-          cursor: "pointer",
-          overflow: "hidden",
-          whiteSpace: "nowrap",
-        }}>
-          <span style={{ flexShrink: 0, display: "flex", alignItems: "center" }}><Icon size={18} /></span>
+        <button
+          onClick={handleClick}
+          onMouseEnter={(e) => {
+            if (isWA) {
+              e.currentTarget.style.color = "#25D366";
+              e.currentTarget.style.textShadow = "0 0 12px rgba(37,211,102,0.4)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (isWA) {
+              e.currentTarget.style.color = "rgba(240,240,245,0.6)";
+              e.currentTarget.style.textShadow = "none";
+            }
+          }}
+          style={{
+            display: "flex", alignItems: "center", gap: "12px",
+            padding: collapsed ? "10px" : "10px 12px", borderRadius: "12px",
+            fontSize: "14px", width: "100%",
+            justifyContent: collapsed ? "center" : "flex-start",
+            fontWeight: 400,
+            color: "rgba(240,240,245,0.6)",
+            background: "transparent",
+            border: "1px solid transparent",
+            cursor: "pointer",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            transition: "color 0.4s ease, text-shadow 0.4s ease",
+          }}
+        >
+          <span style={{ flexShrink: 0, display: "flex", alignItems: "center", transition: "filter 0.4s ease" }}><Icon size={18} /></span>
           {!collapsed && <span>{item.label}</span>}
         </button>
       );
