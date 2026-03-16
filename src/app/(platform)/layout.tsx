@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { NextEventBanner } from "@/components/layout/next-event-banner";
 import { TrialBanner } from "@/components/layout/trial-banner";
@@ -16,6 +17,8 @@ const mockEvent = {
 };
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith("/admin");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Start expanded
   const collapseTimerRef = useRef<NodeJS.Timeout | null>(null);
   const sidebarWidth = sidebarCollapsed ? 68 : 240;
@@ -60,7 +63,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       </main>
       <FeedbackWidget />
       <WhatsAppCTA />
-      <NextEventBanner event={mockEvent} />
+      {!isAdmin && <NextEventBanner event={mockEvent} />}
       <OnboardingTour />
     </div>
   );

@@ -560,13 +560,24 @@ export function OnboardingTour() {
           <div style={{
             animation: "onboardCheckmark 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
             textAlign: "center",
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 20,
           }}>
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00C853" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-            <p style={{ color: "#f0f0f5", fontSize: "20px", fontWeight: 700, marginTop: "16px" }}>
-              !מעולה, סיימת את הסיור
+            <div style={{
+              width: 100, height: 100, borderRadius: "50%",
+              background: "linear-gradient(135deg, rgba(0,200,83,0.2) 0%, rgba(0,200,83,0.05) 100%)",
+              border: "2px solid rgba(0,200,83,0.3)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 0 40px rgba(0,200,83,0.15)",
+            }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00C853" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <p style={{ color: "#f0f0f5", fontSize: "24px", fontWeight: 700, margin: 0 }}>
+              מעולה, סיימת את הסיור!
+            </p>
+            <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 14, margin: 0 }}>
+              תמיד אפשר להפעיל שוב מהתפריט
             </p>
           </div>
         </div>,
