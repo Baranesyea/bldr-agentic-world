@@ -77,13 +77,13 @@ export default function NotebookPage() {
           placeholder="חפש בהערות..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={{ flex: 1, minWidth: "200px", background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none" }}
+          style={{ flex: 1, minWidth: "200px", background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none" }}
         />
         {courses.length > 1 && (
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none", appearance: "none" as const, minWidth: "180px" }}
+            style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none", appearance: "none" as const, minWidth: "180px" }}
           >
             <option value="all">כל הקורסים</option>
             {courses.map((c) => (
@@ -115,7 +115,7 @@ export default function NotebookPage() {
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {courseNotes.map((note) => (
-              <div key={note.id} style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px 20px" }}>
+              <div key={note.id} style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "16px 20px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
                   <div>
                     <Link

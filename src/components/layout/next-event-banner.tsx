@@ -230,7 +230,7 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
           <span style={{
             position: "relative", zIndex: 10,
             display: "flex", alignItems: "center", justifyContent: "center",
-            width: 34, height: 34, borderRadius: 10,
+            width: 34, height: 34, borderRadius: 4,
             background: "rgba(255,255,255,0.15)",
             backdropFilter: "blur(8px)",
             color: "rgba(255,255,255,0.9)",
@@ -262,7 +262,7 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
               left: typeof menuLeft === "number" ? menuLeft : menuLeft,
               transform: "translateX(-50%)",
               overflow: "hidden",
-              borderRadius: 12,
+              borderRadius: 4,
               boxShadow: "0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.12), inset 0 1px 0 rgba(255,255,255,0.25)",
               minWidth: 200,
               animation: "tooltipPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
@@ -323,7 +323,7 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
                     width: "100%", padding: "10px 14px",
                     background: "transparent", border: "none",
                     color: "rgba(255,255,255,0.9)", fontSize: 13, fontWeight: 500,
-                    cursor: "pointer", borderRadius: 8,
+                    cursor: "pointer", borderRadius: 4,
                     textAlign: "right", direction: "rtl",
                     transition: "background 0.2s",
                   }}

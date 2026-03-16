@@ -51,7 +51,7 @@ function toEmbedUrl(url: string): string {
 const cardS: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: 16,
+  borderRadius: 4,
   overflow: "hidden",
   cursor: "pointer",
   transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
@@ -71,7 +71,7 @@ const tagS: React.CSSProperties = {
 const inputS: React.CSSProperties = {
   width: "100%",
   padding: "12px 16px",
-  borderRadius: 12,
+  borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.04)",
   color: "#fff",
@@ -83,7 +83,7 @@ const inputS: React.CSSProperties = {
 
 const btnP: React.CSSProperties = {
   padding: "12px 28px",
-  borderRadius: 12,
+  borderRadius: 4,
   border: "none",
   background: "#0000FF",
   color: "#fff",
@@ -153,7 +153,7 @@ export default function CaseStudiesPage() {
           }}
           style={{
             background: "#0000FF", color: "white", padding: "10px 24px",
-            borderRadius: "12px", fontWeight: 600, fontSize: "14px",
+            borderRadius: "4px", fontWeight: 600, fontSize: "14px",
             border: "none", cursor: "pointer",
             boxShadow: "0 0 20px rgba(0,0,255,0.25)",
             display: "flex", alignItems: "center", gap: "8px",
@@ -170,7 +170,7 @@ export default function CaseStudiesPage() {
         <div style={{
           background: "rgba(255,255,255,0.03)",
           border: "1px solid rgba(255,255,255,0.06)",
-          borderRadius: 16,
+          borderRadius: 4,
           padding: "80px 32px",
           textAlign: "center",
           marginBottom: 60,
@@ -224,7 +224,7 @@ export default function CaseStudiesPage() {
       <div id="request-section" style={{
         background: "rgba(255,255,255,0.03)",
         border: "1px solid rgba(255,255,255,0.06)",
-        borderRadius: 16,
+        borderRadius: 4,
         padding: 40,
         maxWidth: 600,
         margin: "0 auto",
@@ -239,7 +239,7 @@ export default function CaseStudiesPage() {
         {submitted ? (
           <div style={{
             padding: "20px",
-            borderRadius: 12,
+            borderRadius: 4,
             background: "rgba(0,200,100,0.08)",
             border: "1px solid rgba(0,200,100,0.2)",
             textAlign: "center",

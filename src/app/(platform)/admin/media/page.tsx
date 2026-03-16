@@ -41,7 +41,7 @@ function MediaThumbnail({ item, onDelete }: { item: MediaItem; onDelete: (id: st
     <div style={{
       background: "rgba(255,255,255,0.03)",
       border: "1px solid rgba(255,255,255,0.06)",
-      borderRadius: 12,
+      borderRadius: 4,
       overflow: "hidden",
       transition: "border-color 0.2s",
     }}
@@ -68,7 +68,7 @@ function MediaThumbnail({ item, onDelete }: { item: MediaItem; onDelete: (id: st
           style={{
             background: "rgba(255,60,60,0.1)",
             border: "1px solid rgba(255,60,60,0.2)",
-            borderRadius: 8,
+            borderRadius: 4,
             color: "#ff4444",
             fontSize: 12,
             fontWeight: 600,
@@ -173,7 +173,7 @@ export default function MediaLibraryPage() {
               background: "#0000FF",
               color: "#fff",
               border: "none",
-              borderRadius: 12,
+              borderRadius: 4,
               padding: "10px 24px",
               fontSize: 14,
               fontWeight: 600,

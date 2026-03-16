@@ -85,7 +85,7 @@ function StatusBadge({ status }: { status: ForumQuestion["status"] }) {
   };
   const s = map[status] || map.pending;
   return (
-    <span style={{ padding: "1px 7px", borderRadius: 12, fontSize: 10, fontWeight: 700, background: s.bg, color: s.color }}>
+    <span style={{ padding: "1px 7px", borderRadius: 4, fontSize: 10, fontWeight: 700, background: s.bg, color: s.color }}>
       {s.label}
     </span>
   );
@@ -135,7 +135,7 @@ function AnswerItem({
         style={{
           background: "rgba(255,255,255,0.02)",
           border: "1px solid rgba(255,255,255,0.04)",
-          borderRadius: 8,
+          borderRadius: 4,
           padding: "8px 10px",
           marginTop: 6,
         }}
@@ -149,7 +149,7 @@ function AnswerItem({
                 background: "rgba(0,0,255,0.15)",
                 color: "#3333FF",
                 padding: "0px 6px",
-                borderRadius: 8,
+                borderRadius: 4,
                 fontSize: 9,
                 fontWeight: 700,
               }}
@@ -406,7 +406,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
     padding: "8px 10px",
     background: "rgba(255,255,255,0.05)",
     border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: 8,
+    borderRadius: 4,
     color: "#f0f0f5",
     fontSize: 12,
     outline: "none",
@@ -419,7 +419,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
     background: "#0000FF",
     color: "#fff",
     border: "none",
-    borderRadius: 8,
+    borderRadius: 4,
     fontWeight: 700,
     fontSize: 12,
     cursor: "pointer",
@@ -430,7 +430,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
     background: "transparent",
     color: "rgba(240,240,245,0.6)",
     border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: 8,
+    borderRadius: 4,
     fontWeight: 600,
     fontSize: 12,
     cursor: "pointer",
@@ -478,7 +478,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
               background: "rgba(0,0,255,0.15)",
               color: "#3333FF",
               padding: "1px 7px",
-              borderRadius: 12,
+              borderRadius: 4,
               fontSize: 10,
               fontWeight: 700,
             }}
@@ -522,7 +522,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
             style={{
               background: "rgba(0,0,255,0.06)",
               border: "1px solid rgba(0,0,255,0.15)",
-              borderRadius: 10,
+              borderRadius: 4,
               padding: 12,
               marginBottom: 12,
             }}
@@ -548,7 +548,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
             style={{
               background: "rgba(0,200,83,0.06)",
               border: "1px solid rgba(0,200,83,0.15)",
-              borderRadius: 10,
+              borderRadius: 4,
               textAlign: "center",
               padding: 14,
               marginBottom: 12,
@@ -568,7 +568,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
               background: "rgba(0,0,255,0.1)",
               color: "#3333FF",
               border: "1px solid rgba(0,0,255,0.2)",
-              borderRadius: 8,
+              borderRadius: 4,
               fontWeight: 700,
               fontSize: 12,
               cursor: "pointer",
@@ -585,7 +585,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
             style={{
               background: "rgba(255,255,255,0.03)",
               border: "1px solid rgba(255,255,255,0.06)",
-              borderRadius: 10,
+              borderRadius: 4,
               padding: 12,
               marginBottom: 12,
             }}
@@ -671,7 +671,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
                 style={{
                   background: "rgba(255,255,255,0.03)",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 10,
+                  borderRadius: 4,
                   padding: 10,
                 }}
               >
@@ -742,7 +742,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
                         style={{
                           background: "rgba(0,100,255,0.05)",
                           border: "1px solid rgba(0,100,255,0.15)",
-                          borderRadius: 8,
+                          borderRadius: 4,
                           padding: 10,
                           marginBottom: 8,
                         }}
@@ -778,7 +778,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
                         style={{
                           background: "rgba(0,200,83,0.06)",
                           border: "1px solid rgba(0,200,83,0.15)",
-                          borderRadius: 8,
+                          borderRadius: 4,
                           textAlign: "center",
                           padding: 8,
                           marginBottom: 8,

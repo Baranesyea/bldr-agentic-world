@@ -58,14 +58,14 @@ interface MergedUser {
 const CARD: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: "16px",
+  borderRadius: "4px",
   padding: "24px",
 };
 
 const INPUT: React.CSSProperties = {
   background: "rgba(255,255,255,0.05)",
   border: "1px solid rgba(255,255,255,0.08)",
-  borderRadius: "10px",
+  borderRadius: "4px",
   padding: "10px 14px",
   color: "#f0f0f5",
   fontSize: "14px",
@@ -78,7 +78,7 @@ const BTN: React.CSSProperties = {
   background: "linear-gradient(135deg, #1a1aff, #4444ff)",
   color: "#fff",
   border: "none",
-  borderRadius: "10px",
+  borderRadius: "4px",
   padding: "10px 22px",
   fontSize: "13px",
   fontWeight: 600,
@@ -390,7 +390,7 @@ export default function AdminUsersPage() {
               onClick={() => setFilterTab(tab.key)}
               style={{
                 padding: "8px 18px",
-                borderRadius: 10,
+                borderRadius: 4,
                 border: "1px solid",
                 borderColor: filterTab === tab.key ? "rgba(100,100,255,0.4)" : "rgba(255,255,255,0.08)",
                 background: filterTab === tab.key ? "rgba(100,100,255,0.15)" : "rgba(255,255,255,0.03)",
@@ -552,7 +552,7 @@ export default function AdminUsersPage() {
                               background: statusInfo.bg,
                               color: statusInfo.color,
                               padding: "4px 12px",
-                              borderRadius: 8,
+                              borderRadius: 4,
                               fontSize: 12,
                               fontWeight: 600,
                               whiteSpace: "nowrap",
@@ -648,7 +648,7 @@ export default function AdminUsersPage() {
                                     style={{
                                       background: "rgba(255,255,255,0.03)",
                                       border: "1px solid rgba(255,255,255,0.05)",
-                                      borderRadius: 10,
+                                      borderRadius: 4,
                                       padding: 14,
                                     }}
                                   >
@@ -680,7 +680,7 @@ export default function AdminUsersPage() {
                                           alignItems: "center",
                                           padding: "10px 14px",
                                           background: "rgba(255,255,255,0.02)",
-                                          borderRadius: 8,
+                                          borderRadius: 4,
                                           border: "1px solid rgba(255,255,255,0.04)",
                                         }}
                                       >
@@ -793,7 +793,7 @@ export default function AdminUsersPage() {
             style={{
               background: "#0a0a1a",
               border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 20,
+              borderRadius: 6,
               padding: 32,
               maxWidth: 440,
               width: "90%",

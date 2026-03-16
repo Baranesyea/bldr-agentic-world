@@ -26,7 +26,7 @@ const DEFAULT_PROFILE: UserProfile = {
 const INPUT_STYLE: React.CSSProperties = {
   background: "rgba(255,255,255,0.05)",
   border: "1px solid rgba(255,255,255,0.08)",
-  borderRadius: "10px",
+  borderRadius: "4px",
   padding: "10px 14px",
   color: "#f0f0f5",
   fontSize: "14px",
@@ -39,7 +39,7 @@ const BTN_PRIMARY: React.CSSProperties = {
   background: "#0000FF",
   color: "white",
   padding: "10px 24px",
-  borderRadius: "12px",
+  borderRadius: "4px",
   fontWeight: 600,
   fontSize: "14px",
   border: "none",
@@ -51,7 +51,7 @@ const BTN_SECONDARY: React.CSSProperties = {
   background: "rgba(255,255,255,0.06)",
   color: "#f0f0f5",
   padding: "10px 24px",
-  borderRadius: "12px",
+  borderRadius: "4px",
   fontWeight: 600,
   fontSize: "14px",
   border: "1px solid rgba(255,255,255,0.1)",
@@ -243,7 +243,7 @@ export default function ProfilePage() {
   return (
     <div style={{ padding: "32px", maxWidth: "800px", margin: "0 auto" }}>
       {/* Avatar & Name Section */}
-      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "32px", marginBottom: "24px" }}>
+      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "32px", marginBottom: "24px" }}>
         <div style={{ display: "flex", gap: "28px", alignItems: "flex-start", flexWrap: "wrap" }}>
           {/* Avatar */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
@@ -318,7 +318,7 @@ export default function ProfilePage() {
                 style={{
                   background: "rgba(255,255,255,0.06)",
                   border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "8px",
+                  borderRadius: "4px",
                   padding: "6px 12px",
                   color: "rgba(240,240,245,0.6)",
                   fontSize: "11px",
@@ -333,7 +333,7 @@ export default function ProfilePage() {
                   style={{
                     background: "rgba(0,0,255,0.1)",
                     border: "1px solid rgba(0,0,255,0.25)",
-                    borderRadius: "8px",
+                    borderRadius: "4px",
                     padding: "6px 12px",
                     color: "#3333FF",
                     fontSize: "11px",
@@ -357,7 +357,7 @@ export default function ProfilePage() {
                   style={{
                     flex: 1,
                     padding: "10px",
-                    borderRadius: "10px",
+                    borderRadius: "4px",
                     border: "1px solid rgba(0,0,255,0.25)",
                     background: "rgba(0,0,255,0.08)",
                     color: "#f0f0f5",
@@ -381,7 +381,7 @@ export default function ProfilePage() {
                   style={{
                     flex: 1,
                     padding: "10px",
-                    borderRadius: "10px",
+                    borderRadius: "4px",
                     border: "1px solid rgba(180,0,255,0.25)",
                     background: "rgba(180,0,255,0.08)",
                     color: "#f0f0f5",
@@ -490,7 +490,7 @@ export default function ProfilePage() {
               color: "#3333FF",
               background: "rgba(0,0,255,0.15)",
               padding: "2px 10px",
-              borderRadius: "8px",
+              borderRadius: "4px",
               display: "inline-block",
               fontFamily: "var(--font-heading-en)",
             }}>
@@ -505,7 +505,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Extra Profile Fields */}
-      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "24px", marginBottom: "24px" }}>
+      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "24px", marginBottom: "24px" }}>
         <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#f0f0f5", marginBottom: "16px" }}>פרטים נוספים</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           <div>
@@ -570,7 +570,7 @@ export default function ProfilePage() {
           { label: "רצף ימים", value: "7" },
           { label: "הערות", value: "12" },
         ].map((s) => (
-          <div key={s.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+          <div key={s.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "16px", textAlign: "center" }}>
             <div style={{ marginBottom: "4px", color: "rgba(240,240,245,0.6)", display: "flex", justifyContent: "center" }}>{statIcons[s.label]}</div>
             <div style={{ fontSize: "24px", fontWeight: 700, color: "#f0f0f5" }}>{s.value}</div>
             <div style={{ fontSize: "11px", color: "rgba(240,240,245,0.35)" }}>{s.label}</div>
@@ -579,17 +579,17 @@ export default function ProfilePage() {
       </div>
 
       {/* Badges */}
-      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "24px", marginBottom: "24px" }}>
+      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "24px", marginBottom: "24px" }}>
         <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#f0f0f5", marginBottom: "16px" }}>תגים</h2>
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
           {["Early Adopter", "Course Completer", "7-Day Streak", "Community Helper"].map((badge) => (
-            <span key={badge} style={{ background: "rgba(255,255,255,0.04)", color: "rgba(240,240,245,0.6)", padding: "8px 16px", borderRadius: "10px", fontSize: "13px", border: "1px solid rgba(255,255,255,0.06)", fontFamily: "var(--font-heading-en)" }}>{badge}</span>
+            <span key={badge} style={{ background: "rgba(255,255,255,0.04)", color: "rgba(240,240,245,0.6)", padding: "8px 16px", borderRadius: "4px", fontSize: "13px", border: "1px solid rgba(255,255,255,0.06)", fontFamily: "var(--font-heading-en)" }}>{badge}</span>
           ))}
         </div>
       </div>
 
       {/* Settings */}
-      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "24px" }}>
+      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "24px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
           <SettingsIcon size={18} color="rgba(240,240,245,0.6)" />
           <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#f0f0f5" }}>הגדרות</h2>
@@ -610,7 +610,7 @@ export default function ProfilePage() {
             style={{
               width: "44px",
               height: "24px",
-              borderRadius: "12px",
+              borderRadius: "4px",
               border: "none",
               cursor: "pointer",
               position: "relative",

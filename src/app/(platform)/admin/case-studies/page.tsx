@@ -42,7 +42,7 @@ const statusMap: Record<string, { bg: string; color: string; border: string; lab
 const inputS: React.CSSProperties = {
   width: "100%",
   padding: "12px 16px",
-  borderRadius: 12,
+  borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.04)",
   color: "#fff",
@@ -68,13 +68,13 @@ const tagPill: React.CSSProperties = {
 const cardS: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: 12,
+  borderRadius: 4,
   padding: 20,
 };
 
 const smallBtn: React.CSSProperties = {
   padding: "6px 14px",
-  borderRadius: 8,
+  borderRadius: 4,
   fontSize: 12,
   fontWeight: 500,
   cursor: "pointer",
@@ -247,7 +247,7 @@ export default function AdminCaseStudiesPage() {
             onClick={handleSave}
             style={{
               padding: "10px 24px",
-              borderRadius: 10,
+              borderRadius: 4,
               border: "none",
               background: "#0000FF",
               color: "#fff",
@@ -289,7 +289,7 @@ export default function AdminCaseStudiesPage() {
               onClick={() => { resetForm(); setShowForm(true); }}
               style={{
                 padding: "10px 22px",
-                borderRadius: 10,
+                borderRadius: 4,
                 border: "none",
                 background: "#0000FF",
                 color: "#fff",
@@ -431,7 +431,7 @@ export default function AdminCaseStudiesPage() {
                       onChange={(e) => updateStatus(req.id, e.target.value as CaseStudyRequest["status"])}
                       style={{
                         padding: "8px 12px",
-                        borderRadius: 8,
+                        borderRadius: 4,
                         border: "1px solid rgba(255,255,255,0.1)",
                         background: "rgba(255,255,255,0.04)",
                         color: "#fff",

@@ -219,7 +219,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1px", background: "rgba(255,255,255,0.06)", borderRadius: "12px", overflow: "hidden" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1px", background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden" }}>
         {cells.map((cell, i) => {
           const isToday = cell.dateStr === today;
           const dayEvents = eventsForDate(cell.dateStr);
@@ -330,7 +330,7 @@ function DetailPanel({ event, onClose, onEdit, onDelete }: {
     }}>
       <div onClick={e => e.stopPropagation()} style={{
         background: "rgba(16,16,32,0.95)", border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "420px",
+        borderRadius: "4px", padding: "28px", width: "100%", maxWidth: "420px",
         boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
@@ -386,7 +386,7 @@ function EventModal({ event, prefillDate, onSave, onDelete, onClose }: {
     }}>
       <div onClick={e => e.stopPropagation()} style={{
         background: "rgba(16,16,32,0.95)", border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "460px",
+        borderRadius: "4px", padding: "28px", width: "100%", maxWidth: "460px",
         boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
       }}>
         <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#f0f0f5", margin: "0 0 24px" }}>
@@ -438,7 +438,7 @@ const btnPrimary: React.CSSProperties = {
   background: "#0000FF",
   color: "#fff",
   border: "none",
-  borderRadius: "10px",
+  borderRadius: "4px",
   padding: "8px 20px",
   fontWeight: 600,
   fontSize: "14px",
@@ -452,7 +452,7 @@ const btnSecondary: React.CSSProperties = {
   background: "rgba(255,255,255,0.06)",
   color: "rgba(240,240,245,0.8)",
   border: "1px solid rgba(255,255,255,0.1)",
-  borderRadius: "10px",
+  borderRadius: "4px",
   padding: "8px 16px",
   fontSize: "14px",
   cursor: "pointer",
@@ -461,7 +461,7 @@ const btnSecondary: React.CSSProperties = {
 const navBtn: React.CSSProperties = {
   background: "rgba(255,255,255,0.06)",
   border: "1px solid rgba(255,255,255,0.1)",
-  borderRadius: "8px",
+  borderRadius: "4px",
   padding: "6px",
   cursor: "pointer",
   color: "#f0f0f5",
@@ -482,7 +482,7 @@ const labelStyle: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "10px 12px",
-  borderRadius: "10px",
+  borderRadius: "4px",
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.06)",
   color: "#f0f0f5",

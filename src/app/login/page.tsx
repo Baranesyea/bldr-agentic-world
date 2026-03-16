@@ -133,7 +133,7 @@ export default function LoginPage() {
     padding: "14px 16px",
     background: "rgba(255,255,255,0.05)",
     border: `1px solid ${focusedInput === name ? "rgba(0,0,255,0.5)" : "rgba(255,255,255,0.08)"}`,
-    borderRadius: 12,
+    borderRadius: 4,
     color: "#f0f0f5",
     fontSize: 15,
     outline: "none",
@@ -207,7 +207,7 @@ export default function LoginPage() {
             <div style={{
               background: "rgba(255,255,255,0.02)",
               border: "1px solid rgba(255,255,255,0.06)",
-              borderRadius: 20,
+              borderRadius: 6,
               padding: "32px 28px",
               backdropFilter: "blur(20px)",
             }}>
@@ -226,7 +226,7 @@ export default function LoginPage() {
                 <div style={{
                   background: "rgba(0,200,83,0.1)",
                   border: "1px solid rgba(0,200,83,0.3)",
-                  borderRadius: 10,
+                  borderRadius: 4,
                   padding: "10px 14px",
                   marginBottom: 16,
                   fontSize: 13,
@@ -241,7 +241,7 @@ export default function LoginPage() {
                 <div style={{
                   background: "rgba(255,59,48,0.1)",
                   border: "1px solid rgba(255,59,48,0.3)",
-                  borderRadius: 10,
+                  borderRadius: 4,
                   padding: "10px 14px",
                   marginBottom: 16,
                   fontSize: 13,
@@ -261,7 +261,7 @@ export default function LoginPage() {
                   padding: "13px 16px",
                   background: "#fff",
                   border: "none",
-                  borderRadius: 12,
+                  borderRadius: 4,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -375,7 +375,7 @@ export default function LoginPage() {
                     padding: "14px 16px",
                     background: loading ? "rgba(0,0,255,0.5)" : "#0000FF",
                     border: "none",
-                    borderRadius: 12,
+                    borderRadius: 4,
                     color: "#fff",
                     fontSize: 16,
                     fontWeight: 700,

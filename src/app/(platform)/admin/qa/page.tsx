@@ -187,7 +187,7 @@ export default function AdminQAPage() {
             key={t.key}
             onClick={() => setStatusTab(t.key)}
             style={{
-              padding: "6px 16px", borderRadius: "20px", border: "none", cursor: "pointer",
+              padding: "6px 16px", borderRadius: "6px", border: "none", cursor: "pointer",
               fontSize: "13px", fontWeight: 600,
               background: statusTab === t.key ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.04)",
               color: statusTab === t.key ? "#5555FF" : "rgba(240,240,245,0.5)",
@@ -204,12 +204,12 @@ export default function AdminQAPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="חפש שאלות..."
-          style={{ flex: 1, minWidth: "200px", background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none" }}
+          style={{ flex: 1, minWidth: "200px", background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none" }}
         />
         <select
           value={courseFilter}
           onChange={(e) => setCourseFilter(e.target.value)}
-          style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none", cursor: "pointer" }}
+          style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none", cursor: "pointer" }}
         >
           <option value="all">כל הקורסים</option>
           {courses.map((c) => (
@@ -233,7 +233,7 @@ export default function AdminQAPage() {
                 style={{
                   background: "#0a0a1a",
                   border: `1px solid ${q.status === "pending" ? "rgba(255,179,0,0.15)" : "rgba(255,255,255,0.06)"}`,
-                  borderRadius: "12px",
+                  borderRadius: "4px",
                   overflow: "hidden",
                 }}
               >
@@ -271,9 +271,9 @@ export default function AdminQAPage() {
                     {q.mediaUrls?.map((url, i) => (
                       <div key={i} style={{ marginBottom: "12px" }}>
                         {isYouTubeUrl(url) ? (
-                          <iframe src={getYouTubeEmbedUrl(url)} style={{ width: "100%", height: "360px", borderRadius: "10px", border: "none" }} allowFullScreen />
+                          <iframe src={getYouTubeEmbedUrl(url)} style={{ width: "100%", height: "360px", borderRadius: "4px", border: "none" }} allowFullScreen />
                         ) : isImageUrl(url) ? (
-                          <img src={url} alt="" style={{ maxWidth: "100%", borderRadius: "10px" }} />
+                          <img src={url} alt="" style={{ maxWidth: "100%", borderRadius: "4px" }} />
                         ) : (
                           <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "#5555FF", fontSize: "13px" }}>{url}</a>
                         )}
@@ -285,7 +285,7 @@ export default function AdminQAPage() {
                       <select
                         value={q.status}
                         onChange={(e) => handleStatusChange(q.id, e.target.value as "pending" | "answered" | "closed")}
-                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "6px 12px", color: "#f0f0f5", fontSize: "12px", outline: "none", cursor: "pointer" }}
+                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "4px", padding: "6px 12px", color: "#f0f0f5", fontSize: "12px", outline: "none", cursor: "pointer" }}
                       >
                         <option value="pending">ממתין</option>
                         <option value="answered">נענה</option>
@@ -293,14 +293,14 @@ export default function AdminQAPage() {
                       </select>
                       <button
                         onClick={() => handleDelete(q.id)}
-                        style={{ background: "rgba(255,61,0,0.1)", color: "#FF3D00", border: "1px solid rgba(255,61,0,0.2)", borderRadius: "8px", padding: "6px 14px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}
+                        style={{ background: "rgba(255,61,0,0.1)", color: "#FF3D00", border: "1px solid rgba(255,61,0,0.2)", borderRadius: "4px", padding: "6px 14px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}
                       >
                         מחק
                       </button>
                       {(q.status === "answered" || (q.answers && q.answers.length > 0)) && kbOpen !== q.id && (
                         <button
                           onClick={() => openKbTransfer(q)}
-                          style={{ background: "rgba(0,200,83,0.1)", color: "#00C853", border: "1px solid rgba(0,200,83,0.2)", borderRadius: "8px", padding: "6px 14px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}
+                          style={{ background: "rgba(0,200,83,0.1)", color: "#00C853", border: "1px solid rgba(0,200,83,0.2)", borderRadius: "4px", padding: "6px 14px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}
                         >
                           העבר לבסיס ידע
                         </button>
@@ -312,19 +312,19 @@ export default function AdminQAPage() {
 
                     {/* KB Transfer form */}
                     {kbOpen === q.id && (
-                      <div style={{ background: "rgba(0,200,83,0.04)", border: "1px solid rgba(0,200,83,0.12)", borderRadius: "10px", padding: "16px", marginBottom: "16px" }}>
+                      <div style={{ background: "rgba(0,200,83,0.04)", border: "1px solid rgba(0,200,83,0.12)", borderRadius: "4px", padding: "16px", marginBottom: "16px" }}>
                         <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#00C853", margin: "0 0 12px" }}>העברה לבסיס ידע</h4>
                         <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", display: "block", marginBottom: "4px" }}>שאלה</label>
                         <textarea
                           value={kbQuestion}
                           onChange={(e) => setKbQuestion(e.target.value)}
-                          style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "10px", color: "#f0f0f5", fontSize: "13px", outline: "none", resize: "vertical", minHeight: "60px", fontFamily: "inherit", marginBottom: "12px", boxSizing: "border-box" }}
+                          style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "10px", color: "#f0f0f5", fontSize: "13px", outline: "none", resize: "vertical", minHeight: "60px", fontFamily: "inherit", marginBottom: "12px", boxSizing: "border-box" }}
                         />
                         <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", display: "block", marginBottom: "4px" }}>תשובה</label>
                         <textarea
                           value={kbAnswer}
                           onChange={(e) => setKbAnswer(e.target.value)}
-                          style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "10px", color: "#f0f0f5", fontSize: "13px", outline: "none", resize: "vertical", minHeight: "60px", fontFamily: "inherit", marginBottom: "12px", boxSizing: "border-box" }}
+                          style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "10px", color: "#f0f0f5", fontSize: "13px", outline: "none", resize: "vertical", minHeight: "60px", fontFamily: "inherit", marginBottom: "12px", boxSizing: "border-box" }}
                         />
                         <div style={{ display: "flex", gap: "12px", marginBottom: "12px", flexWrap: "wrap" }}>
                           <div>
@@ -332,7 +332,7 @@ export default function AdminQAPage() {
                             <select
                               value={kbCategory}
                               onChange={(e) => setKbCategory(e.target.value)}
-                              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "6px 12px", color: "#f0f0f5", fontSize: "12px", outline: "none", cursor: "pointer" }}
+                              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "4px", padding: "6px 12px", color: "#f0f0f5", fontSize: "12px", outline: "none", cursor: "pointer" }}
                             >
                               {KB_CATEGORIES.map((c) => (
                                 <option key={c} value={c}>{c}</option>
@@ -345,20 +345,20 @@ export default function AdminQAPage() {
                               value={kbTags}
                               onChange={(e) => setKbTags(e.target.value)}
                               placeholder="תגית1, תגית2"
-                              style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "6px 10px", color: "#f0f0f5", fontSize: "12px", outline: "none", boxSizing: "border-box" }}
+                              style={{ width: "100%", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "6px 10px", color: "#f0f0f5", fontSize: "12px", outline: "none", boxSizing: "border-box" }}
                             />
                           </div>
                         </div>
                         <div style={{ display: "flex", gap: "8px" }}>
                           <button
                             onClick={() => handleKbTransfer(q.id)}
-                            style={{ background: "#00C853", color: "white", border: "none", borderRadius: "8px", padding: "8px 18px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                            style={{ background: "#00C853", color: "white", border: "none", borderRadius: "4px", padding: "8px 18px", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
                           >
                             אשר והעבר
                           </button>
                           <button
                             onClick={() => setKbOpen(null)}
-                            style={{ background: "rgba(255,255,255,0.04)", color: "rgba(240,240,245,0.5)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "8px 18px", fontSize: "13px", cursor: "pointer" }}
+                            style={{ background: "rgba(255,255,255,0.04)", color: "rgba(240,240,245,0.5)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "8px 18px", fontSize: "13px", cursor: "pointer" }}
                           >
                             ביטול
                           </button>
@@ -371,7 +371,7 @@ export default function AdminQAPage() {
                       <div style={{ marginBottom: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
                         <h4 style={{ fontSize: "13px", fontWeight: 600, color: "rgba(240,240,245,0.5)", margin: 0 }}>תשובות ({q.answers.length})</h4>
                         {q.answers.map((a) => (
-                          <div key={a.id} style={{ background: a.isAdmin ? "rgba(0,0,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${a.isAdmin ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.04)"}`, borderRadius: "10px", padding: "14px" }}>
+                          <div key={a.id} style={{ background: a.isAdmin ? "rgba(0,0,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${a.isAdmin ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.04)"}`, borderRadius: "4px", padding: "14px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                               {a.userAvatar ? (
                                 <img src={a.userAvatar} alt="" style={{ width: 22, height: 22, borderRadius: "50%" }} />
@@ -388,9 +388,9 @@ export default function AdminQAPage() {
                             {a.mediaUrls?.map((url, i) => (
                               <div key={i} style={{ marginTop: "8px" }}>
                                 {isYouTubeUrl(url) ? (
-                                  <iframe src={getYouTubeEmbedUrl(url)} style={{ width: "100%", height: "300px", borderRadius: "8px", border: "none" }} allowFullScreen />
+                                  <iframe src={getYouTubeEmbedUrl(url)} style={{ width: "100%", height: "300px", borderRadius: "4px", border: "none" }} allowFullScreen />
                                 ) : isImageUrl(url) ? (
-                                  <img src={url} alt="" style={{ maxWidth: "100%", borderRadius: "8px" }} />
+                                  <img src={url} alt="" style={{ maxWidth: "100%", borderRadius: "4px" }} />
                                 ) : (
                                   <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "#5555FF", fontSize: "12px" }}>{url}</a>
                                 )}
@@ -409,14 +409,14 @@ export default function AdminQAPage() {
                         placeholder="כתוב תשובה כמנהל..."
                         style={{
                           flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
-                          borderRadius: "10px", padding: "10px 14px", color: "#f0f0f5", fontSize: "13px",
+                          borderRadius: "4px", padding: "10px 14px", color: "#f0f0f5", fontSize: "13px",
                           outline: "none", resize: "vertical", minHeight: "60px", fontFamily: "inherit",
                         }}
                       />
                       <button
                         onClick={() => handleAnswer(q.id)}
                         style={{
-                          background: "#0000FF", color: "white", padding: "10px 20px", borderRadius: "10px",
+                          background: "#0000FF", color: "white", padding: "10px 20px", borderRadius: "4px",
                           border: "none", fontWeight: 600, fontSize: "13px", cursor: "pointer", alignSelf: "flex-end",
                         }}
                       >

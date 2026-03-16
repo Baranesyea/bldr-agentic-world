@@ -26,7 +26,7 @@ export default function ChatPage() {
             fontWeight: 600,
             textDecoration: "none",
             padding: "10px 20px",
-            borderRadius: "10px",
+            borderRadius: "4px",
             background: "rgba(0,0,255,0.08)",
             border: "1px solid rgba(0,0,255,0.2)",
           }}

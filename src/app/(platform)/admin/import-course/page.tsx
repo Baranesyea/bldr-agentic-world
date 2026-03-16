@@ -19,7 +19,7 @@ import {
 const card: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: 16,
+  borderRadius: 4,
   padding: 32,
   backdropFilter: "blur(20px)",
 };
@@ -27,7 +27,7 @@ const card: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "12px 16px",
-  borderRadius: 12,
+  borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.04)",
   color: "#fff",
@@ -52,7 +52,7 @@ const labelStyle: React.CSSProperties = {
 
 const btnPrimary: React.CSSProperties = {
   padding: "12px 28px",
-  borderRadius: 12,
+  borderRadius: 4,
   border: "none",
   background: "#0000FF",
   color: "#fff",
@@ -65,7 +65,7 @@ const btnPrimary: React.CSSProperties = {
 
 const btnSecondary: React.CSSProperties = {
   padding: "12px 28px",
-  borderRadius: 12,
+  borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.04)",
   color: "rgba(240,240,245,0.6)",
@@ -198,7 +198,7 @@ export default function ImportCoursePage() {
               onClick={downloadTemplate}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "8px 16px", borderRadius: 10,
+                padding: "8px 16px", borderRadius: 4,
                 border: "1px solid rgba(255,255,255,0.1)",
                 background: "rgba(255,255,255,0.04)",
                 color: "rgba(240,240,245,0.7)", fontSize: 13, cursor: "pointer",
@@ -213,7 +213,7 @@ export default function ImportCoursePage() {
               rel="noopener noreferrer"
               style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "8px 16px", borderRadius: 10,
+                padding: "8px 16px", borderRadius: 4,
                 border: "1px solid rgba(0,200,83,0.2)",
                 background: "rgba(0,200,83,0.08)",
                 color: "#00C853", fontSize: 13, textDecoration: "none", cursor: "pointer",
@@ -313,7 +313,7 @@ export default function ImportCoursePage() {
             onClick={() => fileInputRef.current?.click()}
             style={{
               border: `2px dashed ${dragOver ? "#0000FF" : "rgba(255,255,255,0.1)"}`,
-              borderRadius: 16,
+              borderRadius: 4,
               padding: "60px 32px",
               textAlign: "center",
               cursor: "pointer",
@@ -360,7 +360,7 @@ export default function ImportCoursePage() {
               style={{
                 marginTop: 20,
                 padding: 16,
-                borderRadius: 12,
+                borderRadius: 4,
                 background: "rgba(255,60,60,0.08)",
                 border: "1px solid rgba(255,60,60,0.2)",
               }}
@@ -386,7 +386,7 @@ export default function ImportCoursePage() {
 
           {/* Expected columns */}
           <div style={{
-            marginTop: 20, padding: 16, borderRadius: 12,
+            marginTop: 20, padding: 16, borderRadius: 4,
             background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)",
           }}>
             <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(240,240,245,0.5)", marginBottom: 8 }}>עמודות נדרשות בקובץ:</p>
@@ -477,7 +477,7 @@ export default function ImportCoursePage() {
               <label style={labelStyle}>תמונה ממוזערת לקורס</label>
               <div style={{
                 padding: 20,
-                borderRadius: 12,
+                borderRadius: 4,
                 border: "1px solid rgba(255,255,255,0.06)",
                 background: "rgba(255,255,255,0.02)",
               }}>
@@ -535,7 +535,7 @@ export default function ImportCoursePage() {
                     <img
                       src={thumbPreview}
                       alt="Course thumbnail"
-                      style={{ width: "100%", borderRadius: 8, display: "block" }}
+                      style={{ width: "100%", borderRadius: 4, display: "block" }}
                     />
                     <p style={{ color: "rgba(240,240,245,0.35)", fontSize: 11, marginTop: 8 }}>
                       משתמש בצבעי המותג והגרדיאנט מההגדרות
@@ -606,7 +606,7 @@ export default function ImportCoursePage() {
               style={{
                 marginBottom: 20,
                 padding: 12,
-                borderRadius: 10,
+                borderRadius: 4,
                 background: "rgba(255,180,0,0.08)",
                 border: "1px solid rgba(255,180,0,0.2)",
               }}
@@ -627,7 +627,7 @@ export default function ImportCoursePage() {
               <div
                 key={ch.number}
                 style={{
-                  borderRadius: 12,
+                  borderRadius: 4,
                   border: "1px solid rgba(255,255,255,0.06)",
                   background: "rgba(255,255,255,0.02)",
                   overflow: "hidden",
@@ -742,7 +742,7 @@ export default function ImportCoursePage() {
           <div
             style={{
               padding: 24,
-              borderRadius: 12,
+              borderRadius: 4,
               background: "rgba(255,255,255,0.02)",
               border: "1px solid rgba(255,255,255,0.06)",
               display: "flex",

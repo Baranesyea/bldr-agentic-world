@@ -95,7 +95,7 @@ export default function NotificationsPage() {
             onClick={markAllRead}
             style={{
               padding: "8px 16px",
-              borderRadius: 8,
+              borderRadius: 4,
               border: "1px solid rgba(255,255,255,0.1)",
               background: "rgba(255,255,255,0.04)",
               color: "rgba(240,240,245,0.6)",
@@ -121,7 +121,7 @@ export default function NotificationsPage() {
                 alignItems: "center",
                 gap: 14,
                 padding: "14px 16px",
-                borderRadius: 12,
+                borderRadius: 4,
                 background: n.read ? "transparent" : "rgba(0,0,255,0.04)",
                 border: n.read ? "1px solid transparent" : "1px solid rgba(0,0,255,0.08)",
                 cursor: n.read ? "default" : "pointer",
@@ -145,7 +145,7 @@ export default function NotificationsPage() {
               <div style={{
                 width: 38,
                 height: 38,
-                borderRadius: 10,
+                borderRadius: 4,
                 background: iconBgs[n.icon] || "rgba(255,255,255,0.06)",
                 display: "flex",
                 alignItems: "center",
@@ -179,7 +179,7 @@ export default function NotificationsPage() {
         <div style={{
           background: "rgba(255,255,255,0.03)",
           border: "1px solid rgba(255,255,255,0.06)",
-          borderRadius: 16,
+          borderRadius: 4,
           padding: "80px 32px",
           textAlign: "center",
         }}>

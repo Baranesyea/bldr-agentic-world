@@ -34,7 +34,7 @@ const DEFAULT_SETTINGS: OnboardingSettings = {
 const CARD_STYLE: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: "16px",
+  borderRadius: "4px",
   padding: "20px",
   marginBottom: "12px",
 };
@@ -43,7 +43,7 @@ const INPUT_STYLE: React.CSSProperties = {
   width: "100%",
   background: "rgba(255,255,255,0.05)",
   border: "1px solid rgba(255,255,255,0.1)",
-  borderRadius: "10px",
+  borderRadius: "4px",
   padding: "10px 12px",
   color: "#f0f0f5",
   fontSize: "14px",
@@ -162,7 +162,7 @@ export default function OnboardingAdminPage() {
             style={{
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "10px",
+              borderRadius: "4px",
               padding: "10px 16px",
               color: "rgba(240,240,245,0.6)",
               fontSize: "13px",
@@ -176,7 +176,7 @@ export default function OnboardingAdminPage() {
             style={{
               background: saved ? "#00C853" : "#0000FF",
               border: "none",
-              borderRadius: "10px",
+              borderRadius: "4px",
               padding: "10px 24px",
               color: "white",
               fontSize: "14px",
@@ -283,7 +283,7 @@ export default function OnboardingAdminPage() {
                 onClick={() => previewStep(index)}
                 style={{
                   background: "rgba(51,51,255,0.1)", border: "1px solid rgba(51,51,255,0.2)",
-                  borderRadius: "8px", padding: "4px 12px",
+                  borderRadius: "4px", padding: "4px 12px",
                   color: "#3333FF", fontSize: "12px", cursor: "pointer",
                 }}
               >
@@ -293,7 +293,7 @@ export default function OnboardingAdminPage() {
                 onClick={() => deleteStep(index)}
                 style={{
                   background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.15)",
-                  borderRadius: "8px", padding: "4px 12px",
+                  borderRadius: "4px", padding: "4px 12px",
                   color: "#ff6b6b", fontSize: "12px", cursor: "pointer",
                 }}
               >
@@ -362,7 +362,7 @@ export default function OnboardingAdminPage() {
           width: "100%",
           background: "rgba(255,255,255,0.03)",
           border: "2px dashed rgba(255,255,255,0.1)",
-          borderRadius: "16px",
+          borderRadius: "4px",
           padding: "20px",
           color: "rgba(240,240,245,0.5)",
           fontSize: "14px",

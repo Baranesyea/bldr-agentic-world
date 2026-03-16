@@ -57,7 +57,7 @@ interface Course {
 const card: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: 16,
+  borderRadius: 4,
   overflow: "hidden",
   transition: "border-color 0.2s, box-shadow 0.2s",
   cursor: "pointer",
@@ -65,7 +65,7 @@ const card: React.CSSProperties = {
 
 const btnPrimary: React.CSSProperties = {
   padding: "12px 28px",
-  borderRadius: 12,
+  borderRadius: 4,
   border: "none",
   background: "#0000FF",
   color: "#fff",
@@ -79,7 +79,7 @@ const btnPrimary: React.CSSProperties = {
 
 const btnSecondary: React.CSSProperties = {
   padding: "12px 28px",
-  borderRadius: 12,
+  borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.04)",
   color: "rgba(240,240,245,0.6)",
@@ -242,11 +242,11 @@ export default function CourseManagerPage() {
           <Link href="/admin/import-course" style={btnSecondary}>ייבוא מאקסל</Link>
         </div>
         {courses.length > 0 && (
-          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 3, border: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", borderRadius: 4, padding: 3, border: "1px solid rgba(255,255,255,0.06)" }}>
             <button
               onClick={() => setViewMode("grid")}
               style={{
-                padding: "7px 16px", borderRadius: 8, border: "none", cursor: "pointer",
+                padding: "7px 16px", borderRadius: 4, border: "none", cursor: "pointer",
                 fontSize: 13, fontWeight: 500, fontFamily: "inherit",
                 background: viewMode === "grid" ? "rgba(0,0,255,0.2)" : "transparent",
                 color: viewMode === "grid" ? "#5555FF" : "rgba(240,240,245,0.4)",
@@ -258,7 +258,7 @@ export default function CourseManagerPage() {
             <button
               onClick={() => setViewMode("order")}
               style={{
-                padding: "7px 16px", borderRadius: 8, border: "none", cursor: "pointer",
+                padding: "7px 16px", borderRadius: 4, border: "none", cursor: "pointer",
                 fontSize: 13, fontWeight: 500, fontFamily: "inherit",
                 background: viewMode === "order" ? "rgba(0,0,255,0.2)" : "transparent",
                 color: viewMode === "order" ? "#5555FF" : "rgba(240,240,245,0.4)",
@@ -276,7 +276,7 @@ export default function CourseManagerPage() {
         <div style={{
           background: "rgba(255,255,255,0.03)",
           border: "1px solid rgba(255,255,255,0.06)",
-          borderRadius: 16,
+          borderRadius: 4,
           padding: "80px 32px",
           textAlign: "center",
         }}>
@@ -361,7 +361,7 @@ export default function CourseManagerPage() {
                     <Link
                       href={`/admin/courses/${course.id}/edit`}
                       style={{
-                        flex: 1, padding: "8px 0", borderRadius: 8,
+                        flex: 1, padding: "8px 0", borderRadius: 4,
                         border: "1px solid rgba(255,255,255,0.1)",
                         background: "rgba(255,255,255,0.04)",
                         color: "rgba(240,240,245,0.6)", fontSize: 12, fontWeight: 500,
@@ -373,7 +373,7 @@ export default function CourseManagerPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); duplicateCourse(course); }}
                       style={{
-                        flex: 1, padding: "8px 0", borderRadius: 8,
+                        flex: 1, padding: "8px 0", borderRadius: 4,
                         border: "1px solid rgba(255,255,255,0.1)",
                         background: "rgba(255,255,255,0.04)",
                         color: "rgba(240,240,245,0.6)", fontSize: 12, fontWeight: 500, cursor: "pointer",
@@ -384,7 +384,7 @@ export default function CourseManagerPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteCourse(course.id); }}
                       style={{
-                        flex: 1, padding: "8px 0", borderRadius: 8,
+                        flex: 1, padding: "8px 0", borderRadius: 4,
                         border: "1px solid rgba(255,60,60,0.2)",
                         background: "rgba(255,60,60,0.06)",
                         color: "rgba(255,120,120,0.8)", fontSize: 12, fontWeight: 500, cursor: "pointer",
@@ -403,7 +403,7 @@ export default function CourseManagerPage() {
         <div>
           <div style={{
             background: "rgba(0,0,255,0.06)", border: "1px solid rgba(0,0,255,0.15)",
-            borderRadius: 12, padding: "12px 16px", marginBottom: 20,
+            borderRadius: 4, padding: "12px 16px", marginBottom: 20,
             fontSize: 13, color: "rgba(240,240,245,0.5)", lineHeight: 1.6,
           }}>
             גרור את הקורסים כדי לשנות את סדר ההצגה בדשבורד. הקורס המומלץ (Hero) נקבע בעריכת הקורס ולא מושפע מהסדר.
@@ -437,7 +437,7 @@ export default function CourseManagerPage() {
                       padding: "12px 16px",
                       background: isDragging ? "rgba(0,0,255,0.08)" : "rgba(255,255,255,0.03)",
                       border: isDragging ? "1px solid rgba(0,0,255,0.3)" : "1px solid rgba(255,255,255,0.06)",
-                      borderRadius: 12,
+                      borderRadius: 4,
                       marginBottom: 6,
                       opacity: isDragging ? 0.5 : 1,
                       transform: isDragging ? "scale(1.02)" : "scale(1)",

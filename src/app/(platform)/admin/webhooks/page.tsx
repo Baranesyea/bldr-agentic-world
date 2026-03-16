@@ -160,7 +160,7 @@ export default function WebhooksPage() {
               style={{
                 background: "rgba(255,255,255,0.03)",
                 border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: 16,
+                borderRadius: 4,
                 padding: 28,
               }}
             >
@@ -218,7 +218,7 @@ export default function WebhooksPage() {
                   width: "100%",
                   background: "#0a0a1a",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 10,
+                  borderRadius: 4,
                   padding: "10px 16px",
                   color: "#f0f0f5",
                   fontSize: "14px",
@@ -242,7 +242,7 @@ export default function WebhooksPage() {
                   width: "100%",
                   background: "#0a0a1a",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 10,
+                  borderRadius: 4,
                   padding: "10px 16px",
                   color: "#f0f0f5",
                   fontSize: "14px",
@@ -264,7 +264,7 @@ export default function WebhooksPage() {
                     style={{
                       background: "rgba(0,0,255,0.1)",
                       border: "1px solid rgba(0,0,255,0.2)",
-                      borderRadius: 8,
+                      borderRadius: 4,
                       padding: "4px 12px",
                       color: "#7777FF",
                       fontSize: "12px",
@@ -285,7 +285,7 @@ export default function WebhooksPage() {
                     background: "#0000FF",
                     color: "#fff",
                     border: "none",
-                    borderRadius: 10,
+                    borderRadius: 4,
                     padding: "8px 24px",
                     fontSize: "14px",
                     fontWeight: 600,
@@ -301,7 +301,7 @@ export default function WebhooksPage() {
                     background: "rgba(255,255,255,0.06)",
                     color: "#f0f0f5",
                     border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: 10,
+                    borderRadius: 4,
                     padding: "8px 24px",
                     fontSize: "14px",
                     fontWeight: 600,
@@ -332,7 +332,7 @@ export default function WebhooksPage() {
               style={{
                 background: "#0a0a1a",
                 border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: 10,
+                borderRadius: 4,
                 padding: "8px 16px",
                 color: "#f0f0f5",
                 fontSize: "14px",
@@ -438,7 +438,7 @@ export default function WebhooksPage() {
                         <pre
                           style={{
                             background: "#0a0a1a",
-                            borderRadius: 8,
+                            borderRadius: 4,
                             padding: "12px",
                             color: "#f0f0f5",
                             fontSize: "12px",
@@ -478,7 +478,7 @@ export default function WebhooksPage() {
                           <pre
                             style={{
                               background: "#0a0a1a",
-                              borderRadius: 8,
+                              borderRadius: 4,
                               padding: "12px",
                               color: "rgba(240,240,245,0.5)",
                               fontSize: "12px",

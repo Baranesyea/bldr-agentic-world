@@ -153,7 +153,7 @@ export default function CourseViewPage() {
           {/* Buttons */}
           <div style={{ display: "flex", gap: "12px" }}>
             {firstUnwatched && (
-              <Link href={`/courses/${courseId}/lessons/${firstUnwatched.id}`} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#0000FF", color: "white", padding: "12px 28px", borderRadius: "12px", fontWeight: 600, fontSize: "15px", textDecoration: "none", boxShadow: "0 0 30px rgba(0,0,255,0.35)" }}>
+              <Link href={`/courses/${courseId}/lessons/${firstUnwatched.id}`} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#0000FF", color: "white", padding: "12px 28px", borderRadius: "4px", fontWeight: 600, fontSize: "15px", textDecoration: "none", boxShadow: "0 0 30px rgba(0,0,255,0.35)" }}>
                 <PlayIcon size={16} /> {doneLessons > 0 ? "המשך מאיפה שהפסקת" : "התחל לצפות"}
               </Link>
             )}
@@ -170,7 +170,7 @@ export default function CourseViewPage() {
             const done = chLessons.filter((l) => completedLessons.includes(l.id) || l.completed).length;
 
             return (
-              <div key={chapter.id} style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", overflow: "hidden", opacity: chapter.isLocked ? 0.5 : 1 }}>
+              <div key={chapter.id} style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden", opacity: chapter.isLocked ? 0.5 : 1 }}>
                 {/* Chapter Header */}
                 <button
                   onClick={() => !chapter.isLocked && toggle(chapter.id)}
@@ -182,7 +182,7 @@ export default function CourseViewPage() {
                     </span>
                     <span style={{ fontSize: "16px", fontWeight: 700, color: "#f0f0f5" }}>{chapter.title || `נושא ${chIdx + 1}`}</span>
                   </div>
-                  <span style={{ background: "#12122a", color: "rgba(240,240,245,0.6)", padding: "4px 12px", borderRadius: "8px", fontSize: "12px", fontWeight: 600 }}>
+                  <span style={{ background: "#12122a", color: "rgba(240,240,245,0.6)", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: 600 }}>
                     {done}/{chLessons.length}
                   </span>
                 </button>
@@ -196,7 +196,7 @@ export default function CourseViewPage() {
                         <Link
                           key={lesson.id}
                           href={`/courses/${courseId}/lessons/${lesson.id}`}
-                          style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", borderRadius: "12px", textDecoration: "none", transition: "background 0.15s" }}
+                          style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", borderRadius: "4px", textDecoration: "none", transition: "background 0.15s" }}
                           onMouseEnter={(e) => e.currentTarget.style.background = "rgba(18,18,42,0.5)"}
                           onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                         >

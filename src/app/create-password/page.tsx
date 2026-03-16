@@ -43,7 +43,7 @@ function CreatePasswordForm() {
     width: "100%", padding: "14px 16px",
     background: "rgba(255,255,255,0.05)",
     border: `1px solid ${focusedInput === name ? "rgba(0,0,255,0.5)" : "rgba(255,255,255,0.08)"}`,
-    borderRadius: 12, color: "#f0f0f5", fontSize: 15, outline: "none",
+    borderRadius: 4, color: "#f0f0f5", fontSize: 15, outline: "none",
     transition: "border-color 0.2s, box-shadow 0.2s",
     boxShadow: focusedInput === name ? "0 0 20px rgba(0,0,255,0.15)" : "none",
     boxSizing: "border-box" as const,
@@ -66,16 +66,16 @@ function CreatePasswordForm() {
 
       <div style={{
         background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)",
-        borderRadius: 20, padding: "32px 28px", backdropFilter: "blur(20px)",
+        borderRadius: 6, padding: "32px 28px", backdropFilter: "blur(20px)",
       }}>
         {validEmail === false && (
-          <div style={{ background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.3)", borderRadius: 10, padding: "14px 16px", marginBottom: 20, fontSize: 14, color: "#ff6b6b", lineHeight: 1.6 }}>
+          <div style={{ background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.3)", borderRadius: 4, padding: "14px 16px", marginBottom: 20, fontSize: 14, color: "#ff6b6b", lineHeight: 1.6 }}>
             {!email ? "חסר פרמטר אימייל. השתמש בקישור ממייל האישור." : "האימייל לא נמצא ברשימת הנרשמים. פנה לתמיכה."}
           </div>
         )}
         {validEmail === null && <div style={{ textAlign: "center", padding: "20px 0", color: "rgba(240,240,245,0.5)", fontSize: 14 }}>מאמת אימייל...</div>}
-        {success && <div style={{ background: "rgba(0,200,83,0.1)", border: "1px solid rgba(0,200,83,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#00C853" }}>{success}</div>}
-        {error && <div style={{ background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#ff6b6b" }}>{error}</div>}
+        {success && <div style={{ background: "rgba(0,200,83,0.1)", border: "1px solid rgba(0,200,83,0.3)", borderRadius: 4, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#00C853" }}>{success}</div>}
+        {error && <div style={{ background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.3)", borderRadius: 4, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#ff6b6b" }}>{error}</div>}
 
         {validEmail && (
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -93,7 +93,7 @@ function CreatePasswordForm() {
             </div>
             <button type="submit" disabled={loading} onMouseEnter={() => setHoveredBtn(true)} onMouseLeave={() => setHoveredBtn(false)} style={{
               width: "100%", padding: "14px 16px", background: loading ? "rgba(0,0,255,0.5)" : "#0000FF",
-              border: "none", borderRadius: 12, color: "#fff", fontSize: 16, fontWeight: 700,
+              border: "none", borderRadius: 4, color: "#fff", fontSize: 16, fontWeight: 700,
               cursor: loading ? "not-allowed" : "pointer", marginTop: 4,
               transition: "box-shadow 0.2s, background 0.2s, transform 0.15s",
               boxShadow: hoveredBtn ? "0 0 30px rgba(0,0,255,0.4)" : "0 0 15px rgba(0,0,255,0.2)",

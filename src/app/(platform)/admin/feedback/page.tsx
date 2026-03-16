@@ -83,7 +83,7 @@ export default function AdminFeedbackPage() {
 
   const selectStyle: React.CSSProperties = {
     padding: "8px 14px",
-    borderRadius: 10,
+    borderRadius: 4,
     border: "1px solid rgba(255,255,255,0.1)",
     background: "rgba(255,255,255,0.05)",
     color: "#fff",
@@ -108,7 +108,7 @@ export default function AdminFeedbackPage() {
         <div style={{
           background: "rgba(255,255,255,0.03)",
           border: "1px solid rgba(255,255,255,0.06)",
-          borderRadius: 12,
+          borderRadius: 4,
           padding: "14px 20px",
         }}>
           <div style={{ fontSize: 24, fontWeight: 700, color: "#fff" }}>{items.length}</div>
@@ -117,7 +117,7 @@ export default function AdminFeedbackPage() {
         <div style={{
           background: "rgba(41,121,255,0.08)",
           border: "1px solid rgba(41,121,255,0.2)",
-          borderRadius: 12,
+          borderRadius: 4,
           padding: "14px 20px",
         }}>
           <div style={{ fontSize: 24, fontWeight: 700, color: "#2979FF" }}>{totalNew}</div>
@@ -127,7 +127,7 @@ export default function AdminFeedbackPage() {
           <div key={cat} style={{
             background: "rgba(255,255,255,0.03)",
             border: "1px solid rgba(255,255,255,0.06)",
-            borderRadius: 12,
+            borderRadius: 4,
             padding: "14px 20px",
           }}>
             <div style={{ fontSize: 24, fontWeight: 700, color: categoryColors[cat] || "#fff" }}>{count}</div>
@@ -167,7 +167,7 @@ export default function AdminFeedbackPage() {
                 style={{
                   background: "rgba(255,255,255,0.03)",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 16,
+                  borderRadius: 4,
                   padding: 20,
                   cursor: "pointer",
                   transition: "border-color 0.2s",
@@ -178,7 +178,7 @@ export default function AdminFeedbackPage() {
                   {/* Category badge */}
                   <span style={{
                     padding: "4px 10px",
-                    borderRadius: 8,
+                    borderRadius: 4,
                     fontSize: 12,
                     fontWeight: 600,
                     background: (categoryColors[item.category] || "rgba(255,255,255,0.2)") + "22",
@@ -190,7 +190,7 @@ export default function AdminFeedbackPage() {
                   {/* Status badge */}
                   <span style={{
                     padding: "4px 10px",
-                    borderRadius: 8,
+                    borderRadius: 4,
                     fontSize: 12,
                     fontWeight: 600,
                     background: sc.color + "18",
@@ -261,7 +261,7 @@ export default function AdminFeedbackPage() {
                         }}
                         style={{
                           padding: "6px 14px",
-                          borderRadius: 10,
+                          borderRadius: 4,
                           border: "1px solid rgba(255,59,48,0.3)",
                           background: "rgba(255,59,48,0.1)",
                           color: "#FF3B30",

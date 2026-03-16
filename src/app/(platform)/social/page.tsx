@@ -73,7 +73,7 @@ export default function SocialPage() {
         <div style={{
           background: "rgba(255,255,255,0.03)",
           border: "1px solid rgba(255,255,255,0.06)",
-          borderRadius: "16px",
+          borderRadius: "4px",
           overflow: "hidden",
         }}>
           {/* Header */}
@@ -105,7 +105,7 @@ export default function SocialPage() {
               rel="noopener noreferrer"
               style={{
                 background: "#FF0000", color: "white", padding: "6px 14px",
-                borderRadius: "8px", fontSize: "12px", fontWeight: 600, textDecoration: "none",
+                borderRadius: "4px", fontSize: "12px", fontWeight: 600, textDecoration: "none",
               }}
             >
               הרשם
@@ -140,7 +140,7 @@ export default function SocialPage() {
             )}
 
             {!loading && !error && videos.map((video) => (
-              <div key={video.videoId} style={{ marginBottom: "16px", borderRadius: "10px", overflow: "hidden" }}>
+              <div key={video.videoId} style={{ marginBottom: "16px", borderRadius: "4px", overflow: "hidden" }}>
                 <div style={{ position: "relative", paddingBottom: "56.25%" }}>
                   <iframe
                     src={`https://www.youtube.com/embed/${video.videoId}`}
@@ -183,7 +183,7 @@ export default function SocialPage() {
         <div style={{
           background: "rgba(255,255,255,0.03)",
           border: "1px solid rgba(255,255,255,0.06)",
-          borderRadius: "16px",
+          borderRadius: "4px",
           overflow: "hidden",
         }}>
           {/* Header */}
@@ -217,7 +217,7 @@ export default function SocialPage() {
               rel="noopener noreferrer"
               style={{
                 background: "linear-gradient(135deg, #F58529, #DD2A7B)", color: "white",
-                padding: "6px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: 600, textDecoration: "none",
+                padding: "6px 14px", borderRadius: "4px", fontSize: "12px", fontWeight: 600, textDecoration: "none",
               }}
             >
               עקוב
@@ -238,14 +238,14 @@ export default function SocialPage() {
 
             {!instaLoading && instaPosts.length > 0 ? (
               instaPosts.map((post) => (
-                <div key={post.shortcode} style={{ marginBottom: "16px", borderRadius: "10px", overflow: "hidden" }}>
+                <div key={post.shortcode} style={{ marginBottom: "16px", borderRadius: "4px", overflow: "hidden" }}>
                   <iframe
                     src={`https://www.instagram.com/p/${post.shortcode}/embed`}
                     style={{
                       width: "100%",
                       minHeight: "480px",
                       border: "none",
-                      borderRadius: "10px",
+                      borderRadius: "4px",
                       background: "#fff",
                     }}
                     allowFullScreen
@@ -262,7 +262,7 @@ export default function SocialPage() {
                   minHeight: "800px",
                   border: "none",
                   background: "#fff",
-                  borderRadius: "10px",
+                  borderRadius: "4px",
                 }}
                 allowFullScreen
                 loading="lazy"

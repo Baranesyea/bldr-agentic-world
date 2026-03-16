@@ -49,7 +49,7 @@ interface Course {
 const cardS: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: 16,
+  borderRadius: 4,
   padding: 32,
   backdropFilter: "blur(20px)",
   marginBottom: 24,
@@ -58,7 +58,7 @@ const cardS: React.CSSProperties = {
 const inputS: React.CSSProperties = {
   width: "100%",
   padding: "12px 16px",
-  borderRadius: 12,
+  borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.04)",
   color: "#fff",
@@ -84,7 +84,7 @@ const labelS: React.CSSProperties = {
 
 const btnP: React.CSSProperties = {
   padding: "12px 28px",
-  borderRadius: 12,
+  borderRadius: 4,
   border: "none",
   background: "#0000FF",
   color: "#fff",
@@ -96,7 +96,7 @@ const btnP: React.CSSProperties = {
 
 const btnSec: React.CSSProperties = {
   padding: "12px 28px",
-  borderRadius: 12,
+  borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.04)",
   color: "rgba(240,240,245,0.6)",
@@ -109,7 +109,7 @@ const btnSec: React.CSSProperties = {
 
 const btnSmall: React.CSSProperties = {
   padding: "6px 12px",
-  borderRadius: 8,
+  borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.08)",
   background: "rgba(255,255,255,0.03)",
   color: "rgba(240,240,245,0.5)",
@@ -757,7 +757,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
           </div>
 
           {/* Featured toggle */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 12, background: featured ? "rgba(0,0,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${featured ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.04)"}` }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 4, background: featured ? "rgba(0,0,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${featured ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.04)"}` }}>
             <div>
               <p style={{ fontSize: 14, color: "#f0f0f5", marginBottom: 2 }}>קורס מומלץ (Hero)</p>
               <p style={{ fontSize: 12, color: "rgba(240,240,245,0.35)" }}>יופיע בראש הדשבורד כקורס ראשי</p>
@@ -765,7 +765,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
             <button
               onClick={() => setFeatured(!featured)}
               style={{
-                width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer",
+                width: 44, height: 24, borderRadius: 4, border: "none", cursor: "pointer",
                 position: "relative", background: featured ? "#0000FF" : "rgba(255,255,255,0.1)", transition: "background 0.2s", flexShrink: 0,
               }}
             >
@@ -779,7 +779,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
             <div
               style={{
                 padding: 20,
-                borderRadius: 12,
+                borderRadius: 4,
                 border: "1px solid rgba(255,255,255,0.06)",
                 background: "rgba(255,255,255,0.02)",
               }}
@@ -812,7 +812,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                 <div
                   style={{
                     padding: "10px 14px",
-                    borderRadius: 8,
+                    borderRadius: 4,
                     background: thumbError.includes("מקומית")
                       ? "rgba(255,179,0,0.08)"
                       : "rgba(255,60,60,0.08)",
@@ -857,7 +857,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                   <img
                     src={displayThumbUrl}
                     alt="Thumbnail"
-                    style={{ width: "100%", borderRadius: 8, display: "block" }}
+                    style={{ width: "100%", borderRadius: 4, display: "block" }}
                   />
                 </div>
               ) : (
@@ -951,7 +951,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                       width: "90%", maxWidth: 700, maxHeight: "80vh",
                       background: "rgba(10,10,26,0.97)",
                       border: "1px solid rgba(255,255,255,0.08)",
-                      borderRadius: 20, padding: 0,
+                      borderRadius: 6, padding: 0,
                       boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
                       overflow: "hidden", display: "flex", flexDirection: "column",
                     }}
@@ -975,7 +975,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                               key={item.id}
                               onClick={() => selectMediaItem(item)}
                               style={{
-                                cursor: "pointer", borderRadius: 10, overflow: "hidden",
+                                cursor: "pointer", borderRadius: 4, overflow: "hidden",
                                 border: "2px solid rgba(255,255,255,0.06)",
                                 transition: "border-color 0.2s, transform 0.2s",
                                 background: "rgba(255,255,255,0.02)",
@@ -1011,7 +1011,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
             style={{
               background: "rgba(255,255,255,0.02)",
               border: "1px solid rgba(255,255,255,0.06)",
-              borderRadius: 12,
+              borderRadius: 4,
               marginBottom: 16,
               overflow: "hidden",
             }}

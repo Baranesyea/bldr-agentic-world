@@ -145,7 +145,7 @@ export default function ContentIdeasPage() {
   const inputStyle: React.CSSProperties = {
     flex: 1,
     padding: "10px 14px",
-    borderRadius: "10px",
+    borderRadius: "4px",
     border: "1px solid rgba(0,0,255,0.15)",
     background: "rgba(255,255,255,0.04)",
     color: "#f0f0f5",
@@ -156,7 +156,7 @@ export default function ContentIdeasPage() {
   const cardBase: React.CSSProperties = {
     background: "rgba(255,255,255,0.03)",
     border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: "14px",
+    borderRadius: "4px",
     padding: "16px",
     cursor: "pointer",
     transition: "border-color 0.2s",
@@ -164,7 +164,7 @@ export default function ContentIdeasPage() {
 
   const btnSmall: React.CSSProperties = {
     padding: "4px 12px",
-    borderRadius: "8px",
+    borderRadius: "4px",
     border: "1px solid rgba(255,255,255,0.1)",
     background: "rgba(255,255,255,0.04)",
     color: "rgba(240,240,245,0.7)",
@@ -298,7 +298,7 @@ export default function ContentIdeasPage() {
         style={{
           background: "rgba(0,0,255,0.03)",
           border: "1px solid rgba(0,0,255,0.15)",
-          borderRadius: "16px",
+          borderRadius: "4px",
           padding: "20px",
           marginBottom: "32px",
         }}
@@ -353,7 +353,7 @@ export default function ContentIdeasPage() {
             onClick={submitAll}
             style={{
               padding: "8px 20px",
-              borderRadius: "10px",
+              borderRadius: "4px",
               border: "1px solid rgba(0,0,255,0.3)",
               background: "rgba(0,0,255,0.15)",
               color: "#fff",
@@ -390,7 +390,7 @@ export default function ContentIdeasPage() {
               style={{
                 fontSize: "12px",
                 padding: "2px 10px",
-                borderRadius: "10px",
+                borderRadius: "4px",
                 background: "rgba(0,0,255,0.15)",
                 color: "rgba(200,200,255,0.8)",
               }}
@@ -423,7 +423,7 @@ export default function ContentIdeasPage() {
               style={{
                 fontSize: "12px",
                 padding: "2px 10px",
-                borderRadius: "10px",
+                borderRadius: "4px",
                 background: "rgba(0,200,83,0.15)",
                 color: "rgba(0,200,83,0.8)",
               }}

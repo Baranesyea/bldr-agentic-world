@@ -187,7 +187,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
           }}
           style={{
             display: "flex", alignItems: "center", gap: "12px",
-            padding: collapsed ? "10px" : "10px 12px", borderRadius: "12px",
+            padding: collapsed ? "10px" : "10px 12px", borderRadius: "4px",
             fontSize: "14px", width: "100%",
             justifyContent: collapsed ? "center" : "flex-start",
             fontWeight: 400,
@@ -209,7 +209,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
     return (
       <Link href={item.href} style={{
         display: "flex", alignItems: "center", gap: "12px",
-        padding: collapsed ? "10px" : "10px 12px", borderRadius: "12px",
+        padding: collapsed ? "10px" : "10px 12px", borderRadius: "4px",
         textDecoration: "none", fontSize: "14px",
         justifyContent: collapsed ? "center" : "flex-start",
         fontWeight: active ? 700 : 400,
@@ -257,7 +257,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
             onClick={() => setViewAsUser(!viewAsUser)}
             title={viewAsUser ? "חזור למצב מנהל" : "צפה כמשתמש"}
             style={{
-              width: "36px", height: "20px", borderRadius: "10px", border: "none",
+              width: "36px", height: "20px", borderRadius: "4px", border: "none",
               cursor: "pointer", position: "relative",
               background: viewAsUser ? "#FFB300" : "rgba(255,255,255,0.1)",
               transition: "background 0.2s", flexShrink: 0,
@@ -299,7 +299,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
           style={{
             display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start",
             gap: "12px", width: "100%", padding: collapsed ? "10px" : "10px 12px",
-            borderRadius: "12px", background: "transparent",
+            borderRadius: "4px", background: "transparent",
             border: "none", cursor: "pointer", color: "rgba(240,240,245,0.6)", fontSize: "14px",
           }}
         >
@@ -330,7 +330,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
               width: "90%", maxWidth: "700px", maxHeight: "85vh",
               background: "rgba(10,10,26,0.97)",
               border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "24px", padding: "40px 48px",
+              borderRadius: "6px", padding: "40px 48px",
               position: "relative", overflow: "hidden",
               boxShadow: "0 32px 100px rgba(0,0,0,0.6), 0 0 60px rgba(0,0,255,0.08)",
               animation: "newsSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
@@ -375,7 +375,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
           style={{
             display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start",
             gap: "12px", width: "100%", padding: collapsed ? "10px" : "10px 12px",
-            borderRadius: "12px", background: showNotifications ? "rgba(0,0,255,0.12)" : "transparent",
+            borderRadius: "4px", background: showNotifications ? "rgba(0,0,255,0.12)" : "transparent",
             border: "none", cursor: "pointer", color: "rgba(240,240,245,0.6)", fontSize: "14px",
             position: "relative",
           }}
@@ -484,7 +484,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
           style={{
             display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 10,
             width: "100%", height: "40px", padding: collapsed ? 0 : "0 12px",
-            borderRadius: "12px", background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.15)", color: "#ff6b6b", cursor: "pointer", fontSize: "13px",
+            borderRadius: "4px", background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.15)", color: "#ff6b6b", cursor: "pointer", fontSize: "13px",
             fontWeight: 600, transition: "background 0.2s",
           }}
           title="התנתק"
@@ -499,7 +499,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         {collapsed && (
           <button onClick={toggleCollapse} style={{
             display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "36px",
-            borderRadius: "12px", background: "none", border: "none", color: "rgba(240,240,245,0.35)", cursor: "pointer", fontSize: "16px",
+            borderRadius: "4px", background: "none", border: "none", color: "rgba(240,240,245,0.35)", cursor: "pointer", fontSize: "16px",
           }}>
             <ChevronLeftIcon size={16} />
           </button>

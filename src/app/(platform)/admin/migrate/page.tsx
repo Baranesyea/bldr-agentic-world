@@ -160,13 +160,13 @@ export default function MigratePage() {
   const card: React.CSSProperties = {
     background: "rgba(255,255,255,0.03)",
     border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: 16,
+    borderRadius: 4,
     padding: 28,
   };
 
   const btn: React.CSSProperties = {
     padding: "12px 24px",
-    borderRadius: 12,
+    borderRadius: 4,
     border: "none",
     fontWeight: 600,
     fontSize: 14,
@@ -241,7 +241,7 @@ export default function MigratePage() {
         <div style={{
           marginTop: 20,
           padding: "12px 16px",
-          borderRadius: 10,
+          borderRadius: 4,
           background: status.includes("שגיאה") ? "rgba(255,59,48,0.1)" : "rgba(0,200,83,0.1)",
           border: `1px solid ${status.includes("שגיאה") ? "rgba(255,59,48,0.3)" : "rgba(0,200,83,0.3)"}`,
           color: status.includes("שגיאה") ? "#ff6b6b" : "#00C853",

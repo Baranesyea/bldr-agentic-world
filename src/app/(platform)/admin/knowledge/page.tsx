@@ -242,7 +242,7 @@ export default function KnowledgeBasePage() {
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "12px 16px",
-    borderRadius: "10px",
+    borderRadius: "4px",
     border: "1px solid rgba(255,255,255,0.1)",
     background: "rgba(255,255,255,0.04)",
     color: "#f0f0f5",
@@ -254,7 +254,7 @@ export default function KnowledgeBasePage() {
 
   const btnPrimary: React.CSSProperties = {
     padding: "10px 24px",
-    borderRadius: "10px",
+    borderRadius: "4px",
     border: "none",
     background: "#0000FF",
     color: "#fff",
@@ -268,7 +268,7 @@ export default function KnowledgeBasePage() {
 
   const btnSmall: React.CSSProperties = {
     padding: "6px 12px",
-    borderRadius: "8px",
+    borderRadius: "4px",
     border: "1px solid rgba(255,255,255,0.1)",
     background: "rgba(255,255,255,0.04)",
     color: "rgba(240,240,245,0.6)",
@@ -294,7 +294,7 @@ export default function KnowledgeBasePage() {
           { label: "קטגוריות", value: allCategories.length },
           { label: "עדכון אחרון", value: lastUpdated ? formatDate(lastUpdated) : "—" },
         ].map(s => (
-          <div key={s.label} style={{ padding: "14px 20px", borderRadius: "12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", minWidth: "140px" }}>
+          <div key={s.label} style={{ padding: "14px 20px", borderRadius: "4px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", minWidth: "140px" }}>
             <div style={{ fontSize: "12px", color: "rgba(240,240,245,0.4)", marginBottom: "4px" }}>{s.label}</div>
             <div style={{ fontSize: "20px", fontWeight: 700, color: "#fff" }}>{s.value}</div>
           </div>
@@ -304,7 +304,7 @@ export default function KnowledgeBasePage() {
       {/* Quick Add */}
       <div style={{
         padding: "24px",
-        borderRadius: "16px",
+        borderRadius: "4px",
         background: "rgba(0,0,255,0.04)",
         border: "1px solid rgba(0,0,255,0.15)",
         boxShadow: "0 0 40px rgba(0,0,255,0.06)",
@@ -315,7 +315,7 @@ export default function KnowledgeBasePage() {
         {successFlash && (
           <div style={{
             position: "absolute", top: "12px", left: "12px",
-            padding: "8px 16px", borderRadius: "8px",
+            padding: "8px 16px", borderRadius: "4px",
             background: "rgba(0,200,83,0.15)", border: "1px solid rgba(0,200,83,0.3)",
             color: "#00C853", fontSize: "13px", fontWeight: 600,
             display: "flex", alignItems: "center", gap: "6px",
@@ -392,7 +392,7 @@ export default function KnowledgeBasePage() {
                 style={{
                   background: "rgba(255,255,255,0.03)",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: "14px",
+                  borderRadius: "4px",
                   borderRight: `4px solid ${catColor(entry.category)}`,
                   padding: "20px 24px",
                   transition: "border-color 0.2s, box-shadow 0.2s",
@@ -497,7 +497,7 @@ export default function KnowledgeBasePage() {
       {/* Bulk Import */}
       <div style={{
         padding: "24px",
-        borderRadius: "16px",
+        borderRadius: "4px",
         background: "rgba(255,255,255,0.02)",
         border: "1px solid rgba(255,255,255,0.06)",
         marginTop: "20px",
@@ -516,7 +516,7 @@ export default function KnowledgeBasePage() {
           style={inputStyle}
         />
         {bulkPreview.length > 0 && (
-          <div style={{ margin: "12px 0", padding: "10px 14px", borderRadius: "8px", background: "rgba(0,0,255,0.06)", border: "1px solid rgba(0,0,255,0.15)", fontSize: "13px", color: "rgba(240,240,245,0.6)" }}>
+          <div style={{ margin: "12px 0", padding: "10px 14px", borderRadius: "4px", background: "rgba(0,0,255,0.06)", border: "1px solid rgba(0,0,255,0.15)", fontSize: "13px", color: "rgba(240,240,245,0.6)" }}>
             זוהו <strong style={{ color: "#fff" }}>{bulkPreview.length}</strong> ערכים לייבוא
           </div>
         )}

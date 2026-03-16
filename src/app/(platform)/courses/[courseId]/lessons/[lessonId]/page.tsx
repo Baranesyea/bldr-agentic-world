@@ -280,7 +280,7 @@ export default function LessonViewPage() {
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 60px)", gap: "16px" }}>
         <p style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5" }}>לא נמצא</p>
         <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.5)" }}>הקורס או השיעור שביקשת לא נמצאו.</p>
-        <Link href="/dashboard" style={{ background: "#0000FF", color: "white", padding: "10px 24px", borderRadius: "10px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
+        <Link href="/dashboard" style={{ background: "#0000FF", color: "white", padding: "10px 24px", borderRadius: "4px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
           חזרה לדאשבורד
         </Link>
       </div>
@@ -372,7 +372,7 @@ export default function LessonViewPage() {
                       border: "none",
                       cursor: "pointer",
                       textAlign: "right",
-                      borderRadius: "8px",
+                      borderRadius: "4px",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -398,7 +398,7 @@ export default function LessonViewPage() {
                               alignItems: "center",
                               gap: "10px",
                               padding: "8px 10px",
-                              borderRadius: "8px",
+                              borderRadius: "4px",
                               textDecoration: "none",
                               background: isCurrent ? "rgba(0,0,255,0.15)" : "transparent",
                               borderRight: isCurrent ? "3px solid #0000FF" : "3px solid transparent",
@@ -457,7 +457,7 @@ export default function LessonViewPage() {
           minWidth: 0,
         }}>
           {/* Video */}
-          <div style={{ background: "#000", borderRadius: "16px", overflow: "hidden", marginBottom: "16px" }}>
+          <div style={{ background: "#000", borderRadius: "4px", overflow: "hidden", marginBottom: "16px" }}>
             {isDirectVideoUrl(currentLesson.videoUrl) ? (
               <VideoPlayer src={currentLesson.videoUrl} />
             ) : (
@@ -550,7 +550,7 @@ export default function LessonViewPage() {
                       color: "rgba(240,240,245,0.8)",
                       border: "1px solid rgba(255,255,255,0.15)",
                       padding: "8px 20px",
-                      borderRadius: "10px",
+                      borderRadius: "4px",
                       fontSize: "13px",
                       cursor: "pointer",
                     }}
@@ -567,7 +567,7 @@ export default function LessonViewPage() {
           <div style={{
             background: "#0a0a1a",
             border: "1px solid rgba(255,255,255,0.06)",
-            borderRadius: "16px",
+            borderRadius: "4px",
             padding: "20px",
             marginBottom: "16px",
           }}>
@@ -579,7 +579,7 @@ export default function LessonViewPage() {
                   background: isCurrentCompleted ? "rgba(0,200,83,0.15)" : "#12122a",
                   color: isCurrentCompleted ? "#00C853" : "rgba(240,240,245,0.6)",
                   padding: "8px 16px",
-                  borderRadius: "10px",
+                  borderRadius: "4px",
                   border: `1px solid ${isCurrentCompleted ? "rgba(0,200,83,0.3)" : "rgba(255,255,255,0.06)"}`,
                   fontSize: "13px",
                   fontWeight: 600,
@@ -601,7 +601,7 @@ export default function LessonViewPage() {
             <div style={{
               background: "#0a0a1a",
               border: "1px solid rgba(0,0,255,0.15)",
-              borderRadius: "16px",
+              borderRadius: "4px",
               padding: "20px",
               marginBottom: "16px",
               boxShadow: "0 0 20px rgba(0,0,255,0.05)",
@@ -619,7 +619,7 @@ export default function LessonViewPage() {
                   width: "100%",
                   background: "#12122a",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: "8px",
+                  borderRadius: "4px",
                   padding: "10px 12px",
                   color: "#f0f0f5",
                   fontSize: "13px",
@@ -633,7 +633,7 @@ export default function LessonViewPage() {
                 background: "#0000FF",
                 color: "white",
                 padding: "10px",
-                borderRadius: "10px",
+                borderRadius: "4px",
                 border: "none",
                 fontWeight: 600,
                 fontSize: "13px",
@@ -649,7 +649,7 @@ export default function LessonViewPage() {
             <div style={{
               background: "#0a0a1a",
               border: "1px solid rgba(255,255,255,0.06)",
-              borderRadius: "16px",
+              borderRadius: "4px",
               padding: "20px",
               marginBottom: "16px",
             }}>
@@ -657,7 +657,7 @@ export default function LessonViewPage() {
                 <AttachmentIcon size={14} /> קבצים מצורפים
               </h3>
               {currentLesson.attachments.map((fileName) => (
-                <div key={fileName} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px", borderRadius: "8px", cursor: "pointer", marginBottom: "4px" }}>
+                <div key={fileName} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px", borderRadius: "4px", cursor: "pointer", marginBottom: "4px" }}>
                   <DownloadIcon size={16} />
                   <div>
                     <p style={{ fontSize: "13px", color: "#f0f0f5" }}>{fileName}</p>
@@ -679,7 +679,7 @@ export default function LessonViewPage() {
                   background: "#12122a",
                   color: "rgba(240,240,245,0.6)",
                   padding: "8px 16px",
-                  borderRadius: "10px",
+                  borderRadius: "4px",
                   fontSize: "13px",
                   textDecoration: "none",
                   border: "1px solid rgba(255,255,255,0.06)",
@@ -698,7 +698,7 @@ export default function LessonViewPage() {
                   background: "#0000FF",
                   color: "white",
                   padding: "8px 16px",
-                  borderRadius: "10px",
+                  borderRadius: "4px",
                   fontSize: "13px",
                   textDecoration: "none",
                   fontWeight: 600,
@@ -734,7 +734,7 @@ export default function LessonViewPage() {
               color: "rgba(240,240,245,0.35)",
               background: "rgba(255,255,255,0.06)",
               padding: "2px 8px",
-              borderRadius: "8px",
+              borderRadius: "4px",
             }}>
               {savedNotes.length}
             </span>
@@ -750,7 +750,7 @@ export default function LessonViewPage() {
               marginBottom: "8px",
               background: "rgba(0,0,255,0.08)",
               padding: "6px 10px",
-              borderRadius: "8px",
+              borderRadius: "4px",
               width: "fit-content",
             }}>
               <ClockIcon size={12} color="#3333FF" />
@@ -768,7 +768,7 @@ export default function LessonViewPage() {
                 width: "100%",
                 background: "#12122a",
                 border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: "8px",
+                borderRadius: "4px",
                 padding: "10px 12px",
                 color: "#f0f0f5",
                 fontSize: "13px",
@@ -788,7 +788,7 @@ export default function LessonViewPage() {
                 background: noteText.trim() ? "#0000FF" : "rgba(0,0,255,0.3)",
                 color: "white",
                 padding: "8px",
-                borderRadius: "8px",
+                borderRadius: "4px",
                 border: "none",
                 fontWeight: 600,
                 fontSize: "13px",
@@ -810,7 +810,7 @@ export default function LessonViewPage() {
               <div key={note.id} style={{
                 background: "rgba(255,255,255,0.02)",
                 border: "1px solid rgba(255,255,255,0.04)",
-                borderRadius: "8px",
+                borderRadius: "4px",
                 padding: "10px 12px",
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
@@ -873,7 +873,7 @@ export default function LessonViewPage() {
           border: "1px solid rgba(0,200,83,0.3)",
           color: "#00C853",
           padding: "10px 20px",
-          borderRadius: "12px",
+          borderRadius: "4px",
           fontSize: "14px",
           fontWeight: 600,
           zIndex: 1000,

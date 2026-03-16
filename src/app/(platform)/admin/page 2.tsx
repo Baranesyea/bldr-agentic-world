@@ -10,7 +10,7 @@ import {
 const CARD_STYLE: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: "16px",
+  borderRadius: "4px",
   padding: "28px",
   marginBottom: "24px",
   backdropFilter: "blur(12px)",
@@ -35,7 +35,7 @@ const LABEL_STYLE: React.CSSProperties = {
 const INPUT_STYLE: React.CSSProperties = {
   background: "rgba(255,255,255,0.05)",
   border: "1px solid rgba(255,255,255,0.08)",
-  borderRadius: "8px",
+  borderRadius: "4px",
   padding: "10px 14px",
   color: "#f0f0f5",
   fontSize: "14px",
@@ -48,7 +48,7 @@ const BTN_STYLE: React.CSSProperties = {
   background: "linear-gradient(135deg, #1a1aff, #4444ff)",
   color: "#fff",
   border: "none",
-  borderRadius: "8px",
+  borderRadius: "4px",
   padding: "10px 20px",
   fontSize: "13px",
   fontWeight: 600,
@@ -177,7 +177,7 @@ export default function AdminPage() {
             width: "40px",
             height: "40px",
             border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "8px",
+            borderRadius: "4px",
             background: "transparent",
             cursor: "pointer",
             padding: "2px",
@@ -363,7 +363,7 @@ export default function AdminPage() {
             style={{
               marginBottom: "20px",
               background: "rgba(255,255,255,0.02)",
-              borderRadius: "8px",
+              borderRadius: "4px",
               padding: "16px",
               textAlign: "center",
             }}
@@ -438,7 +438,7 @@ export default function AdminPage() {
           <div
             style={{
               height: "40px",
-              borderRadius: "8px",
+              borderRadius: "4px",
               background: `linear-gradient(${brand.gradientDirection === "diagonal" ? "135deg" : brand.gradientDirection}, ${brand.gradientStartColor}, ${brand.gradientEndColor})`,
               border: "1px solid rgba(255,255,255,0.06)",
             }}
@@ -547,7 +547,7 @@ export default function AdminPage() {
           <div
             style={{
               background: "rgba(255,255,255,0.02)",
-              borderRadius: "12px",
+              borderRadius: "4px",
               padding: "16px",
               border: "1px solid rgba(255,255,255,0.06)",
             }}
@@ -560,7 +560,7 @@ export default function AdminPage() {
               alt="Generated thumbnail"
               style={{
                 width: "100%",
-                borderRadius: "8px",
+                borderRadius: "4px",
                 display: "block",
               }}
             />

@@ -272,7 +272,7 @@ export function OnboardingTour() {
             position: "relative",
             background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.12) 100%)",
             border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: "24px",
+            borderRadius: "6px",
             padding: "48px 40px",
             maxWidth: "440px",
             width: "90%",
@@ -284,7 +284,7 @@ export function OnboardingTour() {
             overflow: "hidden",
           }}>
             {/* Specular highlight */}
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)", borderRadius: "24px 24px 0 0", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)", borderRadius: "6px 6px 0 0", pointerEvents: "none" }} />
             {/* Tour icon */}
             <div style={{ marginBottom: "24px" }}>
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(51,51,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -313,22 +313,17 @@ export function OnboardingTour() {
                 onClick={startTour}
                 style={{
                   background: "#0000FF", color: "white",
-                  border: "none", borderRadius: "12px",
+                  border: "none", borderRadius: "4px",
                   padding: "14px 32px", fontSize: "16px", fontWeight: 700,
                   cursor: "pointer", transition: "background 0.2s",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.background = "#0000CC"}
                 onMouseLeave={(e) => e.currentTarget.style.background = "#0000FF"}
               >
-                התחל סיור
+                <span>התחל סיור</span>
+                <span style={{ fontSize: "11px", opacity: 0.7, fontWeight: 400 }}>{durationLabel}</span>
               </button>
-              <span style={{
-                fontSize: "12px", color: "rgba(240,240,245,0.35)",
-                background: "rgba(255,255,255,0.05)",
-                padding: "6px 12px", borderRadius: "8px",
-              }}>
-                {durationLabel}
-              </span>
             </div>
 
             {/* Sound toggle */}
@@ -405,7 +400,7 @@ export function OnboardingTour() {
               left: spotlightRect.left - 8 + "px",
               width: spotlightRect.width + 16 + "px",
               height: spotlightRect.height + 16 + "px",
-              borderRadius: "12px",
+              borderRadius: "4px",
               border: "2px solid rgba(51,51,255,0.5)",
               animation: "onboardPulse 2s ease-in-out infinite",
               zIndex: 99991,
@@ -422,7 +417,7 @@ export function OnboardingTour() {
               position: "fixed" as const,
               background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.12) 100%)",
               border: "1px solid rgba(255,255,255,0.2)",
-              borderRadius: "16px",
+              borderRadius: "4px",
               padding: "24px",
               maxWidth: "320px",
               width: "320px",
@@ -436,7 +431,7 @@ export function OnboardingTour() {
               overflow: "hidden",
             }}>
               {/* Specular highlight */}
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%)", borderRadius: "16px 16px 0 0", pointerEvents: "none" }} />
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%)", borderRadius: "4px 4px 0 0", pointerEvents: "none" }} />
               <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px" }}>
                 {steps[currentStep].title}
               </h3>
@@ -469,7 +464,7 @@ export function OnboardingTour() {
                       background: "transparent",
                       border: "1px solid rgba(255,255,255,0.1)",
                       color: "rgba(240,240,245,0.6)",
-                      borderRadius: "10px",
+                      borderRadius: "4px",
                       padding: "10px 16px",
                       fontSize: "14px",
                       cursor: "pointer",
@@ -488,7 +483,7 @@ export function OnboardingTour() {
                       background: "#0000FF",
                       color: "white",
                       border: "none",
-                      borderRadius: "10px",
+                      borderRadius: "4px",
                       padding: "10px 20px",
                       fontSize: "14px",
                       fontWeight: 600,

@@ -121,7 +121,7 @@ const sections = [
 const CARD: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: "16px",
+  borderRadius: "4px",
   padding: "28px",
   textDecoration: "none",
   display: "block",
@@ -171,7 +171,7 @@ export default function AdminPage() {
           תיעוד API
         </h2>
 
-        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "28px" }}>
+        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "28px" }}>
           <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#f0f0f5", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ color: "#00C853", fontFamily: "var(--font-heading-en)", fontSize: "12px", background: "rgba(0,200,83,0.1)", padding: "2px 8px", borderRadius: "4px" }}>POST</span>
             <span style={{ fontFamily: "var(--font-heading-en)" }}>/api/news</span>
@@ -180,7 +180,7 @@ export default function AdminPage() {
           <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)", marginBottom: "12px", lineHeight: 1.6 }}>
             סוכן יכול לשלוח עדכוני חדשות למערכת. המערכת שומרת עד 10 עדכונים אחרונים.
           </p>
-          <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: "10px", padding: "16px", fontFamily: "var(--font-heading-en)", fontSize: "12px", color: "rgba(240,240,245,0.7)", lineHeight: 1.8, overflowX: "auto", direction: "ltr", textAlign: "left" }}>
+          <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: "4px", padding: "16px", fontFamily: "var(--font-heading-en)", fontSize: "12px", color: "rgba(240,240,245,0.7)", lineHeight: 1.8, overflowX: "auto", direction: "ltr", textAlign: "left" }}>
             <div style={{ color: "rgba(240,240,245,0.3)" }}>{"// שליחת עדכון בודד"}</div>
             <div><span style={{ color: "#00C853" }}>POST</span> /api/news</div>
             <div style={{ color: "#FFB300" }}>{"{"}</div>

@@ -73,14 +73,14 @@ export default function PromoLinksPage() {
   const cardStyle: React.CSSProperties = {
     background: "rgba(255,255,255,0.03)",
     border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: "16px",
+    borderRadius: "4px",
     padding: "24px",
   };
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "10px 14px",
-    borderRadius: "10px",
+    borderRadius: "4px",
     border: "1px solid rgba(255,255,255,0.1)",
     background: "rgba(255,255,255,0.04)",
     color: "#fff",
@@ -135,7 +135,7 @@ export default function PromoLinksPage() {
                   onClick={() => setDays(p)}
                   style={{
                     padding: "8px 16px",
-                    borderRadius: "8px",
+                    borderRadius: "4px",
                     border: days === p ? "1px solid rgba(0,0,255,0.4)" : "1px solid rgba(255,255,255,0.1)",
                     background: days === p ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.04)",
                     color: days === p ? "#fff" : "rgba(240,240,245,0.6)",
@@ -155,7 +155,7 @@ export default function PromoLinksPage() {
             disabled={!name.trim()}
             style={{
               padding: "12px 24px",
-              borderRadius: "10px",
+              borderRadius: "4px",
               border: "none",
               background: name.trim() ? "#0000FF" : "rgba(0,0,255,0.3)",
               color: "#fff",
@@ -174,7 +174,7 @@ export default function PromoLinksPage() {
               alignItems: "center",
               gap: "10px",
               padding: "12px 16px",
-              borderRadius: "10px",
+              borderRadius: "4px",
               background: "rgba(0,0,255,0.08)",
               border: "1px solid rgba(0,0,255,0.2)",
             }}>
@@ -185,7 +185,7 @@ export default function PromoLinksPage() {
                 onClick={() => { navigator.clipboard.writeText(generatedLink); setCopied("new"); setTimeout(() => setCopied(null), 2000); }}
                 style={{
                   padding: "6px 14px",
-                  borderRadius: "8px",
+                  borderRadius: "4px",
                   border: "1px solid rgba(255,255,255,0.15)",
                   background: "rgba(255,255,255,0.06)",
                   color: "#fff",

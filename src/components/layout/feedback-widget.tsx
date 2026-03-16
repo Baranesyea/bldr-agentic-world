@@ -148,7 +148,7 @@ export function FeedbackWidget() {
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: 20,
+          borderRadius: 6,
           padding: 24,
           transform: open ? "translateY(0) scale(1)" : "translateY(20px) scale(0.95)",
           opacity: open ? 1 : 0,
@@ -176,7 +176,7 @@ export function FeedbackWidget() {
               style={{
                 width: "100%",
                 padding: "10px 14px",
-                borderRadius: 12,
+                borderRadius: 4,
                 border: "1px solid rgba(255,255,255,0.1)",
                 background: "rgba(255,255,255,0.05)",
                 color: "#fff",
@@ -202,7 +202,7 @@ export function FeedbackWidget() {
               style={{
                 width: "100%",
                 padding: "12px 14px",
-                borderRadius: 12,
+                borderRadius: 4,
                 border: "1px solid rgba(255,255,255,0.1)",
                 background: "rgba(255,255,255,0.05)",
                 color: "#fff",
@@ -233,7 +233,7 @@ export function FeedbackWidget() {
               style={{
                 width: "100%",
                 padding: "12px",
-                borderRadius: 12,
+                borderRadius: 4,
                 border: "none",
                 background: content.trim() ? "rgba(0,0,255,0.7)" : "rgba(255,255,255,0.08)",
                 color: content.trim() ? "#fff" : "rgba(255,255,255,0.3)",

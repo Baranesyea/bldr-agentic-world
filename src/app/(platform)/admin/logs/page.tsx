@@ -78,7 +78,7 @@ function Badge({ children, bg, color, glow }: { children: React.ReactNode; bg: s
     <span style={{
       display: "inline-block",
       padding: "2px 10px",
-      borderRadius: "8px",
+      borderRadius: "4px",
       fontSize: "11px",
       fontWeight: 600,
       background: bg,
@@ -101,7 +101,7 @@ function Select({ value, onChange, options }: { value: string; onChange: (v: str
           appearance: "none",
           background: "rgba(255,255,255,0.05)",
           border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: "10px",
+          borderRadius: "4px",
           color: "#f0f0f5",
           padding: "8px 32px 8px 12px",
           fontSize: "13px",
@@ -183,7 +183,7 @@ export default function PromptLogsPage() {
           <div key={s.label} style={{
             background: "rgba(255,255,255,0.03)",
             border: "1px solid rgba(255,255,255,0.06)",
-            borderRadius: "14px",
+            borderRadius: "4px",
             padding: "16px 20px",
           }}>
             <div style={{ fontSize: "24px", fontWeight: 700, color: s.color }}>{s.value}</div>
@@ -207,7 +207,7 @@ export default function PromptLogsPage() {
               width: "100%",
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "10px",
+              borderRadius: "4px",
               color: "#f0f0f5",
               padding: "8px 36px 8px 12px",
               fontSize: "13px",
@@ -221,7 +221,7 @@ export default function PromptLogsPage() {
       </div>
 
       {/* Table */}
-      <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", overflow: "hidden" }}>
+      <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden" }}>
         {/* Header */}
         <div style={{
           display: "grid",
@@ -333,7 +333,7 @@ export default function PromptLogsPage() {
                       <pre style={{
                         background: "rgba(0,0,0,0.4)",
                         border: "1px solid rgba(255,255,255,0.06)",
-                        borderRadius: "10px",
+                        borderRadius: "4px",
                         padding: "14px",
                         color: "rgba(240,240,245,0.8)",
                         fontSize: "12px",
@@ -371,7 +371,7 @@ export default function PromptLogsPage() {
                         <div style={{
                           background: "rgba(0,0,0,0.4)",
                           border: "1px solid rgba(255,255,255,0.06)",
-                          borderRadius: "10px",
+                          borderRadius: "4px",
                           padding: "14px",
                         }}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -387,7 +387,7 @@ export default function PromptLogsPage() {
                         <pre style={{
                           background: "rgba(0,0,0,0.4)",
                           border: "1px solid rgba(255,255,255,0.06)",
-                          borderRadius: "10px",
+                          borderRadius: "4px",
                           padding: "14px",
                           color: entry.status === "error" ? "#f87171" : "rgba(240,240,245,0.8)",
                           fontSize: "12px",

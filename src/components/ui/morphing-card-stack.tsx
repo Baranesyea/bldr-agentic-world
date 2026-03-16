@@ -94,7 +94,7 @@ export function MorphingCardStack({
                   position: "absolute",
                   width: "100%",
                   minHeight: "220px",
-                  borderRadius: "20px",
+                  borderRadius: "6px",
                   padding: "28px",
                   background: card.color || "rgba(18,18,42,0.97)",
                   border: "1px solid rgba(255,255,255,0.08)",
@@ -107,7 +107,7 @@ export function MorphingCardStack({
                 <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
                   {card.icon && (
                     <div style={{
-                      width: "44px", height: "44px", borderRadius: "12px",
+                      width: "44px", height: "44px", borderRadius: "4px",
                       background: "rgba(0,0,255,0.12)", display: "flex",
                       alignItems: "center", justifyContent: "center",
                       color: "rgba(140,140,255,0.9)", flexShrink: 0,
@@ -131,7 +131,7 @@ export function MorphingCardStack({
                     <span style={{
                       display: "inline-flex", alignItems: "center", gap: "6px",
                       fontSize: "12px", color: "#3333FF", fontWeight: 600,
-                      padding: "6px 14px", borderRadius: "8px",
+                      padding: "6px 14px", borderRadius: "4px",
                       background: "rgba(0,0,255,0.08)", border: "1px solid rgba(0,0,255,0.15)",
                     }}>
                       <ExternalLink size={12} />

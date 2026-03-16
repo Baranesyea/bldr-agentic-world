@@ -75,7 +75,7 @@ export default function InvitePage() {
         width: "100%",
         background: "rgba(255,255,255,0.04)",
         border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: "24px",
+        borderRadius: "6px",
         padding: "48px 40px",
         textAlign: "center",
         backdropFilter: "blur(40px)",
@@ -106,7 +106,7 @@ export default function InvitePage() {
               style={{
                 width: "100%",
                 padding: "16px 32px",
-                borderRadius: "14px",
+                borderRadius: "4px",
                 border: "none",
                 background: "#0000FF",
                 color: "#fff",

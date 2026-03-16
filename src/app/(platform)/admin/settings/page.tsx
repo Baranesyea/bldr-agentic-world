@@ -6,7 +6,7 @@ import { type BrandSettings } from "@/lib/thumbnail-generator";
 const CARD_STYLE: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: "16px",
+  borderRadius: "4px",
   padding: "28px",
   marginBottom: "24px",
   backdropFilter: "blur(12px)",
@@ -30,7 +30,7 @@ const LABEL_STYLE: React.CSSProperties = {
 const INPUT_STYLE: React.CSSProperties = {
   background: "rgba(255,255,255,0.05)",
   border: "1px solid rgba(255,255,255,0.08)",
-  borderRadius: "8px",
+  borderRadius: "4px",
   padding: "10px 14px",
   color: "#f0f0f5",
   fontSize: "14px",
@@ -43,7 +43,7 @@ const BTN_STYLE: React.CSSProperties = {
   background: "linear-gradient(135deg, #1a1aff, #4444ff)",
   color: "#fff",
   border: "none",
-  borderRadius: "8px",
+  borderRadius: "4px",
   padding: "10px 20px",
   fontSize: "13px",
   fontWeight: 600,
@@ -195,7 +195,7 @@ export default function SettingsPage() {
             width: "40px",
             height: "40px",
             border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "8px",
+            borderRadius: "4px",
             background: "transparent",
             cursor: "pointer",
             padding: "2px",
@@ -376,7 +376,7 @@ export default function SettingsPage() {
             style={{
               marginBottom: "20px",
               background: "rgba(255,255,255,0.02)",
-              borderRadius: "8px",
+              borderRadius: "4px",
               padding: "16px",
               textAlign: "center",
             }}
@@ -440,7 +440,7 @@ export default function SettingsPage() {
           <div
             style={{
               height: "40px",
-              borderRadius: "8px",
+              borderRadius: "4px",
               background: `linear-gradient(${brand.gradientDirection === "diagonal" ? "135deg" : brand.gradientDirection}, ${brand.gradientStartColor}, ${brand.gradientEndColor})`,
               border: "1px solid rgba(255,255,255,0.06)",
             }}
@@ -495,7 +495,7 @@ export default function SettingsPage() {
         </div>
 
         {avatar.referenceImageUrl && (
-          <div style={{ marginBottom: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", padding: "20px", border: "1px solid rgba(255,255,255,0.04)" }}>
+          <div style={{ marginBottom: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "4px", padding: "20px", border: "1px solid rgba(255,255,255,0.04)" }}>
             <label style={{ ...LABEL_STYLE, marginBottom: "12px" }}>תצוגה מקדימה</label>
             <div style={{ display: "flex", gap: "20px", alignItems: "flex-start", flexWrap: "wrap" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -578,7 +578,7 @@ export default function SettingsPage() {
                     const updated = thumbDefaults.referenceUrls.filter((_, j) => j !== i);
                     setThumbDefaults((p) => ({ ...p, referenceUrls: updated }));
                   }}
-                  style={{ background: "rgba(255,61,0,0.1)", color: "#FF3D00", border: "none", borderRadius: "8px", width: "36px", height: "36px", cursor: "pointer", fontSize: "16px", flexShrink: 0 }}
+                  style={{ background: "rgba(255,61,0,0.1)", color: "#FF3D00", border: "none", borderRadius: "4px", width: "36px", height: "36px", cursor: "pointer", fontSize: "16px", flexShrink: 0 }}
                 >
                   ×
                 </button>
@@ -597,7 +597,7 @@ export default function SettingsPage() {
         {thumbDefaults.referenceUrls.some((u) => u.trim()) && (
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "20px" }}>
             {thumbDefaults.referenceUrls.filter((u) => u.trim()).map((url, i) => (
-              <div key={i} style={{ width: "160px", height: "90px", borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <div key={i} style={{ width: "160px", height: "90px", borderRadius: "4px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt={`Reference ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               </div>

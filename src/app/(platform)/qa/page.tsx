@@ -112,12 +112,12 @@ export default function QAPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="חפש שאלות..."
-          style={{ flex: 1, minWidth: "200px", background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none" }}
+          style={{ flex: 1, minWidth: "200px", background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none" }}
         />
         <select
           value={courseFilter}
           onChange={(e) => setCourseFilter(e.target.value)}
-          style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none", cursor: "pointer" }}
+          style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none", cursor: "pointer" }}
         >
           <option value="all">כל הקורסים</option>
           {courses.map((c) => (
@@ -127,7 +127,7 @@ export default function QAPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none", cursor: "pointer" }}
+          style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "10px 16px", color: "#f0f0f5", fontSize: "14px", outline: "none", cursor: "pointer" }}
         >
           <option value="all">הכל</option>
           <option value="pending">ממתין</option>
@@ -152,7 +152,7 @@ export default function QAPage() {
                 style={{
                   background: "#0a0a1a",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: "12px",
+                  borderRadius: "4px",
                   overflow: "hidden",
                 }}
               >
@@ -202,11 +202,11 @@ export default function QAPage() {
                         {isYouTubeUrl(url) ? (
                           <iframe
                             src={getYouTubeEmbedUrl(url)}
-                            style={{ width: "100%", height: "360px", borderRadius: "10px", border: "none" }}
+                            style={{ width: "100%", height: "360px", borderRadius: "4px", border: "none" }}
                             allowFullScreen
                           />
                         ) : isImageUrl(url) ? (
-                          <img src={url} alt="" style={{ maxWidth: "100%", borderRadius: "10px" }} />
+                          <img src={url} alt="" style={{ maxWidth: "100%", borderRadius: "4px" }} />
                         ) : (
                           <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "#5555FF", fontSize: "13px" }}>{url}</a>
                         )}
@@ -218,7 +218,7 @@ export default function QAPage() {
                       <div style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
                         <h4 style={{ fontSize: "13px", fontWeight: 600, color: "rgba(240,240,245,0.5)", margin: 0 }}>תשובות ({q.answers.length})</h4>
                         {q.answers.map((a) => (
-                          <div key={a.id} style={{ background: a.isAdmin ? "rgba(0,0,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${a.isAdmin ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.04)"}`, borderRadius: "10px", padding: "14px" }}>
+                          <div key={a.id} style={{ background: a.isAdmin ? "rgba(0,0,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${a.isAdmin ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.04)"}`, borderRadius: "4px", padding: "14px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                               {a.userAvatar ? (
                                 <img src={a.userAvatar} alt="" style={{ width: 22, height: 22, borderRadius: "50%" }} />
@@ -235,9 +235,9 @@ export default function QAPage() {
                             {a.mediaUrls?.map((url, i) => (
                               <div key={i} style={{ marginTop: "8px" }}>
                                 {isYouTubeUrl(url) ? (
-                                  <iframe src={getYouTubeEmbedUrl(url)} style={{ width: "100%", height: "300px", borderRadius: "8px", border: "none" }} allowFullScreen />
+                                  <iframe src={getYouTubeEmbedUrl(url)} style={{ width: "100%", height: "300px", borderRadius: "4px", border: "none" }} allowFullScreen />
                                 ) : isImageUrl(url) ? (
-                                  <img src={url} alt="" style={{ maxWidth: "100%", borderRadius: "8px" }} />
+                                  <img src={url} alt="" style={{ maxWidth: "100%", borderRadius: "4px" }} />
                                 ) : (
                                   <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "#5555FF", fontSize: "12px" }}>{url}</a>
                                 )}
@@ -256,14 +256,14 @@ export default function QAPage() {
                         placeholder="כתוב תשובה..."
                         style={{
                           flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
-                          borderRadius: "10px", padding: "10px 14px", color: "#f0f0f5", fontSize: "13px",
+                          borderRadius: "4px", padding: "10px 14px", color: "#f0f0f5", fontSize: "13px",
                           outline: "none", resize: "vertical", minHeight: "60px", fontFamily: "inherit",
                         }}
                       />
                       <button
                         onClick={() => handleAnswer(q.id)}
                         style={{
-                          background: "#0000FF", color: "white", padding: "10px 20px", borderRadius: "10px",
+                          background: "#0000FF", color: "white", padding: "10px 20px", borderRadius: "4px",
                           border: "none", fontWeight: 600, fontSize: "13px", cursor: "pointer", alignSelf: "flex-end",
                         }}
                       >

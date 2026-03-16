@@ -82,7 +82,7 @@ export function WhatsAppCTA() {
         <div style={{
           position: "relative",
           overflow: "hidden",
-          borderRadius: 16,
+          borderRadius: 4,
           border: `2px solid ${hovered ? "rgba(37,211,102,0.5)" : "rgba(37,211,102,0.25)"}`,
           padding: "14px 20px",
           display: "flex",
@@ -168,7 +168,7 @@ export function WhatsAppCTA() {
 
           {/* WhatsApp icon */}
           <div style={{
-            padding: 10, borderRadius: 12,
+            padding: 10, borderRadius: 4,
             background: hovered
               ? "linear-gradient(135deg, rgba(37,211,102,0.3) 0%, rgba(37,211,102,0.1) 100%)"
               : "linear-gradient(135deg, rgba(37,211,102,0.2) 0%, rgba(37,211,102,0.05) 100%)",
