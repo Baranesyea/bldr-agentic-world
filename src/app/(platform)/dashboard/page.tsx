@@ -209,45 +209,55 @@ export default function DashboardPage() {
       {nonFeaturedActive.length > 0 && (
         <div style={{ padding: "32px 48px 24px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "16px" }}>כל הקורסים</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
             {nonFeaturedActive.map((c) => {
               const lessonCount = c.chapters?.reduce((s, ch) => s + ch.lessons.length, 0) || 0;
               return (
                 <Link key={c.id} href={`/courses/${c.id}`} style={{ textDecoration: "none" }}>
                   <div style={{
-                    background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)",
-                    borderRadius: "14px", overflow: "hidden",
-                    transition: "transform 0.25s, border-color 0.25s, box-shadow 0.25s",
+                    position: "relative",
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    minHeight: 220,
+                    cursor: "pointer",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    transition: "all 0.3s",
+                    background: "linear-gradient(135deg, #0a0a2a, #000033)",
                   }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.03)"; e.currentTarget.style.borderColor = "rgba(0,0,255,0.3)"; e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,255,0.15)"; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.borderColor = "rgba(0,0,255,0.4)"; e.currentTarget.style.boxShadow = "0 8px 40px rgba(0,0,255,0.2)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.boxShadow = "none"; }}
                   >
-                    {/* Thumbnail */}
-                    <div style={{ position: "relative", paddingBottom: "56.25%", background: "linear-gradient(135deg, #0a0a2a, #000044)" }}>
-                      {c.thumbnailUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <ResolvedImg src={c.thumbnailUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-                      )}
-                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(0,0,255,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.7 }}>
-                          <PlayIcon size={22} color="white" />
-                        </div>
-                      </div>
-                      {c.featured && (
-                        <span style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,255,0.3)", color: "#3333FF", padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)" }}>מומלץ</span>
-                      )}
-                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 40, background: "linear-gradient(to top, #0a0a1a, transparent)" }} />
-                    </div>
-                    {/* Info */}
-                    <div style={{ padding: "14px 16px" }}>
-                      <h3 style={{ fontSize: "15px", fontWeight: 700, color: "#f0f0f5", marginBottom: "4px" }}>{c.title}</h3>
+                    {/* Background thumbnail */}
+                    {c.thumbnailUrl && (
+                      <ResolvedImg src={c.thumbnailUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                    )}
+                    {/* Gradient overlay */}
+                    <div style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 40%, transparent 100%)",
+                    }} />
+                    {/* Badge */}
+                    {c.featured && (
+                      <span style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,255,0.35)", color: "#6666FF", padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>מומלץ</span>
+                    )}
+                    {/* Lesson count badge */}
+                    <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "rgba(240,240,245,0.7)", padding: "4px 10px", borderRadius: 8, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>
+                      {lessonCount} שיעורים
+                    </span>
+                    {/* Text overlay */}
+                    <div style={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      padding: "16px 20px",
+                      zIndex: 2,
+                    }}>
+                      <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 4 }}>{c.title}</h3>
                       {c.description && (
-                        <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.45)", lineHeight: 1.5, marginBottom: "8px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>{c.description}</p>
+                        <p style={{ fontSize: 13, color: "rgba(240,240,245,0.55)", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>{c.description}</p>
                       )}
-                      <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "rgba(240,240,245,0.3)" }}>
-                        <span>{c.chapters?.length || 0} נושאים</span>
-                        <span>{lessonCount} שיעורים</span>
-                      </div>
                     </div>
                   </div>
                 </Link>
