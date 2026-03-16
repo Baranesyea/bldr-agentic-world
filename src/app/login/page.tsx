@@ -376,26 +376,9 @@ export default function LoginPage() {
             style={{ zIndex: 0 }}
           />
 
-          {/* Layer 1: Particle text — full area behind robot with bottom fade */}
+          {/* Layer 1: Spline 3D Robot with fade-in */}
           <div style={{
-            position: "absolute", inset: 0,
-            zIndex: 1,
-          }}>
-            <ParticleTextEffect
-              words={["Welcome to", "Agentic World", "AI Agents", "Agentic Workflows", "Agentic Marketing"]}
-              style={{ position: "absolute", inset: 0, opacity: 0.5 }}
-            />
-            {/* Bottom fade overlay */}
-            <div style={{
-              position: "absolute", bottom: 0, left: 0, right: 0, height: "40%",
-              background: "linear-gradient(to bottom, transparent 0%, #050510 100%)",
-              pointerEvents: "none",
-            }} />
-          </div>
-
-          {/* Layer 2: Spline 3D Robot with fade-in */}
-          <div style={{
-            position: "absolute", inset: 0, zIndex: 2,
+            position: "absolute", inset: 0, zIndex: 1,
             animation: "robotFadeIn 2s ease-out forwards",
             opacity: 0,
           }}>
@@ -403,6 +386,22 @@ export default function LoginPage() {
               scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
               className="w-full h-full"
             />
+          </div>
+
+          {/* Layer 2: Particle text — IN FRONT of robot */}
+          <div style={{
+            position: "absolute", inset: 0,
+            zIndex: 3, pointerEvents: "none",
+          }}>
+            <ParticleTextEffect
+              words={["Welcome to", "Agentic World", "AI Agents", "Agentic Workflows", "Agentic Marketing"]}
+              style={{ position: "absolute", inset: 0, opacity: 0.6 }}
+            />
+            {/* Bottom fade */}
+            <div style={{
+              position: "absolute", bottom: 0, left: 0, right: 0, height: "40%",
+              background: "linear-gradient(to bottom, transparent 0%, #050510 100%)",
+            }} />
           </div>
 
           {/* Layer 3: Spotlight */}

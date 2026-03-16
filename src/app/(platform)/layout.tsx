@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { NextEventBanner } from "@/components/layout/next-event-banner";
 import { TrialBanner } from "@/components/layout/trial-banner";
 import { FeedbackWidget } from "@/components/layout/feedback-widget";
+import { WhatsAppCTA } from "@/components/layout/whatsapp-cta";
 
 const mockEvent = {
   title: "Office Hours",
@@ -57,6 +58,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
         {children}
       </main>
       <FeedbackWidget />
+      <WhatsAppCTA />
       <NextEventBanner event={mockEvent} />
     </div>
   );

@@ -615,6 +615,32 @@ export default function SettingsPage() {
           {thumbDefaultsSaved ? "נשמר!" : "שמור ברירות מחדל"}
         </button>
       </div>
+
+      {/* WhatsApp CTA */}
+      <div style={SECTION_STYLE}>
+        <h2 style={SECTION_TITLE_STYLE}>WhatsApp CTA</h2>
+        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.4)", marginBottom: "16px" }}>
+          כפתור הצטרפות לוואטסאפ שמוצג למשתמשים חדשים
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div>
+            <label style={LABEL_STYLE}>קישור לקבוצה</label>
+            <input
+              style={INPUT_STYLE}
+              value={(() => { try { return JSON.parse(localStorage.getItem("bldr_whatsapp_settings") || "{}").url || ""; } catch { return ""; } })()}
+              onChange={(e) => {
+                try {
+                  const current = JSON.parse(localStorage.getItem("bldr_whatsapp_settings") || '{"url":"","enabled":true}');
+                  current.url = e.target.value;
+                  localStorage.setItem("bldr_whatsapp_settings", JSON.stringify(current));
+                } catch {}
+              }}
+              placeholder="https://chat.whatsapp.com/..."
+              dir="ltr"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
