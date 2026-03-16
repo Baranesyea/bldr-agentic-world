@@ -137,9 +137,7 @@ export default function DashboardPage() {
           {/* Background — use thumbnail or gradient */}
           {featuredCourse.thumbnailUrl ? (
             <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <ResolvedImg
                 src={featuredCourse.thumbnailUrl}
                 alt=""
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}

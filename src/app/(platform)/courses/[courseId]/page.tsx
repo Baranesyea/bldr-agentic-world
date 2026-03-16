@@ -5,6 +5,22 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PlayIcon, LockIcon, CheckIcon, ChevronDownIcon, ClockIcon, ArrowLeftIcon } from "@/components/ui/icons";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
+import { resolveImageUrl } from "@/lib/image-store";
+
+function ResolvedImg({ src, alt, style }: { src: string; alt: string; style: React.CSSProperties }) {
+  const [resolved, setResolved] = React.useState("");
+  React.useEffect(() => {
+    if (!src) return;
+    if (src.startsWith("idb://")) {
+      resolveImageUrl(src).then(setResolved);
+    } else {
+      setResolved(src);
+    }
+  }, [src]);
+  if (!resolved) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={resolved} alt={alt} style={style} />;
+}
 
 const MOCK_STUDENTS = [
   { id: 1, name: "שירה כהן", designation: "סטודנטית", image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face" },
@@ -95,8 +111,7 @@ export default function CourseViewPage() {
         {/* Background thumbnail — full width */}
         {course.thumbnailUrl ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={course.thumbnailUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+            <ResolvedImg src={course.thumbnailUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "70%", background: "linear-gradient(to top, #050510 15%, rgba(5,5,16,0.85) 50%, transparent 100%)" }} />
           </>
         ) : (
