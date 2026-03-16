@@ -66,7 +66,9 @@ export function OnboardingTour() {
 
   // Check for first visit or trigger
   useEffect(() => {
-    const done = localStorage.getItem("bldr_onboarding_done");
+    // TODO: restore "done" check when ready for production
+    // const done = localStorage.getItem("bldr_onboarding_done");
+    const done = false;
     if (!done) {
       const s = getSteps();
       const st = getSettings();
