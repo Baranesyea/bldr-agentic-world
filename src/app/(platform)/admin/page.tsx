@@ -16,6 +16,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/logs": <TerminalIcon size={28} />,
   "/admin/case-studies": <BeakerIcon size={28} />,
   "/admin/qa": <QuestionIcon size={28} />,
+  "/admin/migrate": <ImportIcon size={28} />,
 };
 
 const sections = [
@@ -73,6 +74,11 @@ const sections = [
     title: "ניהול שאלות",
     description: "ניהול שאלות מהפורום, מענה לתלמידים והעברת שאלות לבסיס הידע",
     href: "/admin/qa",
+  },
+  {
+    title: "ייצוא וייבוא",
+    description: "העבר מידע בין המערכת המקומית לאתר החי — קורסים, הגדרות ותמונות",
+    href: "/admin/migrate",
   },
 ];
 
