@@ -144,6 +144,7 @@ export default function DashboardPage() {
               />
               {/* Gradient only from bottom half — top stays clear */}
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "70%", background: "linear-gradient(to top, #050510 15%, rgba(5,5,16,0.85) 50%, transparent 100%)" }} />
+              <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "60%", background: "linear-gradient(to left, rgba(5,5,16,0.7) 0%, rgba(5,5,16,0.3) 40%, transparent 100%)" }} />
             </>
           ) : (
             <>
@@ -157,11 +158,11 @@ export default function DashboardPage() {
             <span style={{ background: "rgba(0,0,255,0.2)", color: "#3333FF", padding: "4px 12px", borderRadius: "8px", fontSize: "12px", fontWeight: 600, display: "inline-block", marginBottom: "12px" }}>
               קורס מומלץ
             </span>
-            <h1 style={{ fontSize: "36px", fontWeight: 900, color: "#f0f0f5", lineHeight: 1.1, marginBottom: "12px" }}>
+            <h1 style={{ fontSize: "36px", fontWeight: 900, color: "#f0f0f5", lineHeight: 1.1, marginBottom: "12px", textShadow: "0 2px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)" }}>
               {featuredCourse.title}
             </h1>
             {featuredCourse.description && (
-              <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.6)", marginBottom: "16px", lineHeight: 1.6 }}>
+              <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.6)", marginBottom: "16px", lineHeight: 1.6, textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
                 {featuredCourse.description.slice(0, 150)}
               </p>
             )}
@@ -264,9 +265,9 @@ export default function DashboardPage() {
                       padding: "16px 20px",
                       zIndex: 2,
                     }}>
-                      <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 4 }}>{c.title}</h3>
+                      <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 4, textShadow: "0 1px 6px rgba(0,0,0,0.8)" }}>{c.title}</h3>
                       {c.description && (
-                        <p style={{ fontSize: 13, color: "rgba(240,240,245,0.55)", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>{c.description}</p>
+                        <p style={{ fontSize: 13, color: "rgba(240,240,245,0.55)", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{c.description}</p>
                       )}
                     </div>
                   </div>
