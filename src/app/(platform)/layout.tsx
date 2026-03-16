@@ -8,6 +8,7 @@ import { TrialBanner } from "@/components/layout/trial-banner";
 import { FeedbackWidget } from "@/components/layout/feedback-widget";
 import { WhatsAppCTA } from "@/components/layout/whatsapp-cta";
 import { OnboardingTour } from "@/components/layout/onboarding-tour";
+import { ProfileQuestionnaire } from "@/components/layout/profile-questionnaire";
 
 const mockEvent = {
   title: "Office Hours",
@@ -65,6 +66,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       {!isAdmin && <WhatsAppCTA />}
       {!isAdmin && <NextEventBanner event={mockEvent} />}
       <OnboardingTour />
+      <ProfileQuestionnaire />
     </div>
   );
 }

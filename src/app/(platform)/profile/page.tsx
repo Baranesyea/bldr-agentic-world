@@ -9,6 +9,10 @@ interface UserProfile {
   avatarUrl: string;
   role: string;
   avatarGenerated: boolean;
+  profession?: string;
+  learningGoal?: string;
+  city?: string;
+  age?: number;
 }
 
 const DEFAULT_PROFILE: UserProfile = {
@@ -60,6 +64,10 @@ export default function ProfilePage() {
   const [editName, setEditName] = useState("");
   const [saved, setSaved] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [editProfession, setEditProfession] = useState("");
+  const [editLearningGoal, setEditLearningGoal] = useState("");
+  const [editCity, setEditCity] = useState("");
+  const [editAge, setEditAge] = useState("");
   const [autoPlayNext, setAutoPlayNext] = useState(true);
   const [showGenderPicker, setShowGenderPicker] = useState(false);
   const [genError, setGenError] = useState("");
@@ -72,6 +80,10 @@ export default function ProfilePage() {
         const parsed = JSON.parse(stored);
         setProfile(parsed);
         setEditName(parsed.name);
+        setEditProfession(parsed.profession || "");
+        setEditLearningGoal(parsed.learningGoal || "");
+        setEditCity(parsed.city || "");
+        setEditAge(parsed.age ? String(parsed.age) : "");
       } else {
         setEditName(DEFAULT_PROFILE.name);
       }
@@ -489,6 +501,64 @@ export default function ProfilePage() {
               <span style={{ marginRight: "12px", fontSize: "13px", color: "#00C853", fontWeight: 600 }}>נשמר!</span>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Extra Profile Fields */}
+      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", padding: "24px", marginBottom: "24px" }}>
+        <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#f0f0f5", marginBottom: "16px" }}>פרטים נוספים</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div>
+            <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", display: "block", marginBottom: "6px" }}>מה אתם עושים בחיים המקצועיים?</label>
+            <textarea
+              rows={2}
+              value={editProfession}
+              onChange={(e) => setEditProfession(e.target.value)}
+              style={{ ...INPUT_STYLE, resize: "none" as const, fontFamily: "inherit" }}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", display: "block", marginBottom: "6px" }}>איך הלמידה כאן עוזרת לכם?</label>
+            <textarea
+              rows={2}
+              value={editLearningGoal}
+              onChange={(e) => setEditLearningGoal(e.target.value)}
+              style={{ ...INPUT_STYLE, resize: "none" as const, fontFamily: "inherit" }}
+            />
+          </div>
+          <div style={{ display: "flex", gap: "14px" }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", display: "block", marginBottom: "6px" }}>מאיפה אתם?</label>
+              <input
+                type="text"
+                value={editCity}
+                onChange={(e) => setEditCity(e.target.value)}
+                style={INPUT_STYLE}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", display: "block", marginBottom: "6px" }}>גיל</label>
+              <input
+                type="number"
+                value={editAge}
+                onChange={(e) => setEditAge(e.target.value)}
+                style={INPUT_STYLE}
+                min={1}
+                max={120}
+              />
+            </div>
+          </div>
+          <button
+            onClick={() => saveProfile({
+              profession: editProfession,
+              learningGoal: editLearningGoal,
+              city: editCity,
+              age: editAge ? parseInt(editAge) : undefined,
+            })}
+            style={{ ...BTN_PRIMARY, alignSelf: "flex-start" }}
+          >
+            שמור פרטים
+          </button>
         </div>
       </div>
 

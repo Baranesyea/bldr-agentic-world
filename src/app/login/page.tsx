@@ -56,6 +56,9 @@ export default function LoginPage() {
       }
     }
 
+    const count = parseInt(localStorage.getItem("bldr_login_count") || "0");
+    localStorage.setItem("bldr_login_count", String(count + 1));
+
     router.push("/dashboard");
     router.refresh();
   };
