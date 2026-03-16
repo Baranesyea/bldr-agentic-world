@@ -14,9 +14,26 @@ export interface Profile {
   created_at: string;
 }
 
+const CACHE_KEY = "bldr_profile_cache";
+
+function getCachedProfile(): Profile | null {
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (cached) return JSON.parse(cached);
+  } catch {}
+  return null;
+}
+
+function setCachedProfile(profile: Profile | null) {
+  try {
+    if (profile) sessionStorage.setItem(CACHE_KEY, JSON.stringify(profile));
+    else sessionStorage.removeItem(CACHE_KEY);
+  } catch {}
+}
+
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(getCachedProfile);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,7 +50,10 @@ export function useUser() {
           .eq("id", user.id)
           .single();
         if (error) console.error("Profile fetch error:", error);
-        else setProfile(data as Profile | null);
+        else {
+          setProfile(data as Profile);
+          setCachedProfile(data as Profile);
+        }
       }
 
       setLoading(false);
@@ -51,8 +71,10 @@ export function useUser() {
             .eq("id", session.user.id)
             .single();
           setProfile(data as Profile | null);
+          setCachedProfile(data as Profile | null);
         } else {
           setProfile(null);
+          setCachedProfile(null);
         }
       }
     );
