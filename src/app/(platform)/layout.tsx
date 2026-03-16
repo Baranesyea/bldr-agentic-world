@@ -61,8 +61,8 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
         <TrialBanner />
         {children}
       </main>
-      <FeedbackWidget />
-      <WhatsAppCTA />
+      {!isAdmin && <FeedbackWidget />}
+      {!isAdmin && <WhatsAppCTA />}
       {!isAdmin && <NextEventBanner event={mockEvent} />}
       <OnboardingTour />
     </div>
