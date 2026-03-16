@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [fullName, setFullName] = useState("");
 
@@ -24,6 +25,7 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
 
     if (mode === "signup") {
@@ -39,13 +41,9 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      // Auto login after signup
-      const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-      if (loginError) {
-        setError("נרשמת בהצלחה! בדוק את האימייל לאימות.");
-        setLoading(false);
-        return;
-      }
+      setSuccess("נרשמת בהצלחה! בדוק את האימייל לאימות.");
+      setLoading(false);
+      return;
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
@@ -159,6 +157,21 @@ export default function LoginPage() {
               }}>
                 {mode === "login" ? "התחברות" : "הרשמה"}
               </h2>
+
+              {/* Success */}
+              {success && (
+                <div style={{
+                  background: "rgba(0,200,83,0.1)",
+                  border: "1px solid rgba(0,200,83,0.3)",
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                  marginBottom: 16,
+                  fontSize: 13,
+                  color: "#00C853",
+                }}>
+                  {success}
+                </div>
+              )}
 
               {/* Error */}
               {error && (
@@ -321,7 +334,7 @@ export default function LoginPage() {
                 <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)", margin: "0 0 10px" }}>
                   {mode === "login" ? "אין לך חשבון?" : "כבר יש לך חשבון?"}{" "}
                   <span
-                    onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}
+                    onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setSuccess(""); }}
                     style={{ color: "#3333FF", cursor: "pointer", fontWeight: 700 }}
                   >
                     {mode === "login" ? "הירשם" : "התחבר"}
