@@ -22,6 +22,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/onboarding": <UsersIcon size={28} />,
   "/admin/content-ideas": <LightbulbIcon size={28} />,
   "/admin/subscribers": <UsersIcon size={28} />,
+  "/admin/tasks": <LightbulbIcon size={28} />,
 };
 
 const sections = [
@@ -109,6 +110,11 @@ const sections = [
     title: "ניהול נרשמים",
     description: "CRM — ניהול מנויים, היסטוריית חיובים ומעקב הכנסות",
     href: "/admin/subscribers",
+  },
+  {
+    title: "משימות",
+    description: "ניהול משימות לביצוע — הוספה, מעקב ואישור ביצוע",
+    href: "/admin/tasks",
   },
 ];
 
