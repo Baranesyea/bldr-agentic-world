@@ -404,14 +404,12 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       {/* Logout + Collapse */}
       <div style={{ padding: "8px", paddingBottom: "16px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
         <button
-          onClick={async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            try {
-              const supabase = createClient();
-              await supabase.auth.signOut();
-            } catch {}
-            window.location.href = "/login";
+          onClick={() => {
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "/api/auth/logout";
+            document.body.appendChild(form);
+            form.submit();
           }}
           style={{
             display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 10,
