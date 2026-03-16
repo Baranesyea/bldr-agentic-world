@@ -18,7 +18,8 @@ const CACHE_KEY = "bldr_profile_cache";
 
 function getCachedProfile(): Profile | null {
   try {
-    const cached = sessionStorage.getItem(CACHE_KEY);
+    // Try sessionStorage first, then localStorage
+    const cached = sessionStorage.getItem(CACHE_KEY) || localStorage.getItem(CACHE_KEY);
     if (cached) return JSON.parse(cached);
   } catch {}
   return null;
@@ -26,8 +27,14 @@ function getCachedProfile(): Profile | null {
 
 function setCachedProfile(profile: Profile | null) {
   try {
-    if (profile) sessionStorage.setItem(CACHE_KEY, JSON.stringify(profile));
-    else sessionStorage.removeItem(CACHE_KEY);
+    if (profile) {
+      const json = JSON.stringify(profile);
+      sessionStorage.setItem(CACHE_KEY, json);
+      localStorage.setItem(CACHE_KEY, json);
+    } else {
+      sessionStorage.removeItem(CACHE_KEY);
+      localStorage.removeItem(CACHE_KEY);
+    }
   } catch {}
 }
 

@@ -6,6 +6,7 @@ import { SplineScene } from "@/components/ui/spline";
 import { Spotlight } from "@/components/ui/spotlight";
 import { createClient } from "@/lib/supabase";
 import { GradientDots } from "@/components/ui/gradient-dots";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ParticleTextEffect } from "@/components/ui/particle-text-effect";
 
 export default function LoginPage() {
@@ -20,6 +21,7 @@ export default function LoginPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [showSpinner, setShowSpinner] = useState(false);
 
   const supabase = createClient();
 
@@ -54,6 +56,7 @@ export default function LoginPage() {
       }
     }
 
+    setShowSpinner(true);
     router.push("/dashboard");
     router.refresh();
   };
@@ -83,6 +86,7 @@ export default function LoginPage() {
 
   return (
     <>
+      {showSpinner && <LoadingSpinner text="מתחבר..." />}
       <style>{`
         @keyframes fade-up {
           from { opacity: 0; transform: translateY(20px); }

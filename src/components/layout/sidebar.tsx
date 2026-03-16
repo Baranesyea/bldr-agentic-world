@@ -34,6 +34,7 @@ import { Sparkles, BookOpen, Rocket, Layers, Calendar } from "lucide-react";
 import { MorphingCardStack, type CardData } from "@/components/ui/morphing-card-stack";
 import { useUser } from "@/hooks/useUser";
 import { createClient } from "@/lib/supabase";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 const mainNav = [
   { label: "לימודים", href: "/dashboard", icon: CoursesIcon },
@@ -85,6 +86,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [viewAsUser, setViewAsUser] = useState(false);
   const [showNews, setShowNews] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [newsCards, setNewsCards] = useState<CardData[]>([]);
 
   // Load notifications
@@ -171,6 +173,8 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
   };
 
   return (
+    <>
+    {loggingOut && <LoadingSpinner text="מתנתק..." />}
     <aside style={{
       height: "100vh",
       width: "100%",
@@ -406,14 +410,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         <button
           id="logout-btn"
           onClick={async () => {
-            // Show full-screen logout overlay
-            const overlay = document.createElement("div");
-            overlay.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(5,5,16,0.85);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);";
-            overlay.innerHTML = '<div style="text-align:center"><div style="width:32px;height:32px;border:2px solid rgba(255,255,255,0.15);border-top-color:#3333FF;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px"></div><p style="color:rgba(240,240,245,0.6);font-size:14px">מתנתק...</p></div>';
-            const style = document.createElement("style");
-            style.textContent = "@keyframes spin{to{transform:rotate(360deg)}}";
-            document.head.appendChild(style);
-            document.body.appendChild(overlay);
+            setLoggingOut(true);
             await fetch("/api/auth/logout", { method: "POST" });
             window.location.replace("/login");
           }}
@@ -442,5 +439,6 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         )}
       </div>
     </aside>
+    </>
   );
 }
