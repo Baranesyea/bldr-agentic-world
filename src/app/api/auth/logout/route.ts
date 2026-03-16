@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const response = NextResponse.redirect(new URL("/login", request.url));
+  const response = NextResponse.json({ ok: true });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
   // Clear all supabase cookies
   request.cookies.getAll().forEach((cookie) => {
     if (cookie.name.startsWith("sb-")) {
-      response.cookies.delete(cookie.name);
+      response.cookies.set(cookie.name, "", { maxAge: 0, path: "/" });
     }
   });
 
