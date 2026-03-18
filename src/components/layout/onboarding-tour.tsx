@@ -50,7 +50,21 @@ const DEFAULT_SETTINGS: OnboardingSettings = {
 function getSteps(): TourStep[] {
   try {
     const stored = localStorage.getItem("bldr_onboarding_steps");
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const parsed: TourStep[] = JSON.parse(stored);
+      // Migrate old href selectors to data-nav
+      let migrated = false;
+      for (const step of parsed) {
+        if (step.targetSelector.startsWith("[href='")) {
+          step.targetSelector = step.targetSelector.replace("[href='", "[data-nav='");
+          migrated = true;
+        }
+      }
+      if (migrated) {
+        localStorage.setItem("bldr_onboarding_steps", JSON.stringify(parsed));
+      }
+      return parsed;
+    }
   } catch {}
   localStorage.setItem("bldr_onboarding_steps", JSON.stringify(DEFAULT_STEPS));
   return DEFAULT_STEPS;

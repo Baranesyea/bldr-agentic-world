@@ -223,7 +223,19 @@ export default function OnboardingAdminPage() {
     try {
       const storedSteps = localStorage.getItem("bldr_onboarding_steps");
       if (storedSteps) {
-        setSteps(JSON.parse(storedSteps));
+        const parsed: TourStep[] = JSON.parse(storedSteps);
+        // Migrate old href selectors to data-nav
+        let migrated = false;
+        for (const step of parsed) {
+          if (step.targetSelector.startsWith("[href='")) {
+            step.targetSelector = step.targetSelector.replace("[href='", "[data-nav='");
+            migrated = true;
+          }
+        }
+        if (migrated) {
+          localStorage.setItem("bldr_onboarding_steps", JSON.stringify(parsed));
+        }
+        setSteps(parsed);
       } else {
         setSteps(DEFAULT_STEPS);
         localStorage.setItem("bldr_onboarding_steps", JSON.stringify(DEFAULT_STEPS));
