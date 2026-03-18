@@ -5,6 +5,23 @@
    Brand: Electric Blue + Dark Premium
    ============================================ */
 
+/* Brand Font — Robot Heroes (for "Agentic World" branding) */
+@font-face {
+  font-family: 'Robot Heroes';
+  src: url('/fonts/Robot Heroes.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Robot Heroes';
+  src: url('/fonts/Robot Heroes Italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
 /* Hebrew Font — FbAbsoluti */
 @font-face {
   font-family: 'FbAbsoluti';

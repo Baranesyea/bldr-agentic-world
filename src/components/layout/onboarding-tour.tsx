@@ -551,7 +551,7 @@ export function OnboardingTour() {
                 <div style={{
                   fontSize: 38, fontWeight: 800, lineHeight: 1.15,
                   letterSpacing: "-0.03em",
-                  fontFamily: "Merriweather, serif",
+                  fontFamily: "'Robot Heroes', sans-serif",
                   background: "linear-gradient(135deg, #f0f0f5 0%, #8888FF 50%, #00CCFF 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
