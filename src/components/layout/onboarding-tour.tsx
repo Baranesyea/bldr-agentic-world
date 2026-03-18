@@ -446,9 +446,9 @@ export function OnboardingTour() {
           0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
           100% { transform: translateY(100px) rotate(720deg); opacity: 0; }
         }
-        @keyframes spotlightBorderFlow {
-          0% { background-position: 0% 50%; }
-          100% { background-position: 200% 50%; }
+        @keyframes spotlightPulse {
+          0%, 100% { box-shadow: 0 0 12px rgba(0,0,255,0.3), 0 0 24px rgba(0,100,255,0.15), inset 0 0 12px rgba(0,0,255,0.1); border-color: rgba(0,0,255,0.5); }
+          50% { box-shadow: 0 0 18px rgba(0,0,255,0.45), 0 0 36px rgba(0,100,255,0.25), inset 0 0 16px rgba(0,0,255,0.15); border-color: rgba(0,0,255,0.7); }
         }
 
         /* Fallback for browsers that don't support @property */
@@ -663,43 +663,23 @@ export function OnboardingTour() {
             )}
           </div>
 
-          {/* Spotlight border — thin animated gradient outline */}
+          {/* Spotlight border — matching the card glow colors */}
           {spotlightRect && (
-            <>
-              {/* Soft glow behind */}
-              <div style={{
-                position: "fixed",
-                top: spotlightRect.top - 12 + "px",
-                left: spotlightRect.left - 12 + "px",
-                width: spotlightRect.width + 24 + "px",
-                height: spotlightRect.height + 24 + "px",
-                borderRadius: 10,
-                zIndex: 99991,
-                pointerEvents: "none",
-                opacity: transitioning ? 0 : 0.5,
-                transition: "opacity 0.25s, top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease",
-                boxShadow: "0 0 20px rgba(0,100,255,0.3), 0 0 40px rgba(0,100,255,0.15)",
-              }} />
-              {/* The border itself */}
-              <div style={{
-                position: "fixed",
-                top: spotlightRect.top - 6 + "px",
-                left: spotlightRect.left - 6 + "px",
-                width: spotlightRect.width + 12 + "px",
-                height: spotlightRect.height + 12 + "px",
-                borderRadius: 4,
-                zIndex: 99991,
-                pointerEvents: "none",
-                opacity: transitioning ? 0 : 1,
-                transition: "opacity 0.25s, top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease",
-                border: "2px solid transparent",
-                backgroundImage: "linear-gradient(rgba(8,8,22,1), rgba(8,8,22,1)), linear-gradient(90deg, #0000FF, #00CCFF, #6600CC, #FF3366, #0000FF, #00CCFF)",
-                backgroundOrigin: "border-box",
-                backgroundClip: "padding-box, border-box",
-                backgroundSize: "100% 100%, 200% 100%",
-                animation: "spotlightBorderFlow 3s linear infinite",
-              }} />
-            </>
+            <div style={{
+              position: "fixed",
+              top: spotlightRect.top - 6 + "px",
+              left: spotlightRect.left - 6 + "px",
+              width: spotlightRect.width + 12 + "px",
+              height: spotlightRect.height + 12 + "px",
+              borderRadius: 4,
+              zIndex: 99991,
+              pointerEvents: "none",
+              opacity: transitioning ? 0 : 1,
+              transition: "opacity 0.25s, top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease",
+              border: "2px solid rgba(0,0,255,0.5)",
+              boxShadow: "0 0 12px rgba(0,0,255,0.3), 0 0 24px rgba(0,100,255,0.15), inset 0 0 12px rgba(0,0,255,0.1)",
+              animation: "spotlightPulse 2s ease-in-out infinite",
+            }} />
           )}
 
           {/* Tooltip — with Siri Glow */}
