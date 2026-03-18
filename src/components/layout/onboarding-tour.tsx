@@ -235,7 +235,12 @@ export function OnboardingTour() {
         setSteps(s);
         setSettings(st);
         setSoundEnabled(st.soundDefault);
-        setTimeout(() => setShowWelcome(true), 1000);
+        setTimeout(() => {
+          setShowWelcome(true);
+          if (st.soundDefault && st.welcomeAudioUrl) {
+            playWelcomeAudio(st.welcomeAudioUrl);
+          }
+        }, 1000);
       }
     }
 
@@ -251,6 +256,9 @@ export function OnboardingTour() {
           setSoundEnabled(st.soundDefault);
           setCurrentStep(0);
           setShowWelcome(true);
+          if (st.soundDefault && st.welcomeAudioUrl) {
+            playWelcomeAudio(st.welcomeAudioUrl);
+          }
         }
       }
     }, 500);
@@ -259,23 +267,19 @@ export function OnboardingTour() {
   }, []);
 
   // Play welcome audio when welcome screen shows
-  useEffect(() => {
-    if (!showWelcome || !soundEnabled || !settings.welcomeAudioUrl) return;
-    let cancelled = false;
-    resolveAudioUrl(settings.welcomeAudioUrl).then((url) => {
-      if (cancelled || !url) return;
+  const playWelcomeAudio = useCallback((audioUrl: string) => {
+    if (!audioUrl) return;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    resolveAudioUrl(audioUrl).then((url) => {
+      if (!url) return;
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.play().catch(() => {});
     });
-    return () => {
-      cancelled = true;
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, [showWelcome, soundEnabled, settings.welcomeAudioUrl]);
+  }, []);
 
   const updateSpotlight = useCallback((stepIndex: number) => {
     const step = steps[stepIndex];
