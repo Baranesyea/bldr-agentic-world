@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { motion } from "framer-motion";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 
 interface TourStep {
@@ -418,10 +419,6 @@ export function OnboardingTour() {
           0%, 100% { opacity: 0.6; }
           50% { opacity: 1; }
         }
-        @keyframes orbRotate3D {
-          0% { transform: rotateY(0deg) rotateX(8deg); }
-          100% { transform: rotateY(360deg) rotateX(8deg); }
-        }
         @keyframes siriAppear {
           0% { opacity: 0; transform: scale(0.92) translateY(24px); filter: blur(8px); }
           100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
@@ -486,68 +483,58 @@ export function OnboardingTour() {
           >
             <div style={{ padding: "52px 44px 44px", textAlign: "center" }}>
 
-              {/* Mesh sphere — AI entity orb */}
+              {/* Animated circles orb — AI entity */}
               <div style={{
-                width: 90, height: 90, margin: "0 auto 28px",
+                width: 120, height: 120, margin: "0 auto 28px",
                 position: "relative",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                perspective: 200,
               }}>
-                {/* Outer glow */}
+                {/* Background glow blurs */}
                 <div style={{
-                  position: "absolute", inset: -16,
-                  borderRadius: "50%",
-                  background: "radial-gradient(circle, rgba(100,120,255,0.2) 0%, rgba(180,80,255,0.1) 40%, transparent 70%)",
-                  animation: "siriInnerPulse 3s ease-in-out infinite",
-                  filter: "blur(8px)",
+                  position: "absolute", inset: -10,
+                  background: "radial-gradient(ellipse at center, rgba(0,0,255,0.2) 0%, transparent 70%)",
+                  filter: "blur(20px)",
+                  pointerEvents: "none",
                 }} />
-                {/* Rotating mesh — the whole div rotates in 3D */}
                 <div style={{
-                  position: "relative", zIndex: 1,
-                  width: 90, height: 90,
-                  animation: "orbRotate3D 6s linear infinite",
-                  filter: "drop-shadow(0 0 12px rgba(100,140,255,0.4))",
-                }}>
-                  <svg width="90" height="90" viewBox="0 0 100 100">
-                    <defs>
-                      <radialGradient id="orbGlow" cx="40%" cy="35%" r="55%">
-                        <stop offset="0%" stopColor="rgba(180,160,255,0.9)" />
-                        <stop offset="30%" stopColor="rgba(100,120,255,0.6)" />
-                        <stop offset="60%" stopColor="rgba(140,60,220,0.4)" />
-                        <stop offset="100%" stopColor="rgba(20,20,60,0.1)" />
-                      </radialGradient>
-                      <radialGradient id="orbHighlight" cx="35%" cy="30%" r="40%">
-                        <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
-                        <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-                      </radialGradient>
-                    </defs>
-                    {/* Filled sphere base */}
-                    <circle cx="50" cy="50" r="42" fill="url(#orbGlow)" />
-                    <circle cx="50" cy="50" r="42" fill="url(#orbHighlight)" />
-                    {/* Wireframe mesh — longitude lines */}
-                    {[0, 30, 60, 90, 120, 150].map((rot) => (
-                      <ellipse key={`lon-${rot}`} cx="50" cy="50"
-                        rx={42 * Math.abs(Math.cos(rot * Math.PI / 180))} ry={42}
-                        fill="none" stroke="rgba(200,210,255,0.25)" strokeWidth="0.6"
-                      />
-                    ))}
-                    {/* Wireframe mesh — latitude lines */}
-                    {[-28, -14, 0, 14, 28].map((offset) => {
-                      const y = 50 + offset;
-                      const radiusAtY = Math.sqrt(42 * 42 - offset * offset);
-                      return (
-                        <ellipse key={`lat-${offset}`} cx="50" cy={y}
-                          rx={radiusAtY} ry={radiusAtY * 0.2}
-                          fill="none" stroke="rgba(200,210,255,0.2)" strokeWidth="0.5"
-                        />
-                      );
-                    })}
-                    {/* Outer ring */}
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(180,200,255,0.3)" strokeWidth="0.8" />
-                    {/* Inner glow accent */}
-                    <circle cx="42" cy="40" r="18" fill="rgba(255,255,255,0.06)" />
-                  </svg>
-                </div>
+                  position: "absolute", inset: -10,
+                  background: "radial-gradient(ellipse at center, rgba(0,204,255,0.1) 0%, transparent 60%)",
+                  filter: "blur(16px)",
+                  pointerEvents: "none",
+                }} />
+                {/* Rotating circles */}
+                <motion.div style={{ position: "absolute", width: 120, height: 120 }}>
+                  {[0, 1, 2].map((i) => (
+                    <motion.div
+                      key={i}
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        borderRadius: "50%",
+                        border: `2px solid ${["rgba(0,0,255,0.5)", "rgba(0,180,255,0.4)", "rgba(100,50,200,0.25)"][i]}`,
+                        background: i === 0
+                          ? "radial-gradient(ellipse at 40% 35%, rgba(0,0,255,0.2) 0%, rgba(0,100,255,0.08) 40%, transparent 70%)"
+                          : "transparent",
+                      }}
+                      animate={{
+                        rotate: 360,
+                        scale: [1, 1.05 + i * 0.05, 1],
+                        opacity: [0.7, 1, 0.7],
+                      }}
+                      transition={{
+                        duration: 5 + i * 0.5,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      <div style={{
+                        position: "absolute", inset: 0, borderRadius: "50%",
+                        background: `radial-gradient(ellipse at center, ${["rgba(0,0,255,0.08)", "rgba(0,180,255,0.06)", "rgba(100,50,200,0.04)"][i]} 0%, transparent 70%)`,
+                        mixBlendMode: "screen",
+                      }} />
+                    </motion.div>
+                  ))}
+                </motion.div>
               </div>
 
               <div style={{ marginBottom: 14 }}>
