@@ -418,6 +418,10 @@ export function OnboardingTour() {
           0%, 100% { opacity: 0.6; }
           50% { opacity: 1; }
         }
+        @keyframes orbRotate3D {
+          0% { transform: rotateY(0deg) rotateX(8deg); }
+          100% { transform: rotateY(360deg) rotateX(8deg); }
+        }
         @keyframes siriAppear {
           0% { opacity: 0; transform: scale(0.92) translateY(24px); filter: blur(8px); }
           100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
@@ -487,6 +491,7 @@ export function OnboardingTour() {
                 width: 90, height: 90, margin: "0 auto 28px",
                 position: "relative",
                 display: "flex", alignItems: "center", justifyContent: "center",
+                perspective: 200,
               }}>
                 {/* Outer glow */}
                 <div style={{
@@ -496,49 +501,53 @@ export function OnboardingTour() {
                   animation: "siriInnerPulse 3s ease-in-out infinite",
                   filter: "blur(8px)",
                 }} />
-                {/* Rotating mesh sphere SVG */}
-                <svg
-                  width="90" height="90" viewBox="0 0 100 100"
-                  style={{
-                    position: "relative", zIndex: 1,
-                    animation: "siriSpin 8s linear infinite",
-                    filter: "drop-shadow(0 0 12px rgba(100,140,255,0.4))",
-                  }}
-                >
-                  <defs>
-                    <radialGradient id="orbGlow" cx="40%" cy="35%" r="55%">
-                      <stop offset="0%" stopColor="rgba(180,160,255,0.9)" />
-                      <stop offset="30%" stopColor="rgba(100,120,255,0.6)" />
-                      <stop offset="60%" stopColor="rgba(140,60,220,0.4)" />
-                      <stop offset="100%" stopColor="rgba(20,20,60,0.1)" />
-                    </radialGradient>
-                    <radialGradient id="orbHighlight" cx="35%" cy="30%" r="40%">
-                      <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
-                      <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-                    </radialGradient>
-                  </defs>
-                  {/* Filled sphere base */}
-                  <circle cx="50" cy="50" r="42" fill="url(#orbGlow)" />
-                  <circle cx="50" cy="50" r="42" fill="url(#orbHighlight)" />
-                  {/* Wireframe mesh lines — longitude */}
-                  {[0, 30, 60, 90, 120, 150].map((rot) => (
-                    <ellipse key={`lon-${rot}`} cx="50" cy="50" rx={42 * Math.cos(rot * Math.PI / 180)} ry="42"
-                      fill="none" stroke="rgba(200,210,255,0.25)" strokeWidth="0.6"
-                      transform={`rotate(0 50 50)`}
-                      style={{ transform: `rotateY(${rot}deg)`, transformOrigin: "50px 50px" }}
-                    />
-                  ))}
-                  {/* Wireframe mesh lines — latitude */}
-                  {[-30, -15, 0, 15, 30].map((offset) => (
-                    <ellipse key={`lat-${offset}`} cx="50" cy={50 + offset} rx={42 * Math.cos(offset * Math.PI / 42)} ry={8 + Math.abs(offset) * 0.3}
-                      fill="none" stroke="rgba(200,210,255,0.2)" strokeWidth="0.5"
-                    />
-                  ))}
-                  {/* Outer ring */}
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(180,200,255,0.3)" strokeWidth="0.8" />
-                  {/* Inner glow accent */}
-                  <circle cx="42" cy="40" r="18" fill="rgba(255,255,255,0.06)" />
-                </svg>
+                {/* Rotating mesh — the whole div rotates in 3D */}
+                <div style={{
+                  position: "relative", zIndex: 1,
+                  width: 90, height: 90,
+                  animation: "orbRotate3D 6s linear infinite",
+                  filter: "drop-shadow(0 0 12px rgba(100,140,255,0.4))",
+                }}>
+                  <svg width="90" height="90" viewBox="0 0 100 100">
+                    <defs>
+                      <radialGradient id="orbGlow" cx="40%" cy="35%" r="55%">
+                        <stop offset="0%" stopColor="rgba(180,160,255,0.9)" />
+                        <stop offset="30%" stopColor="rgba(100,120,255,0.6)" />
+                        <stop offset="60%" stopColor="rgba(140,60,220,0.4)" />
+                        <stop offset="100%" stopColor="rgba(20,20,60,0.1)" />
+                      </radialGradient>
+                      <radialGradient id="orbHighlight" cx="35%" cy="30%" r="40%">
+                        <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
+                        <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                      </radialGradient>
+                    </defs>
+                    {/* Filled sphere base */}
+                    <circle cx="50" cy="50" r="42" fill="url(#orbGlow)" />
+                    <circle cx="50" cy="50" r="42" fill="url(#orbHighlight)" />
+                    {/* Wireframe mesh — longitude lines */}
+                    {[0, 30, 60, 90, 120, 150].map((rot) => (
+                      <ellipse key={`lon-${rot}`} cx="50" cy="50"
+                        rx={42 * Math.abs(Math.cos(rot * Math.PI / 180))} ry={42}
+                        fill="none" stroke="rgba(200,210,255,0.25)" strokeWidth="0.6"
+                      />
+                    ))}
+                    {/* Wireframe mesh — latitude lines */}
+                    {[-28, -14, 0, 14, 28].map((offset) => {
+                      const y = 50 + offset;
+                      const radiusAtY = Math.sqrt(42 * 42 - offset * offset);
+                      return (
+                        <ellipse key={`lat-${offset}`} cx="50" cy={y}
+                          rx={radiusAtY} ry={radiusAtY * 0.2}
+                          fill="none" stroke="rgba(200,210,255,0.2)" strokeWidth="0.5"
+                        />
+                      );
+                    })}
+                    {/* Outer ring */}
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(180,200,255,0.3)" strokeWidth="0.8" />
+                    {/* Inner glow accent */}
+                    <circle cx="42" cy="40" r="18" fill="rgba(255,255,255,0.06)" />
+                  </svg>
+                </div>
               </div>
 
               <div style={{ marginBottom: 14 }}>
@@ -576,7 +585,7 @@ export function OnboardingTour() {
                     background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
                     color: "white",
                     border: "none", borderRadius: 4,
-                    padding: "13px 56px", fontSize: 16, fontWeight: 700,
+                    padding: "11px 72px", fontSize: 16, fontWeight: 700,
                     cursor: "pointer", transition: "all 0.25s",
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                     boxShadow: "0 0 30px rgba(0,0,255,0.3), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
