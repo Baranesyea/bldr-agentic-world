@@ -303,12 +303,14 @@ export function OnboardingTour() {
     setShowWelcome(false);
     setCurrentStep(0);
     setActive(true);
+    window.dispatchEvent(new CustomEvent("bldr:tour-active", { detail: true }));
   };
 
   const skipTour = () => {
     setShowWelcome(false);
     setActive(false);
     localStorage.setItem("bldr_onboarding_done", "true");
+    window.dispatchEvent(new CustomEvent("bldr:tour-active", { detail: false }));
   };
 
   const nextStep = () => {
@@ -323,7 +325,8 @@ export function OnboardingTour() {
       setActive(false);
       localStorage.setItem("bldr_onboarding_done", "true");
       setShowDone(true);
-      // Signal sidebar to open and highlight tour button
+      // Release sidebar lock, then signal highlight
+      window.dispatchEvent(new CustomEvent("bldr:tour-active", { detail: false }));
       window.dispatchEvent(new CustomEvent("bldr:tour-complete"));
       setTimeout(() => setShowDone(false), 4000);
     }

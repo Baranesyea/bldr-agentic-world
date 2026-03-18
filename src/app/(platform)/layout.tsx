@@ -22,11 +22,14 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
   const isAdmin = pathname?.startsWith("/admin");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Start expanded
   const collapseTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const tourActiveRef = useRef(false);
   const sidebarWidth = sidebarCollapsed ? 68 : 240;
 
   // Auto-collapse after 10 seconds on first load
   useEffect(() => {
-    const t = setTimeout(() => setSidebarCollapsed(true), 10000);
+    const t = setTimeout(() => {
+      if (!tourActiveRef.current) setSidebarCollapsed(true);
+    }, 10000);
     return () => clearTimeout(t);
   }, []);
 
@@ -43,13 +46,29 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
   }, [clearCollapseTimer]);
 
   const handleMouseLeave = useCallback(() => {
+    // Don't collapse if tour is active
+    if (tourActiveRef.current) return;
     clearCollapseTimer();
     collapseTimerRef.current = setTimeout(() => {
       setSidebarCollapsed(true);
     }, 2000);
   }, [clearCollapseTimer]);
 
-  // Open sidebar when tour completes
+  // Lock sidebar open while tour is active
+  useEffect(() => {
+    const handleTourActive = (e: Event) => {
+      const isActive = (e as CustomEvent).detail;
+      tourActiveRef.current = isActive;
+      if (isActive) {
+        clearCollapseTimer();
+        setSidebarCollapsed(false);
+      }
+    };
+    window.addEventListener("bldr:tour-active", handleTourActive);
+    return () => window.removeEventListener("bldr:tour-active", handleTourActive);
+  }, [clearCollapseTimer]);
+
+  // Open sidebar when tour completes (for highlight)
   useEffect(() => {
     const handleTourComplete = () => {
       clearCollapseTimer();
