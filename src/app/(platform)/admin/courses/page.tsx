@@ -98,6 +98,19 @@ const statusColors: Record<string, { bg: string; color: string; border: string; 
   coming_soon: { bg: "rgba(255,179,0,0.12)", color: "#FFB300", border: "rgba(255,179,0,0.2)", label: "בקרוב" },
 };
 
+const DEMO_IDS = ["demo-c1", "demo-c2", "demo-c3", "demo-c4", "demo-c5", "demo-c6"];
+
+function getDemoCourses(): Course[] {
+  return [
+    { id: "demo-c1", title: "Mastering Claude Code", description: "למד איך להשתמש ב-Claude Code כמו מקצוען", status: "active", featured: false, thumbnailUrl: "", createdAt: "", updatedAt: "", chapters: [{ id: "ch1", number: 1, title: "יסודות", lessons: Array.from({ length: 8 }, (_, i) => ({ id: `dl${i}`, number: i + 1, title: `שיעור ${i + 1}`, videoUrl: "", duration: "—", description: "", skills: [], hasAssignment: false, assignmentText: "", attachments: [], notes: "", thumbnailUrl: "" })) }] },
+    { id: "demo-c2", title: "Vibe Coding Fundamentals", description: "למד לבנות אפליקציות עם AI", status: "active", featured: false, thumbnailUrl: "", createdAt: "", updatedAt: "", chapters: [{ id: "ch1", number: 1, title: "מבוא", lessons: Array.from({ length: 6 }, (_, i) => ({ id: `dl${i}`, number: i + 1, title: `שיעור ${i + 1}`, videoUrl: "", duration: "—", description: "", skills: [], hasAssignment: false, assignmentText: "", attachments: [], notes: "", thumbnailUrl: "" })) }] },
+    { id: "demo-c3", title: "Building AI Agents", description: "בנה סוכני AI חכמים", status: "active", featured: false, thumbnailUrl: "", createdAt: "", updatedAt: "", chapters: [{ id: "ch1", number: 1, title: "יסודות", lessons: Array.from({ length: 5 }, (_, i) => ({ id: `dl${i}`, number: i + 1, title: `שיעור ${i + 1}`, videoUrl: "", duration: "—", description: "", skills: [], hasAssignment: false, assignmentText: "", attachments: [], notes: "", thumbnailUrl: "" })) }] },
+    { id: "demo-c4", title: "Automation Mastery", description: "אוטומציות חכמות לעסקים", status: "active", featured: false, thumbnailUrl: "", createdAt: "", updatedAt: "", chapters: [{ id: "ch1", number: 1, title: "מבוא", lessons: Array.from({ length: 4 }, (_, i) => ({ id: `dl${i}`, number: i + 1, title: `שיעור ${i + 1}`, videoUrl: "", duration: "—", description: "", skills: [], hasAssignment: false, assignmentText: "", attachments: [], notes: "", thumbnailUrl: "" })) }] },
+    { id: "demo-c5", title: "AI Product Management", description: "ניהול מוצר בעולם ה-AI", status: "coming_soon", featured: false, thumbnailUrl: "", createdAt: "", updatedAt: "", chapters: [] },
+    { id: "demo-c6", title: "Advanced Prompt Engineering", description: "טכניקות מתקדמות לכתיבת פרומפטים", status: "coming_soon", featured: false, thumbnailUrl: "", createdAt: "", updatedAt: "", chapters: [] },
+  ];
+}
+
 export default function CourseManagerPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "order">("grid");
@@ -107,16 +120,20 @@ export default function CourseManagerPage() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("bldr_courses");
-      if (stored) {
-        let parsed: Course[] = JSON.parse(stored);
-        // Apply saved order
-        const orderStr = localStorage.getItem("bldr_course_order");
-        if (orderStr) {
-          const order: string[] = JSON.parse(orderStr);
-          parsed = sortByOrder(parsed, order);
-        }
-        setCourses(parsed);
+      const stored: Course[] = JSON.parse(localStorage.getItem("bldr_courses") || "[]");
+      // Merge with demo courses that haven't been deleted
+      const userIds = new Set(stored.map((c) => c.id));
+      const deletedDemos: string[] = JSON.parse(localStorage.getItem("bldr_deleted_demos") || "[]");
+      const deletedSet = new Set(deletedDemos);
+      const demos = getDemoCourses().filter((d) => !userIds.has(d.id) && !deletedSet.has(d.id));
+      const merged = [...stored, ...demos];
+      // Apply saved order
+      const orderStr = localStorage.getItem("bldr_course_order");
+      if (orderStr) {
+        const order: string[] = JSON.parse(orderStr);
+        setCourses(sortByOrder(merged, order));
+      } else {
+        setCourses(merged);
       }
     } catch {}
   }, []);
@@ -138,9 +155,18 @@ export default function CourseManagerPage() {
 
   const deleteCourse = (id: string) => {
     if (!confirm("האם אתה בטוח שברצונך למחוק את הקורס?")) return;
+    // If it's a demo course, track it in deleted list
+    if (DEMO_IDS.includes(id)) {
+      const deleted: string[] = JSON.parse(localStorage.getItem("bldr_deleted_demos") || "[]");
+      if (!deleted.includes(id)) {
+        deleted.push(id);
+        localStorage.setItem("bldr_deleted_demos", JSON.stringify(deleted));
+      }
+    }
     const updated = courses.filter((c) => c.id !== id);
     setCourses(updated);
-    localStorage.setItem("bldr_courses", JSON.stringify(updated));
+    const realCourses = updated.filter((c) => !DEMO_IDS.includes(c.id));
+    localStorage.setItem("bldr_courses", JSON.stringify(realCourses));
     const ids = updated.map((c) => c.id);
     localStorage.setItem("bldr_course_order", JSON.stringify(ids));
   };

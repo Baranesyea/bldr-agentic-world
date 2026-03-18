@@ -58,9 +58,11 @@ export default function DashboardPage() {
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem("bldr_courses") || "[]") as Course[];
-      // Merge: user courses + demo courses (only add demos that don't conflict)
+      // Merge: user courses + demo courses (skip deleted demos)
       const userIds = new Set(stored.map((c) => c.id));
-      let merged = [...stored, ...DEMO_COURSES.filter((d) => !userIds.has(d.id))];
+      const deletedDemos: string[] = JSON.parse(localStorage.getItem("bldr_deleted_demos") || "[]");
+      const deletedSet = new Set(deletedDemos);
+      let merged = [...stored, ...DEMO_COURSES.filter((d) => !userIds.has(d.id) && !deletedSet.has(d.id))];
       // Apply admin-defined order if exists
       try {
         const orderStr = localStorage.getItem("bldr_course_order");
