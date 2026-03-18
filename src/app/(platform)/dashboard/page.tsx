@@ -318,7 +318,7 @@ export default function DashboardPage() {
                       padding: "16px 20px",
                       zIndex: 2,
                     }}>
-                      <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 4, textShadow: "0 1px 6px rgba(0,0,0,0.8)" }}>{c.title}</h3>
+                      <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 4, textShadow: "0 1px 6px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>{c.title}</h3>
                       {c.description && (
                         <p style={{ fontSize: 13, color: "rgba(240,240,245,0.55)", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{c.description}</p>
                       )}
@@ -341,19 +341,36 @@ export default function DashboardPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
             {comingSoonCourses.map((c, idx) => (
               <div key={c.id} style={{
-                background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: "4px", overflow: "hidden", opacity: 0.6,
+                position: "relative",
+                borderRadius: 4,
+                overflow: "hidden",
+                minHeight: 220,
+                border: "1px solid rgba(255,255,255,0.06)",
+                background: "linear-gradient(135deg, #0a0a2a, #000033)",
                 animation: `dashFadeUp 0.6s ease-out ${0.15 * (idx + nonFeaturedActive.length)}s both`,
               }}>
-                <div style={{ position: "relative", paddingBottom: "56.25%", background: "linear-gradient(135deg, #0a0a2a, #0a0a20)" }}>
-                  {c.thumbnailUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <ResolvedImg src={c.thumbnailUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
-                  )}
-                  <span style={{ position: "absolute", top: 10, right: 10, background: "rgba(255,179,0,0.25)", color: "#FFB300", padding: "4px 14px", borderRadius: 4, fontSize: 12, fontWeight: 600 }}>בקרוב</span>
-                </div>
-                <div style={{ padding: "14px 16px" }}>
-                  <h3 style={{ fontSize: "15px", fontWeight: 600, color: "rgba(240,240,245,0.5)", marginBottom: "6px" }}>{c.title}</h3>
+                {/* Background thumbnail */}
+                {c.thumbnailUrl && (
+                  <ResolvedImg src={c.thumbnailUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }} />
+                )}
+                {/* Gradient overlay — same as active courses */}
+                <div style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "linear-gradient(to top, #050510 0%, rgba(5,5,16,0.9) 30%, rgba(5,5,16,0.4) 60%, rgba(5,5,16,0.15) 100%)",
+                }} />
+                {/* Badge */}
+                <span style={{ position: "absolute", top: 12, right: 12, background: "rgba(255,179,0,0.25)", color: "#FFB300", padding: "4px 14px", borderRadius: 4, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>בקרוב</span>
+                {/* Text overlay — same position as active courses */}
+                <div style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  padding: "16px 20px",
+                  zIndex: 2,
+                }}>
+                  <h3 style={{ fontSize: 17, fontWeight: 700, color: "rgba(240,240,245,0.7)", marginBottom: 0, textShadow: "0 1px 6px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>{c.title}</h3>
                 </div>
               </div>
             ))}
