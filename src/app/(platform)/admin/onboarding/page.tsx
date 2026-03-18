@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { saveImage, getImage } from "@/lib/image-store";
 
 interface TourStep {
   id: string;
@@ -16,20 +17,22 @@ interface OnboardingSettings {
   welcomeTitle: string;
   welcomeSubtitle: string;
   soundDefault: boolean;
+  welcomeAudioUrl?: string;
 }
 
 const DEFAULT_STEPS: TourStep[] = [
-  { id: "step-1", targetSelector: "[href='/dashboard']", title: "הלימודים", description: "כאן תמצא את כל הקורסים שלך, ממוינים בצורה נוחה כמו נטפליקס", audioUrl: "", position: "left" },
-  { id: "step-2", targetSelector: "[href='/notebook']", title: "המחברת", description: "כל ההערות שלך מכל השיעורים במקום אחד", audioUrl: "", position: "left" },
-  { id: "step-3", targetSelector: "[href='/calendar']", title: "לוח שנה", description: "כל האירועים והמפגשים החיים שלנו", audioUrl: "", position: "left" },
-  { id: "step-4", targetSelector: "[href='/qa']", title: "שאלות ותשובות", description: "שאל שאלות, קבל תשובות מהקהילה ומהצוות", audioUrl: "", position: "left" },
-  { id: "step-5", targetSelector: "[href='/profile']", title: "הפרופיל שלך", description: "עדכן את הפרטים שלך, הגדרות והעדפות", audioUrl: "", position: "left" },
+  { id: "step-1", targetSelector: "[data-nav='/dashboard']", title: "הלימודים", description: "כאן תמצא את כל הקורסים שלך, ממוינים בצורה נוחה כמו נטפליקס", audioUrl: "", position: "left" },
+  { id: "step-2", targetSelector: "[data-nav='/notebook']", title: "המחברת", description: "כל ההערות שלך מכל השיעורים במקום אחד", audioUrl: "", position: "left" },
+  { id: "step-3", targetSelector: "[data-nav='/calendar']", title: "לוח שנה", description: "כל האירועים והמפגשים החיים שלנו", audioUrl: "", position: "left" },
+  { id: "step-4", targetSelector: "[data-nav='/qa']", title: "שאלות ותשובות", description: "שאל שאלות, קבל תשובות מהקהילה ומהצוות", audioUrl: "", position: "left" },
+  { id: "step-5", targetSelector: "[data-nav='/profile']", title: "הפרופיל שלך", description: "עדכן את הפרטים שלך, הגדרות והעדפות", audioUrl: "", position: "left" },
 ];
 
 const DEFAULT_SETTINGS: OnboardingSettings = {
   welcomeTitle: "ברוכים הבאים ל-Agentic World",
-  welcomeSubtitle: "כאן אנשים שבונים לומדים איך לבנות",
+  welcomeSubtitle: "המועדון לאנשים שבונים בעידן האגנטי",
   soundDefault: true,
+  welcomeAudioUrl: "",
 };
 
 const CARD_STYLE: React.CSSProperties = {
@@ -66,6 +69,150 @@ const SELECT_STYLE: React.CSSProperties = {
   cursor: "pointer",
 };
 
+const UPLOAD_BTN_STYLE: React.CSSProperties = {
+  display: "flex", alignItems: "center", gap: "8px",
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: "4px",
+  padding: "8px 14px",
+  color: "rgba(240,240,245,0.6)",
+  fontSize: "13px",
+  cursor: "pointer",
+  transition: "border-color 0.2s",
+  width: "100%",
+};
+
+/** Read a file as data URL */
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Audio upload component with play preview */
+function AudioUpload({
+  label,
+  audioUrl,
+  onUpload,
+  onClear,
+}: {
+  label: string;
+  audioUrl: string;
+  onUpload: (idbUrl: string) => void;
+  onClear: () => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [resolvedUrl, setResolvedUrl] = useState("");
+
+  // Resolve idb:// URLs
+  useEffect(() => {
+    if (!audioUrl) { setResolvedUrl(""); return; }
+    if (audioUrl.startsWith("idb://")) {
+      const id = audioUrl.slice(6);
+      getImage(id).then((data) => setResolvedUrl(data || ""));
+    } else {
+      setResolvedUrl(audioUrl);
+    }
+  }, [audioUrl]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      const id = `audio_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      await saveImage(id, dataUrl);
+      onUpload(`idb://${id}`);
+    } catch (err) {
+      console.error("Failed to upload audio:", err);
+    }
+    setUploading(false);
+    // Reset input
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const togglePlay = () => {
+    if (!resolvedUrl) return;
+    if (playing && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+      setPlaying(false);
+    } else {
+      const audio = new Audio(resolvedUrl);
+      audioRef.current = audio;
+      audio.onended = () => setPlaying(false);
+      audio.play().catch(() => setPlaying(false));
+      setPlaying(true);
+    }
+  };
+
+  return (
+    <div>
+      <label style={LABEL_STYLE}>{label}</label>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="audio/*"
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
+      {audioUrl ? (
+        <div style={{ display: "flex", gap: "6px" }}>
+          <button
+            onClick={togglePlay}
+            style={{
+              ...UPLOAD_BTN_STYLE,
+              flex: 1,
+              justifyContent: "center",
+              borderColor: playing ? "rgba(51,51,255,0.4)" : "rgba(255,255,255,0.1)",
+              color: playing ? "#3333FF" : "rgba(240,240,245,0.6)",
+            }}
+          >
+            <span style={{ fontSize: "16px" }}>{playing ? "⏸" : "▶"}</span>
+            <span>{playing ? "מנגן..." : "השמע"}</span>
+          </button>
+          <button
+            onClick={() => fileRef.current?.click()}
+            style={{ ...UPLOAD_BTN_STYLE, flex: 1, justifyContent: "center" }}
+          >
+            <span style={{ fontSize: "14px" }}>🔄</span>
+            <span>החלף</span>
+          </button>
+          <button
+            onClick={onClear}
+            style={{
+              ...UPLOAD_BTN_STYLE,
+              flex: 0, padding: "8px 12px",
+              borderColor: "rgba(255,59,48,0.2)",
+              color: "rgba(255,120,120,0.8)",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          style={UPLOAD_BTN_STYLE}
+          onMouseEnter={(e) => e.currentTarget.style.borderColor = "rgba(51,51,255,0.3)"}
+          onMouseLeave={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
+        >
+          <span style={{ fontSize: "16px" }}>🎵</span>
+          <span>{uploading ? "מעלה..." : "העלה קובץ אודיו"}</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function OnboardingAdminPage() {
   const [steps, setSteps] = useState<TourStep[]>([]);
   const [settings, setSettings] = useState<OnboardingSettings>(DEFAULT_SETTINGS);
@@ -88,7 +235,7 @@ export default function OnboardingAdminPage() {
     try {
       const storedSettings = localStorage.getItem("bldr_onboarding_settings");
       if (storedSettings) {
-        setSettings(JSON.parse(storedSettings));
+        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(storedSettings) });
       }
     } catch {}
   }, []);
@@ -136,7 +283,6 @@ export default function OnboardingAdminPage() {
     const el = document.querySelector(step.targetSelector);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-      const rect = el.getBoundingClientRect();
       setPreviewIndex(index);
       setTimeout(() => setPreviewIndex(null), 2000);
     }
@@ -213,6 +359,12 @@ export default function OnboardingAdminPage() {
               onChange={(e) => setSettings({ ...settings, welcomeSubtitle: e.target.value })}
             />
           </div>
+          <AudioUpload
+            label="אודיו מסך פתיחה"
+            audioUrl={settings.welcomeAudioUrl || ""}
+            onUpload={(url) => setSettings({ ...settings, welcomeAudioUrl: url })}
+            onClear={() => setSettings({ ...settings, welcomeAudioUrl: "" })}
+          />
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)" }}>סאונד כברירת מחדל</span>
             <ToggleSwitch checked={settings.soundDefault} onChange={(v) => setSettings({ ...settings, soundDefault: v })} size="sm" />
@@ -305,7 +457,7 @@ export default function OnboardingAdminPage() {
                 style={{ ...INPUT_STYLE, direction: "ltr", textAlign: "left", fontFamily: "monospace", fontSize: "13px" }}
                 value={step.targetSelector}
                 onChange={(e) => updateStep(index, "targetSelector", e.target.value)}
-                placeholder=".sidebar-nav, #dashboard-hero"
+                placeholder="[data-nav='/dashboard']"
               />
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
@@ -330,15 +482,12 @@ export default function OnboardingAdminPage() {
                 <option value="right">ימין</option>
               </select>
             </div>
-            <div>
-              <label style={LABEL_STYLE}>קישור אודיו</label>
-              <input
-                style={{ ...INPUT_STYLE, direction: "ltr", textAlign: "left" }}
-                value={step.audioUrl}
-                onChange={(e) => updateStep(index, "audioUrl", e.target.value)}
-                placeholder="https://example.com/audio.mp3"
-              />
-            </div>
+            <AudioUpload
+              label="אודיו לשלב"
+              audioUrl={step.audioUrl}
+              onUpload={(url) => updateStep(index, "audioUrl", url)}
+              onClear={() => updateStep(index, "audioUrl", "")}
+            />
           </div>
         </div>
       ))}

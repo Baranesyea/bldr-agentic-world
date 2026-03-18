@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { getImage } from "@/lib/image-store";
 
 interface TourStep {
   id: string;
@@ -18,6 +19,18 @@ interface OnboardingSettings {
   welcomeTitle: string;
   welcomeSubtitle: string;
   soundDefault: boolean;
+  welcomeAudioUrl?: string;
+}
+
+/** Resolve an idb:// audio URL to a data URL */
+async function resolveAudioUrl(url: string): Promise<string> {
+  if (!url) return "";
+  if (url.startsWith("idb://")) {
+    const id = url.slice(6);
+    const data = await getImage(id);
+    return data || "";
+  }
+  return url;
 }
 
 const DEFAULT_STEPS: TourStep[] = [
@@ -231,6 +244,25 @@ export function OnboardingTour() {
     return () => clearInterval(interval);
   }, []);
 
+  // Play welcome audio when welcome screen shows
+  useEffect(() => {
+    if (!showWelcome || !soundEnabled || !settings.welcomeAudioUrl) return;
+    let cancelled = false;
+    resolveAudioUrl(settings.welcomeAudioUrl).then((url) => {
+      if (cancelled || !url) return;
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.play().catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, [showWelcome, soundEnabled, settings.welcomeAudioUrl]);
+
   const updateSpotlight = useCallback((stepIndex: number) => {
     const step = steps[stepIndex];
     if (!step) return;
@@ -269,22 +301,31 @@ export function OnboardingTour() {
       audioRef.current = null;
     }
 
+    let cancelled = false;
+
     if (soundEnabled && step.audioUrl) {
       setAudioPlaying(true);
       setShowNextButton(false);
-      const audio = new Audio(step.audioUrl);
-      audioRef.current = audio;
-      audio.onended = () => {
-        setAudioPlaying(false);
-        setShowNextButton(true);
-      };
-      audio.onerror = () => {
-        setAudioPlaying(false);
-        setShowNextButton(true);
-      };
-      audio.play().catch(() => {
-        setAudioPlaying(false);
-        setShowNextButton(true);
+      resolveAudioUrl(step.audioUrl).then((resolvedUrl) => {
+        if (cancelled || !resolvedUrl) {
+          setAudioPlaying(false);
+          setShowNextButton(true);
+          return;
+        }
+        const audio = new Audio(resolvedUrl);
+        audioRef.current = audio;
+        audio.onended = () => {
+          setAudioPlaying(false);
+          setShowNextButton(true);
+        };
+        audio.onerror = () => {
+          setAudioPlaying(false);
+          setShowNextButton(true);
+        };
+        audio.play().catch(() => {
+          setAudioPlaying(false);
+          setShowNextButton(true);
+        });
       });
     } else {
       setAudioPlaying(false);
@@ -292,6 +333,7 @@ export function OnboardingTour() {
     }
 
     return () => {
+      cancelled = true;
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
