@@ -86,7 +86,7 @@ function SiriGlowCard({
         className="siri-glow-spinner"
         style={{
           position: "absolute",
-          inset: -borderWidth * 12,
+          inset: -borderWidth * 2,
           background: `conic-gradient(
             from var(--siri-angle, 0deg),
             #0000FF 0%,
@@ -116,7 +116,7 @@ function SiriGlowCard({
         className="siri-glow-halo"
         style={{
           position: "absolute",
-          inset: -borderWidth * 20,
+          inset: -borderWidth * 6,
           background: `conic-gradient(
             from var(--siri-angle-reverse, 180deg),
             rgba(0,0,255,0.12) 0%,
@@ -343,37 +343,50 @@ export function OnboardingTour() {
   const getTooltipPosition = (rect: DOMRect, position: string): React.CSSProperties => {
     const padding = 20;
     const tooltipWidth = 340;
+    const tooltipEstimatedHeight = 260;
+    const viewportMargin = 16;
+
+    let top: number | undefined;
+    let left: number | undefined;
+    let right: number | undefined;
+    let bottom: number | undefined;
 
     switch (position) {
       case "left":
-        return {
-          position: "fixed",
-          top: rect.top + rect.height / 2 + "px",
-          right: window.innerWidth - rect.left + padding + "px",
-          transform: "translateY(-50%)",
-        };
+        top = rect.top + rect.height / 2 - tooltipEstimatedHeight / 2;
+        right = window.innerWidth - rect.left + padding;
+        break;
       case "right":
-        return {
-          position: "fixed",
-          top: rect.top + rect.height / 2 + "px",
-          left: rect.right + padding + "px",
-          transform: "translateY(-50%)",
-        };
+        top = rect.top + rect.height / 2 - tooltipEstimatedHeight / 2;
+        left = rect.right + padding;
+        break;
       case "top":
-        return {
-          position: "fixed",
-          bottom: window.innerHeight - rect.top + padding + "px",
-          left: rect.left + rect.width / 2 - tooltipWidth / 2 + "px",
-        };
+        bottom = window.innerHeight - rect.top + padding;
+        left = rect.left + rect.width / 2 - tooltipWidth / 2;
+        break;
       case "bottom":
-        return {
-          position: "fixed",
-          top: rect.bottom + padding + "px",
-          left: rect.left + rect.width / 2 - tooltipWidth / 2 + "px",
-        };
+        top = rect.bottom + padding;
+        left = rect.left + rect.width / 2 - tooltipWidth / 2;
+        break;
       default:
-        return { position: "fixed", top: rect.bottom + padding + "px", left: rect.left + "px" };
+        top = rect.bottom + padding;
+        left = rect.left;
     }
+
+    // Clamp to viewport
+    if (top !== undefined) {
+      top = Math.max(viewportMargin, Math.min(top, window.innerHeight - tooltipEstimatedHeight - viewportMargin));
+    }
+    if (left !== undefined) {
+      left = Math.max(viewportMargin, Math.min(left, window.innerWidth - tooltipWidth - viewportMargin));
+    }
+
+    const result: React.CSSProperties = { position: "fixed" };
+    if (top !== undefined) result.top = top + "px";
+    if (left !== undefined) result.left = left + "px";
+    if (right !== undefined) result.right = right + "px";
+    if (bottom !== undefined) result.bottom = bottom + "px";
+    return result;
   };
 
   if (typeof document === "undefined") return null;
@@ -467,59 +480,75 @@ export function OnboardingTour() {
           >
             <div style={{ padding: "52px 44px 44px", textAlign: "center" }}>
 
-              {/* Animated orb icon — the "entity" */}
+              {/* Mesh sphere — AI entity orb */}
               <div style={{
-                width: 64, height: 64, margin: "0 auto 28px",
-                borderRadius: "50%",
+                width: 90, height: 90, margin: "0 auto 28px",
                 position: "relative",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
+                {/* Outer glow */}
                 <div style={{
-                  position: "absolute", inset: -4,
+                  position: "absolute", inset: -16,
                   borderRadius: "50%",
-                  background: "conic-gradient(from var(--siri-angle, 0deg), #0000FF, #00CCFF, #6600CC, #FF3366, #0000FF)",
-                  animation: "siriSpin 3s linear infinite",
-                  filter: "blur(6px)",
-                  opacity: 0.6,
+                  background: "radial-gradient(circle, rgba(100,120,255,0.2) 0%, rgba(180,80,255,0.1) 40%, transparent 70%)",
+                  animation: "siriInnerPulse 3s ease-in-out infinite",
+                  filter: "blur(8px)",
                 }} />
-                <div style={{
-                  position: "absolute", inset: -12,
-                  borderRadius: "50%",
-                  background: "conic-gradient(from var(--siri-angle-reverse, 180deg), rgba(0,0,255,0.15), rgba(0,204,255,0.1), rgba(102,0,204,0.12), rgba(0,0,255,0.15))",
-                  animation: "siriSpinReverse 5s linear infinite",
-                  filter: "blur(14px)",
-                  opacity: 0.8,
-                }} />
-                <div style={{
-                  width: 56, height: 56, borderRadius: "50%",
-                  background: "radial-gradient(circle at 40% 35%, rgba(30,30,80,1) 0%, rgba(8,8,22,1) 100%)",
-                  border: "1px solid rgba(100,100,255,0.15)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  position: "relative", zIndex: 1,
-                  boxShadow: "inset 0 1px 2px rgba(255,255,255,0.08), 0 0 20px rgba(0,0,255,0.15)",
-                }}>
-                  {/* Animated pulse bars inside orb */}
-                  <div style={{ display: "flex", gap: 3, alignItems: "center", height: 20 }}>
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <div key={i} style={{
-                        width: 3, borderRadius: 2,
-                        height: 16,
-                        background: "linear-gradient(to top, #0000FF, #00CCFF)",
-                        animation: `siriDotPulse 1.2s ease-in-out ${i * 0.15}s infinite`,
-                        transformOrigin: "center",
-                      }} />
-                    ))}
-                  </div>
-                </div>
+                {/* Rotating mesh sphere SVG */}
+                <svg
+                  width="90" height="90" viewBox="0 0 100 100"
+                  style={{
+                    position: "relative", zIndex: 1,
+                    animation: "siriSpin 8s linear infinite",
+                    filter: "drop-shadow(0 0 12px rgba(100,140,255,0.4))",
+                  }}
+                >
+                  <defs>
+                    <radialGradient id="orbGlow" cx="40%" cy="35%" r="55%">
+                      <stop offset="0%" stopColor="rgba(180,160,255,0.9)" />
+                      <stop offset="30%" stopColor="rgba(100,120,255,0.6)" />
+                      <stop offset="60%" stopColor="rgba(140,60,220,0.4)" />
+                      <stop offset="100%" stopColor="rgba(20,20,60,0.1)" />
+                    </radialGradient>
+                    <radialGradient id="orbHighlight" cx="35%" cy="30%" r="40%">
+                      <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
+                      <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                    </radialGradient>
+                  </defs>
+                  {/* Filled sphere base */}
+                  <circle cx="50" cy="50" r="42" fill="url(#orbGlow)" />
+                  <circle cx="50" cy="50" r="42" fill="url(#orbHighlight)" />
+                  {/* Wireframe mesh lines — longitude */}
+                  {[0, 30, 60, 90, 120, 150].map((rot) => (
+                    <ellipse key={`lon-${rot}`} cx="50" cy="50" rx={42 * Math.cos(rot * Math.PI / 180)} ry="42"
+                      fill="none" stroke="rgba(200,210,255,0.25)" strokeWidth="0.6"
+                      transform={`rotate(0 50 50)`}
+                      style={{ transform: `rotateY(${rot}deg)`, transformOrigin: "50px 50px" }}
+                    />
+                  ))}
+                  {/* Wireframe mesh lines — latitude */}
+                  {[-30, -15, 0, 15, 30].map((offset) => (
+                    <ellipse key={`lat-${offset}`} cx="50" cy={50 + offset} rx={42 * Math.cos(offset * Math.PI / 42)} ry={8 + Math.abs(offset) * 0.3}
+                      fill="none" stroke="rgba(200,210,255,0.2)" strokeWidth="0.5"
+                    />
+                  ))}
+                  {/* Outer ring */}
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(180,200,255,0.3)" strokeWidth="0.8" />
+                  {/* Inner glow accent */}
+                  <circle cx="42" cy="40" r="18" fill="rgba(255,255,255,0.06)" />
+                </svg>
               </div>
 
-              <h2 style={{
-                fontSize: 30, fontWeight: 700, color: "#f0f0f5",
-                marginBottom: 14, lineHeight: 1.35,
-                letterSpacing: "-0.02em",
-              }}>
-                {settings.welcomeTitle.replace("Agentic World", "")}
-                <span style={{
+              <div style={{ marginBottom: 14 }}>
+                <div style={{
+                  fontSize: 18, fontWeight: 500, color: "rgba(240,240,245,0.55)",
+                  marginBottom: 6, letterSpacing: "0.01em",
+                }}>
+                  {settings.welcomeTitle.replace("Agentic World", "").trim()}
+                </div>
+                <div style={{
+                  fontSize: 38, fontWeight: 800, lineHeight: 1.15,
+                  letterSpacing: "-0.03em",
                   fontFamily: "Merriweather, serif",
                   background: "linear-gradient(135deg, #f0f0f5 0%, #8888FF 50%, #00CCFF 100%)",
                   WebkitBackgroundClip: "text",
@@ -527,8 +556,8 @@ export function OnboardingTour() {
                   backgroundClip: "text",
                 }}>
                   Agentic World
-                </span>
-              </h2>
+                </div>
+              </div>
 
               <p style={{
                 fontSize: 15, color: "rgba(240,240,245,0.45)",
@@ -544,8 +573,8 @@ export function OnboardingTour() {
                   style={{
                     background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
                     color: "white",
-                    border: "none", borderRadius: 10,
-                    padding: "15px 36px", fontSize: 16, fontWeight: 700,
+                    border: "none", borderRadius: 4,
+                    padding: "13px 56px", fontSize: 16, fontWeight: 700,
                     cursor: "pointer", transition: "all 0.25s",
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                     boxShadow: "0 0 30px rgba(0,0,255,0.3), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
@@ -623,30 +652,43 @@ export function OnboardingTour() {
             )}
           </div>
 
-          {/* Spotlight border — animated gradient flow */}
+          {/* Spotlight border — thin animated gradient outline */}
           {spotlightRect && (
-            <div style={{
-              position: "fixed",
-              top: spotlightRect.top - 9 + "px",
-              left: spotlightRect.left - 9 + "px",
-              width: spotlightRect.width + 18 + "px",
-              height: spotlightRect.height + 18 + "px",
-              borderRadius: 8,
-              zIndex: 99991,
-              pointerEvents: "none",
-              opacity: transitioning ? 0 : 1,
-              transition: "opacity 0.25s, top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease",
-              padding: 2,
-              background: "linear-gradient(90deg, #0000FF, #00CCFF, #6600CC, #FF3366, #0000FF, #00CCFF)",
-              backgroundSize: "200% 100%",
-              animation: "spotlightBorderFlow 3s linear infinite",
-            }}>
+            <>
+              {/* Soft glow behind */}
               <div style={{
-                width: "100%", height: "100%",
-                borderRadius: 6,
-                background: "transparent",
+                position: "fixed",
+                top: spotlightRect.top - 12 + "px",
+                left: spotlightRect.left - 12 + "px",
+                width: spotlightRect.width + 24 + "px",
+                height: spotlightRect.height + 24 + "px",
+                borderRadius: 10,
+                zIndex: 99991,
+                pointerEvents: "none",
+                opacity: transitioning ? 0 : 0.5,
+                transition: "opacity 0.25s, top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease",
+                boxShadow: "0 0 20px rgba(0,100,255,0.3), 0 0 40px rgba(0,100,255,0.15)",
               }} />
-            </div>
+              {/* The border itself */}
+              <div style={{
+                position: "fixed",
+                top: spotlightRect.top - 6 + "px",
+                left: spotlightRect.left - 6 + "px",
+                width: spotlightRect.width + 12 + "px",
+                height: spotlightRect.height + 12 + "px",
+                borderRadius: 4,
+                zIndex: 99991,
+                pointerEvents: "none",
+                opacity: transitioning ? 0 : 1,
+                transition: "opacity 0.25s, top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease",
+                border: "2px solid transparent",
+                backgroundImage: "linear-gradient(rgba(8,8,22,1), rgba(8,8,22,1)), linear-gradient(90deg, #0000FF, #00CCFF, #6600CC, #FF3366, #0000FF, #00CCFF)",
+                backgroundOrigin: "border-box",
+                backgroundClip: "padding-box, border-box",
+                backgroundSize: "100% 100%, 200% 100%",
+                animation: "spotlightBorderFlow 3s linear infinite",
+              }} />
+            </>
           )}
 
           {/* Tooltip — with Siri Glow */}
@@ -663,8 +705,7 @@ export function OnboardingTour() {
                 zIndex: 99992,
                 pointerEvents: "auto",
                 opacity: transitioning ? 0 : 1,
-                transition: "opacity 0.25s",
-                animation: transitioning ? "none" : "siriAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                transition: "opacity 0.3s ease",
               }}
             >
               <div style={{ padding: 24 }}>
@@ -679,11 +720,11 @@ export function OnboardingTour() {
                 }}>
                   <span style={{
                     width: 6, height: 6, borderRadius: "50%",
-                    background: "#00CCFF",
-                    boxShadow: "0 0 8px rgba(0,204,255,0.5)",
+                    background: "#3333FF",
+                    boxShadow: "0 0 8px rgba(51,51,255,0.5)",
                     animation: "siriInnerPulse 2s ease-in-out infinite",
                   }} />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(0,204,255,0.8)", direction: "ltr" }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(240,240,245,0.6)", direction: "ltr" }}>
                     {currentStep + 1} / {steps.length}
                   </span>
                 </div>
@@ -722,7 +763,7 @@ export function OnboardingTour() {
                         background: "rgba(255,255,255,0.04)",
                         border: "1px solid rgba(255,255,255,0.08)",
                         color: "rgba(240,240,245,0.5)",
-                        borderRadius: 8,
+                        borderRadius: 4,
                         padding: "10px 16px",
                         fontSize: 14,
                         cursor: "pointer",
@@ -741,7 +782,7 @@ export function OnboardingTour() {
                         background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
                         color: "white",
                         border: "none",
-                        borderRadius: 8,
+                        borderRadius: 4,
                         padding: "10px 22px",
                         fontSize: 14,
                         fontWeight: 600,
