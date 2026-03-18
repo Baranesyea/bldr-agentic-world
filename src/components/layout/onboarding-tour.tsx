@@ -50,6 +50,136 @@ function getSettings(): OnboardingSettings {
   return DEFAULT_SETTINGS;
 }
 
+/* ─────────────────────────────────────────────
+   SiriGlowCard — the animated border wrapper
+   A rotating conic-gradient spins behind the card
+   creating the illusion of a living, breathing
+   border — like an AI entity awakening.
+   ───────────────────────────────────────────── */
+function SiriGlowCard({
+  children,
+  borderRadius = 16,
+  borderWidth = 2,
+  glowIntensity = 1,
+  className,
+  style,
+}: {
+  children: React.ReactNode;
+  borderRadius?: number;
+  borderWidth?: number;
+  glowIntensity?: number;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <div
+      className={`siri-glow-outer ${className || ""}`}
+      style={{
+        position: "relative",
+        borderRadius: borderRadius,
+        padding: borderWidth,
+        ...style,
+      }}
+    >
+      {/* The spinning gradient layer */}
+      <div
+        className="siri-glow-spinner"
+        style={{
+          position: "absolute",
+          inset: -borderWidth * 12,
+          background: `conic-gradient(
+            from var(--siri-angle, 0deg),
+            #0000FF 0%,
+            #4400FF 8%,
+            #0066FF 16%,
+            #00CCFF 24%,
+            #0000FF 32%,
+            #6600CC 40%,
+            #FF3366 48%,
+            #FF6600 52%,
+            #FFAA00 56%,
+            #00CCFF 64%,
+            #0044FF 72%,
+            #2200FF 80%,
+            #4400FF 88%,
+            #0000FF 100%
+          )`,
+          borderRadius: borderRadius,
+          animation: "siriSpin 4s linear infinite",
+          filter: `blur(${4 + glowIntensity * 8}px)`,
+          opacity: 0.7 + glowIntensity * 0.3,
+        }}
+      />
+
+      {/* Outer glow halo */}
+      <div
+        className="siri-glow-halo"
+        style={{
+          position: "absolute",
+          inset: -borderWidth * 20,
+          background: `conic-gradient(
+            from var(--siri-angle-reverse, 180deg),
+            rgba(0,0,255,0.12) 0%,
+            rgba(0,204,255,0.08) 25%,
+            rgba(102,0,204,0.10) 50%,
+            rgba(255,51,102,0.06) 75%,
+            rgba(0,0,255,0.12) 100%
+          )`,
+          borderRadius: borderRadius * 2,
+          animation: "siriSpinReverse 6s linear infinite",
+          filter: `blur(${20 + glowIntensity * 10}px)`,
+          opacity: 0.5,
+        }}
+      />
+
+      {/* The solid card surface — sits on top, masking the gradient */}
+      <div
+        style={{
+          position: "relative",
+          borderRadius: borderRadius - 1,
+          background: "linear-gradient(165deg, rgba(12,12,30,0.97) 0%, rgba(8,8,22,0.99) 50%, rgba(12,12,30,0.97) 100%)",
+          overflow: "hidden",
+          zIndex: 1,
+        }}
+      >
+        {/* Inner ambient glow — subtle color wash from the border */}
+        <div
+          className="siri-inner-glow"
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: `radial-gradient(ellipse at 50% 0%, rgba(0,100,255,0.08) 0%, transparent 60%),
+                          radial-gradient(ellipse at 0% 50%, rgba(102,0,204,0.05) 0%, transparent 50%),
+                          radial-gradient(ellipse at 100% 50%, rgba(0,204,255,0.05) 0%, transparent 50%)`,
+            animation: "siriInnerPulse 3s ease-in-out infinite",
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        />
+
+        {/* Specular highlight — glass refraction at top */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: "10%",
+            right: "10%",
+            height: "1px",
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+            zIndex: 2,
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Content */}
+        <div style={{ position: "relative", zIndex: 1 }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function OnboardingTour() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [active, setActive] = useState(false);
@@ -211,8 +341,8 @@ export function OnboardingTour() {
   const durationLabel = totalDuration < 60 ? `${totalDuration} שניות` : `${Math.round(totalDuration / 60)} דקות`;
 
   const getTooltipPosition = (rect: DOMRect, position: string): React.CSSProperties => {
-    const padding = 16;
-    const tooltipWidth = 320;
+    const padding = 20;
+    const tooltipWidth = 340;
 
     switch (position) {
       case "left":
@@ -251,107 +381,222 @@ export function OnboardingTour() {
   return (
     <>
       <style>{`
-        @keyframes onboardFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes onboardFadeOut { from { opacity: 1; } to { opacity: 0; } }
-        @keyframes onboardSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes onboardPulse { 0%, 100% { box-shadow: 0 0 30px rgba(51,51,255,0.3); } 50% { box-shadow: 0 0 50px rgba(51,51,255,0.5); } }
-        @keyframes onboardCheckmark { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes confettiFall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100px) rotate(720deg); opacity: 0; } }
+        /* ── Siri Glow Animations ── */
+        @property --siri-angle {
+          syntax: '<angle>';
+          initial-value: 0deg;
+          inherits: false;
+        }
+        @property --siri-angle-reverse {
+          syntax: '<angle>';
+          initial-value: 180deg;
+          inherits: false;
+        }
+
+        @keyframes siriSpin {
+          to { --siri-angle: 360deg; }
+        }
+        @keyframes siriSpinReverse {
+          to { --siri-angle-reverse: -180deg; }
+        }
+        @keyframes siriInnerPulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+        @keyframes siriAppear {
+          0% { opacity: 0; transform: scale(0.92) translateY(24px); filter: blur(8px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
+        }
+        @keyframes siriOverlayIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes siriBreathe {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.005); }
+        }
+        @keyframes siriDotPulse {
+          0%, 100% { transform: scaleY(0.4); opacity: 0.4; }
+          50% { transform: scaleY(1); opacity: 1; }
+        }
+        @keyframes onboardCheckmark {
+          from { transform: scale(0); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes confettiFall {
+          0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(100px) rotate(720deg); opacity: 0; }
+        }
+        @keyframes spotlightBorderFlow {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 200% 50%; }
+        }
+
+        /* Fallback for browsers that don't support @property */
+        @supports not (background: conic-gradient(from var(--siri-angle, 0deg), red, blue)) {
+          .siri-glow-spinner {
+            animation: siriSpinFallback 4s linear infinite !important;
+          }
+          @keyframes siriSpinFallback {
+            to { transform: rotate(360deg); }
+          }
+        }
       `}</style>
 
-      {/* Welcome screen */}
+      {/* ═══════════════════════════════════════
+          Welcome Screen — Siri Glow Edition
+          ═══════════════════════════════════════ */}
       {showWelcome && createPortal(
         <div style={{
           position: "fixed", inset: 0, zIndex: 99990,
-          background: "rgba(5,5,16,0.85)",
-          backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+          background: "rgba(3,3,12,0.88)",
+          backdropFilter: "blur(12px) saturate(1.2)", WebkitBackdropFilter: "blur(12px) saturate(1.2)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          animation: "onboardFadeIn 0.4s ease",
+          animation: "siriOverlayIn 0.6s ease",
           direction: "rtl",
         }}>
-          <div style={{
-            position: "relative",
-            background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.12) 100%)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: "6px",
-            padding: "48px 40px",
-            maxWidth: "440px",
-            width: "90%",
-            textAlign: "center",
-            animation: "onboardSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
-            boxShadow: "0 32px 100px rgba(0,0,0,0.6), 0 0 60px rgba(0,0,255,0.08), inset 1px 1px 0 rgba(255,255,255,0.35), inset -1px -1px 0 rgba(255,255,255,0.15)",
-            backdropFilter: "blur(40px) saturate(1.8)",
-            WebkitBackdropFilter: "blur(40px) saturate(1.8)",
-            overflow: "hidden",
-          }}>
-            {/* Specular highlight */}
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)", borderRadius: "6px 6px 0 0", pointerEvents: "none" }} />
-            {/* Tour icon */}
-            <div style={{ marginBottom: "24px" }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(51,51,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <polygon points="12,2 15,9 22,9 16,14 18,21 12,17 6,21 8,14 2,9 9,9" fill="none" />
-              </svg>
-            </div>
+          <SiriGlowCard
+            borderRadius={20}
+            borderWidth={2}
+            glowIntensity={1}
+            style={{
+              maxWidth: 460,
+              width: "92%",
+              animation: "siriAppear 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both, siriBreathe 4s ease-in-out 1s infinite",
+            }}
+          >
+            <div style={{ padding: "52px 44px 44px", textAlign: "center" }}>
 
-            <h2 style={{
-              fontSize: "28px", fontWeight: 700, color: "#f0f0f5",
-              marginBottom: "12px", lineHeight: 1.4,
-            }}>
-              {settings.welcomeTitle.replace("Agentic World", "")}
-              <span style={{ fontFamily: "Merriweather, serif" }}>Agentic World</span>
-            </h2>
+              {/* Animated orb icon — the "entity" */}
+              <div style={{
+                width: 64, height: 64, margin: "0 auto 28px",
+                borderRadius: "50%",
+                position: "relative",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <div style={{
+                  position: "absolute", inset: -4,
+                  borderRadius: "50%",
+                  background: "conic-gradient(from var(--siri-angle, 0deg), #0000FF, #00CCFF, #6600CC, #FF3366, #0000FF)",
+                  animation: "siriSpin 3s linear infinite",
+                  filter: "blur(6px)",
+                  opacity: 0.6,
+                }} />
+                <div style={{
+                  position: "absolute", inset: -12,
+                  borderRadius: "50%",
+                  background: "conic-gradient(from var(--siri-angle-reverse, 180deg), rgba(0,0,255,0.15), rgba(0,204,255,0.1), rgba(102,0,204,0.12), rgba(0,0,255,0.15))",
+                  animation: "siriSpinReverse 5s linear infinite",
+                  filter: "blur(14px)",
+                  opacity: 0.8,
+                }} />
+                <div style={{
+                  width: 56, height: 56, borderRadius: "50%",
+                  background: "radial-gradient(circle at 40% 35%, rgba(30,30,80,1) 0%, rgba(8,8,22,1) 100%)",
+                  border: "1px solid rgba(100,100,255,0.15)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  position: "relative", zIndex: 1,
+                  boxShadow: "inset 0 1px 2px rgba(255,255,255,0.08), 0 0 20px rgba(0,0,255,0.15)",
+                }}>
+                  {/* Animated pulse bars inside orb */}
+                  <div style={{ display: "flex", gap: 3, alignItems: "center", height: 20 }}>
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <div key={i} style={{
+                        width: 3, borderRadius: 2,
+                        height: 16,
+                        background: "linear-gradient(to top, #0000FF, #00CCFF)",
+                        animation: `siriDotPulse 1.2s ease-in-out ${i * 0.15}s infinite`,
+                        transformOrigin: "center",
+                      }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-            <p style={{
-              fontSize: "15px", color: "rgba(240,240,245,0.5)",
-              marginBottom: "36px", lineHeight: 1.6,
-            }}>
-              {settings.welcomeSubtitle}
-            </p>
+              <h2 style={{
+                fontSize: 30, fontWeight: 700, color: "#f0f0f5",
+                marginBottom: 14, lineHeight: 1.35,
+                letterSpacing: "-0.02em",
+              }}>
+                {settings.welcomeTitle.replace("Agentic World", "")}
+                <span style={{
+                  fontFamily: "Merriweather, serif",
+                  background: "linear-gradient(135deg, #f0f0f5 0%, #8888FF 50%, #00CCFF 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}>
+                  Agentic World
+                </span>
+              </h2>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", marginBottom: "20px" }}>
+              <p style={{
+                fontSize: 15, color: "rgba(240,240,245,0.45)",
+                marginBottom: 40, lineHeight: 1.7,
+                maxWidth: 300, margin: "0 auto 40px",
+              }}>
+                {settings.welcomeSubtitle}
+              </p>
+
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 24 }}>
+                <button
+                  onClick={startTour}
+                  style={{
+                    background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
+                    color: "white",
+                    border: "none", borderRadius: 10,
+                    padding: "15px 36px", fontSize: 16, fontWeight: 700,
+                    cursor: "pointer", transition: "all 0.25s",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                    boxShadow: "0 0 30px rgba(0,0,255,0.3), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "scale(1.04)";
+                    e.currentTarget.style.boxShadow = "0 0 40px rgba(0,0,255,0.45), 0 6px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "scale(1)";
+                    e.currentTarget.style.boxShadow = "0 0 30px rgba(0,0,255,0.3), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)";
+                  }}
+                >
+                  <span>התחל סיור</span>
+                  <span style={{ fontSize: 11, opacity: 0.6, fontWeight: 400 }}>{durationLabel}</span>
+                </button>
+              </div>
+
+              {/* Sound toggle */}
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                marginBottom: 20,
+              }}>
+                <span style={{ fontSize: 13, color: "rgba(240,240,245,0.4)" }}>סיור עם סאונד</span>
+                <ToggleSwitch checked={soundEnabled} onChange={setSoundEnabled} size="sm" />
+              </div>
+
               <button
-                onClick={startTour}
+                onClick={skipTour}
                 style={{
-                  background: "#0000FF", color: "white",
-                  border: "none", borderRadius: "4px",
-                  padding: "14px 32px", fontSize: "16px", fontWeight: 700,
-                  cursor: "pointer", transition: "background 0.2s",
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
+                  background: "none", border: "none",
+                  color: "rgba(240,240,245,0.25)", fontSize: 13,
+                  cursor: "pointer",
+                  transition: "color 0.2s",
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "#0000CC"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "#0000FF"}
+                onMouseEnter={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.5)"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.25)"}
               >
-                <span>התחל סיור</span>
-                <span style={{ fontSize: "11px", opacity: 0.7, fontWeight: 400 }}>{durationLabel}</span>
+                דלג
               </button>
             </div>
-
-            {/* Sound toggle */}
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
-              marginBottom: "20px",
-            }}>
-              <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)" }}>סיור עם סאונד</span>
-              <ToggleSwitch checked={soundEnabled} onChange={setSoundEnabled} size="sm" />
-            </div>
-
-            <button
-              onClick={skipTour}
-              style={{
-                background: "none", border: "none",
-                color: "rgba(240,240,245,0.35)", fontSize: "13px",
-                cursor: "pointer", textDecoration: "underline",
-              }}
-            >
-              דלג
-            </button>
-          </div>
+          </SiriGlowCard>
         </div>,
         document.body
       )}
 
-      {/* Active tour */}
+      {/* ═══════════════════════════════════════
+          Active Tour — Spotlight + Glow Tooltip
+          ═══════════════════════════════════════ */}
       {active && createPortal(
         <div style={{
           position: "fixed", inset: 0, zIndex: 99990,
@@ -365,180 +610,217 @@ export function OnboardingTour() {
             pointerEvents: "auto",
             zIndex: 99990,
           }}>
-            {/* Top section */}
             {spotlightRect && (
               <>
-                <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: Math.max(0, spotlightRect.top - 8) + "px", background: "rgba(5,5,16,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }} />
-                <div style={{ position: "fixed", top: Math.max(0, spotlightRect.top - 8) + "px", left: 0, width: Math.max(0, spotlightRect.left - 8) + "px", height: (spotlightRect.height + 16) + "px", background: "rgba(5,5,16,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }} />
-                <div style={{ position: "fixed", top: Math.max(0, spotlightRect.top - 8) + "px", left: (spotlightRect.right + 8) + "px", right: 0, height: (spotlightRect.height + 16) + "px", background: "rgba(5,5,16,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }} />
-                <div style={{ position: "fixed", top: (spotlightRect.bottom + 8) + "px", left: 0, right: 0, bottom: 0, background: "rgba(5,5,16,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }} />
+                <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: Math.max(0, spotlightRect.top - 8) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }} />
+                <div style={{ position: "fixed", top: Math.max(0, spotlightRect.top - 8) + "px", left: 0, width: Math.max(0, spotlightRect.left - 8) + "px", height: (spotlightRect.height + 16) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }} />
+                <div style={{ position: "fixed", top: Math.max(0, spotlightRect.top - 8) + "px", left: (spotlightRect.right + 8) + "px", right: 0, height: (spotlightRect.height + 16) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }} />
+                <div style={{ position: "fixed", top: (spotlightRect.bottom + 8) + "px", left: 0, right: 0, bottom: 0, background: "rgba(3,3,12,0.88)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }} />
               </>
             )}
             {!spotlightRect && (
-              <div style={{ position: "fixed", inset: 0, background: "rgba(5,5,16,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }} />
+              <div style={{ position: "fixed", inset: 0, background: "rgba(3,3,12,0.88)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }} />
             )}
           </div>
 
-          {/* Spotlight border */}
+          {/* Spotlight border — animated gradient flow */}
           {spotlightRect && (
             <div style={{
               position: "fixed",
-              top: spotlightRect.top - 8 + "px",
-              left: spotlightRect.left - 8 + "px",
-              width: spotlightRect.width + 16 + "px",
-              height: spotlightRect.height + 16 + "px",
-              borderRadius: "4px",
-              border: "2px solid rgba(51,51,255,0.5)",
-              animation: "onboardPulse 2s ease-in-out infinite",
+              top: spotlightRect.top - 9 + "px",
+              left: spotlightRect.left - 9 + "px",
+              width: spotlightRect.width + 18 + "px",
+              height: spotlightRect.height + 18 + "px",
+              borderRadius: 8,
               zIndex: 99991,
               pointerEvents: "none",
               opacity: transitioning ? 0 : 1,
-              transition: "opacity 0.25s, top 0.3s, left 0.3s, width 0.3s, height 0.3s",
-            }} />
+              transition: "opacity 0.25s, top 0.4s ease, left 0.4s ease, width 0.4s ease, height 0.4s ease",
+              padding: 2,
+              background: "linear-gradient(90deg, #0000FF, #00CCFF, #6600CC, #FF3366, #0000FF, #00CCFF)",
+              backgroundSize: "200% 100%",
+              animation: "spotlightBorderFlow 3s linear infinite",
+            }}>
+              <div style={{
+                width: "100%", height: "100%",
+                borderRadius: 6,
+                background: "transparent",
+              }} />
+            </div>
           )}
 
-          {/* Tooltip */}
+          {/* Tooltip — with Siri Glow */}
           {spotlightRect && steps[currentStep] && (
-            <div style={{
-              ...getTooltipPosition(spotlightRect, steps[currentStep].position),
-              position: "fixed" as const,
-              background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.12) 100%)",
-              border: "1px solid rgba(255,255,255,0.2)",
-              borderRadius: "4px",
-              padding: "24px",
-              maxWidth: "320px",
-              width: "320px",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 1px 1px 0 rgba(255,255,255,0.35), inset -1px -1px 0 rgba(255,255,255,0.15)",
-              backdropFilter: "blur(40px) saturate(1.8)",
-              WebkitBackdropFilter: "blur(40px) saturate(1.8)",
-              zIndex: 99992,
-              pointerEvents: "auto",
-              opacity: transitioning ? 0 : 1,
-              transition: "opacity 0.25s",
-              overflow: "hidden",
-            }}>
-              {/* Specular highlight */}
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%)", borderRadius: "4px 4px 0 0", pointerEvents: "none" }} />
-              <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px" }}>
-                {steps[currentStep].title}
-              </h3>
-              <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.6)", lineHeight: 1.6, marginBottom: "20px" }}>
-                {steps[currentStep].description}
-              </p>
-
-              {/* Audio indicator */}
-              {audioPlaying && (
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-                  <div style={{ display: "flex", gap: "3px", alignItems: "flex-end", height: "14px" }}>
-                    {[0, 1, 2, 3].map((i) => (
-                      <div key={i} style={{
-                        width: "3px", borderRadius: "2px", background: "#3333FF",
-                        animation: `onboardPulse 0.8s ease-in-out ${i * 0.15}s infinite alternate`,
-                        height: [8, 14, 6, 10][i] + "px",
-                      }} />
-                    ))}
-                  </div>
-                  <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.35)" }}>מנגן...</span>
-                </div>
-              )}
-
-              {/* Buttons */}
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                {currentStep > 0 && (
-                  <button
-                    onClick={prevStep}
-                    style={{
-                      background: "transparent",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      color: "rgba(240,240,245,0.6)",
-                      borderRadius: "4px",
-                      padding: "10px 16px",
-                      fontSize: "14px",
-                      cursor: "pointer",
-                      transition: "background 0.2s",
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
-                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                  >
-                    הקודם
-                  </button>
-                )}
-                {showNextButton && (
-                  <button
-                    onClick={nextStep}
-                    style={{
-                      background: "#0000FF",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      padding: "10px 20px",
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      animation: "onboardFadeIn 0.3s ease",
-                      transition: "background 0.2s",
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = "#0000CC"}
-                    onMouseLeave={(e) => e.currentTarget.style.background = "#0000FF"}
-                  >
-                    {currentStep === steps.length - 1 ? "סיום" : "הבא"}
-                  </button>
-                )}
-                <span style={{ marginRight: "auto", fontSize: "12px", color: "rgba(240,240,245,0.35)", direction: "ltr" }}>
-                  {currentStep + 1} / {steps.length}
-                </span>
-              </div>
-
-              {/* Progress dots */}
-              <div style={{ display: "flex", gap: "6px", justifyContent: "center", marginTop: "16px" }}>
-                {steps.map((_, i) => (
-                  <div key={i} style={{
-                    width: "6px", height: "6px", borderRadius: "50%",
-                    background: i === currentStep ? "#3333FF" : i < currentStep ? "rgba(51,51,255,0.4)" : "rgba(255,255,255,0.15)",
-                    transition: "background 0.3s",
+            <SiriGlowCard
+              borderRadius={14}
+              borderWidth={2}
+              glowIntensity={0.6}
+              style={{
+                ...getTooltipPosition(spotlightRect, steps[currentStep].position),
+                position: "fixed" as const,
+                maxWidth: 340,
+                width: 340,
+                zIndex: 99992,
+                pointerEvents: "auto",
+                opacity: transitioning ? 0 : 1,
+                transition: "opacity 0.25s",
+                animation: transitioning ? "none" : "siriAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+              }}
+            >
+              <div style={{ padding: 24 }}>
+                {/* Step number badge */}
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  marginBottom: 14,
+                  padding: "4px 12px",
+                  borderRadius: 20,
+                  background: "rgba(0,0,255,0.12)",
+                  border: "1px solid rgba(0,0,255,0.2)",
+                }}>
+                  <span style={{
+                    width: 6, height: 6, borderRadius: "50%",
+                    background: "#00CCFF",
+                    boxShadow: "0 0 8px rgba(0,204,255,0.5)",
+                    animation: "siriInnerPulse 2s ease-in-out infinite",
                   }} />
-                ))}
-              </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(0,204,255,0.8)", direction: "ltr" }}>
+                    {currentStep + 1} / {steps.length}
+                  </span>
+                </div>
 
-              {/* Skip link */}
-              <div style={{ textAlign: "center", marginTop: "12px" }}>
-                <button
-                  onClick={skipTour}
-                  style={{
-                    background: "none", border: "none",
-                    color: "rgba(240,240,245,0.25)", fontSize: "11px",
-                    cursor: "pointer",
-                  }}
-                >
-                  דלג על הסיור
-                </button>
+                <h3 style={{ fontSize: 19, fontWeight: 700, color: "#f0f0f5", marginBottom: 10, letterSpacing: "-0.01em" }}>
+                  {steps[currentStep].title}
+                </h3>
+                <p style={{ fontSize: 14, color: "rgba(240,240,245,0.55)", lineHeight: 1.7, marginBottom: 22 }}>
+                  {steps[currentStep].description}
+                </p>
+
+                {/* Audio indicator */}
+                {audioPlaying && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
+                    <div style={{ display: "flex", gap: 2, alignItems: "center", height: 16 }}>
+                      {[0, 1, 2, 3].map((i) => (
+                        <div key={i} style={{
+                          width: 3, borderRadius: 2,
+                          height: 14,
+                          background: "linear-gradient(to top, #0000FF, #00CCFF)",
+                          animation: `siriDotPulse 1s ease-in-out ${i * 0.12}s infinite`,
+                          transformOrigin: "center",
+                        }} />
+                      ))}
+                    </div>
+                    <span style={{ fontSize: 11, color: "rgba(240,240,245,0.3)" }}>מנגן...</span>
+                  </div>
+                )}
+
+                {/* Buttons */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {currentStep > 0 && (
+                    <button
+                      onClick={prevStep}
+                      style={{
+                        background: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        color: "rgba(240,240,245,0.5)",
+                        borderRadius: 8,
+                        padding: "10px 16px",
+                        fontSize: 14,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+                    >
+                      הקודם
+                    </button>
+                  )}
+                  {showNextButton && (
+                    <button
+                      onClick={nextStep}
+                      style={{
+                        background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 8,
+                        padding: "10px 22px",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        transition: "all 0.25s",
+                        boxShadow: "0 0 20px rgba(0,0,255,0.25), 0 2px 8px rgba(0,0,0,0.3)",
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.boxShadow = "0 0 30px rgba(0,0,255,0.4), 0 4px 12px rgba(0,0,0,0.4)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 20px rgba(0,0,255,0.25), 0 2px 8px rgba(0,0,0,0.3)"; }}
+                    >
+                      {currentStep === steps.length - 1 ? "סיום" : "הבא"}
+                    </button>
+                  )}
+                </div>
+
+                {/* Progress bar */}
+                <div style={{
+                  marginTop: 18,
+                  height: 2,
+                  background: "rgba(255,255,255,0.06)",
+                  borderRadius: 1,
+                  overflow: "hidden",
+                }}>
+                  <div style={{
+                    height: "100%",
+                    width: ((currentStep + 1) / steps.length * 100) + "%",
+                    background: "linear-gradient(90deg, #0000FF, #00CCFF)",
+                    borderRadius: 1,
+                    transition: "width 0.4s ease",
+                    boxShadow: "0 0 8px rgba(0,204,255,0.4)",
+                  }} />
+                </div>
+
+                {/* Skip link */}
+                <div style={{ textAlign: "center", marginTop: 14 }}>
+                  <button
+                    onClick={skipTour}
+                    style={{
+                      background: "none", border: "none",
+                      color: "rgba(240,240,245,0.2)", fontSize: 11,
+                      cursor: "pointer",
+                      transition: "color 0.2s",
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.4)"}
+                    onMouseLeave={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.2)"}
+                  >
+                    דלג על הסיור
+                  </button>
+                </div>
               </div>
-            </div>
+            </SiriGlowCard>
           )}
         </div>,
         document.body
       )}
 
-      {/* Completion celebration */}
+      {/* ═══════════════════════════════════════
+          Completion Celebration — Glow Edition
+          ═══════════════════════════════════════ */}
       {showDone && createPortal(
         <div style={{
           position: "fixed", inset: 0, zIndex: 99995,
           display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgba(5,5,16,0.7)",
-          animation: "onboardFadeIn 0.3s ease",
+          background: "rgba(3,3,12,0.75)",
+          animation: "siriOverlayIn 0.3s ease",
           pointerEvents: "none",
         }}>
           {/* Confetti */}
-          {Array.from({ length: 20 }).map((_, i) => (
+          {Array.from({ length: 24 }).map((_, i) => (
             <div key={i} style={{
               position: "fixed",
               top: "40%",
-              left: (20 + Math.random() * 60) + "%",
-              width: "8px", height: "8px",
+              left: (15 + Math.random() * 70) + "%",
+              width: (6 + Math.random() * 4) + "px",
+              height: (6 + Math.random() * 4) + "px",
               borderRadius: Math.random() > 0.5 ? "50%" : "2px",
-              background: ["#3333FF", "#FF3D00", "#00C853", "#FFB300", "#f0f0f5"][i % 5],
+              background: ["#0000FF", "#00CCFF", "#6600CC", "#FF3366", "#FFAA00", "#00C853"][i % 6],
               animation: `confettiFall ${1 + Math.random() * 1.5}s ease-out ${Math.random() * 0.5}s forwards`,
-              opacity: 0.8,
+              opacity: 0.85,
             }} />
           ))}
           <div style={{
@@ -546,21 +828,32 @@ export function OnboardingTour() {
             textAlign: "center",
             display: "flex", flexDirection: "column", alignItems: "center", gap: 20,
           }}>
-            <div style={{
-              width: 100, height: 100, borderRadius: "50%",
-              background: "linear-gradient(135deg, rgba(0,200,83,0.2) 0%, rgba(0,200,83,0.05) 100%)",
-              border: "2px solid rgba(0,200,83,0.3)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 0 40px rgba(0,200,83,0.15)",
-            }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00C853" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+            {/* Glowing checkmark orb */}
+            <div style={{ position: "relative" }}>
+              <div style={{
+                position: "absolute", inset: -8,
+                borderRadius: "50%",
+                background: "conic-gradient(from var(--siri-angle, 0deg), rgba(0,200,83,0.3), rgba(0,204,255,0.2), rgba(0,200,83,0.3))",
+                animation: "siriSpin 3s linear infinite",
+                filter: "blur(12px)",
+              }} />
+              <div style={{
+                width: 100, height: 100, borderRadius: "50%",
+                background: "linear-gradient(135deg, rgba(0,200,83,0.15) 0%, rgba(0,200,83,0.05) 100%)",
+                border: "2px solid rgba(0,200,83,0.25)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 0 40px rgba(0,200,83,0.15), inset 0 1px 2px rgba(255,255,255,0.08)",
+                position: "relative",
+              }}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00C853" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
             </div>
-            <p style={{ color: "#f0f0f5", fontSize: "24px", fontWeight: 700, margin: 0 }}>
+            <p style={{ color: "#f0f0f5", fontSize: 24, fontWeight: 700, margin: 0 }}>
               מעולה, סיימת את הסיור!
             </p>
-            <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 14, margin: 0 }}>
+            <p style={{ color: "rgba(240,240,245,0.45)", fontSize: 14, margin: 0 }}>
               תמיד אפשר להפעיל שוב מהתפריט
             </p>
           </div>
