@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
@@ -90,6 +90,18 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
   const [loggingOut, setLoggingOut] = useState(false);
   const [newsCards, setNewsCards] = useState<CardData[]>([]);
   const notifLeaveTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [tourBtnHighlight, setTourBtnHighlight] = useState(false);
+  const tourBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Listen for tour-complete event to highlight the tour button
+  useEffect(() => {
+    const handleTourComplete = () => {
+      setTourBtnHighlight(true);
+      setTimeout(() => setTourBtnHighlight(false), 4500);
+    };
+    window.addEventListener("bldr:tour-complete", handleTourComplete);
+    return () => window.removeEventListener("bldr:tour-complete", handleTourComplete);
+  }, []);
 
   // Load notifications
   React.useEffect(() => {
@@ -171,8 +183,11 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         }
       };
       const isWA = item.href === "#whatsapp";
+      const isTour = item.href === "#tour";
+      const isHighlighted = isTour && tourBtnHighlight;
       return (
         <button
+          ref={isTour ? tourBtnRef : undefined}
           onClick={handleClick}
           onMouseEnter={(e) => {
             if (isWA) {
@@ -186,19 +201,22 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
               e.currentTarget.style.textShadow = "none";
             }
           }}
+          className={isHighlighted ? "tour-btn-highlight" : ""}
           style={{
             display: "flex", alignItems: "center", gap: "12px",
             padding: collapsed ? "10px" : "10px 12px", borderRadius: "4px",
             fontSize: "14px", width: "100%",
             justifyContent: collapsed ? "center" : "flex-start",
             fontWeight: 400,
-            color: "rgba(240,240,245,0.6)",
-            background: "transparent",
-            border: "1px solid transparent",
+            color: isHighlighted ? "#f0f0f5" : "rgba(240,240,245,0.6)",
+            background: isHighlighted ? "rgba(0,0,255,0.12)" : "transparent",
+            border: isHighlighted ? "1px solid rgba(0,0,255,0.3)" : "1px solid transparent",
             cursor: "pointer",
             overflow: "hidden",
             whiteSpace: "nowrap",
-            transition: "color 0.4s ease, text-shadow 0.4s ease",
+            transition: "all 0.4s ease",
+            boxShadow: isHighlighted ? "0 0 16px rgba(0,0,255,0.25), inset 0 0 12px rgba(0,0,255,0.08)" : "none",
+            position: "relative",
           }}
         >
           <span style={{ flexShrink: 0, display: "flex", alignItems: "center", transition: "filter 0.4s ease" }}><Icon size={18} /></span>
@@ -229,6 +247,15 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
 
   return (
     <>
+    <style>{`
+      @keyframes tourBtnPulse {
+        0%, 100% { box-shadow: 0 0 16px rgba(0,0,255,0.25), inset 0 0 12px rgba(0,0,255,0.08); }
+        50% { box-shadow: 0 0 24px rgba(0,0,255,0.4), inset 0 0 16px rgba(0,0,255,0.12); }
+      }
+      .tour-btn-highlight {
+        animation: tourBtnPulse 1.5s ease-in-out infinite !important;
+      }
+    `}</style>
     {loggingOut && <LoadingSpinner text="מתנתק..." />}
     <aside style={{
       height: "100vh",

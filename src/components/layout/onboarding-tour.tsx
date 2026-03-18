@@ -322,7 +322,9 @@ export function OnboardingTour() {
       setActive(false);
       localStorage.setItem("bldr_onboarding_done", "true");
       setShowDone(true);
-      setTimeout(() => setShowDone(false), 2500);
+      // Signal sidebar to open and highlight tour button
+      window.dispatchEvent(new CustomEvent("bldr:tour-complete"));
+      setTimeout(() => setShowDone(false), 4000);
     }
   };
 
@@ -892,10 +894,12 @@ export function OnboardingTour() {
               </div>
             </div>
             <p style={{ color: "#f0f0f5", fontSize: 24, fontWeight: 700, margin: 0 }}>
-              מעולה, סיימת את הסיור!
+              איזה כיף, סיימת את הסיור!
             </p>
-            <p style={{ color: "rgba(240,240,245,0.45)", fontSize: 14, margin: 0 }}>
-              תמיד אפשר להפעיל שוב מהתפריט
+            <p style={{ color: "rgba(240,240,245,0.45)", fontSize: 14, margin: 0, lineHeight: 1.7, maxWidth: 320, textAlign: "center" }}>
+              דברים משתנים במערכת כל הזמן,
+              <br />
+              והסיור זמין לך תמיד מהתפריט.
             </p>
           </div>
         </div>,

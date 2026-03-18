@@ -49,6 +49,19 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
     }, 2000);
   }, [clearCollapseTimer]);
 
+  // Open sidebar when tour completes
+  useEffect(() => {
+    const handleTourComplete = () => {
+      clearCollapseTimer();
+      setSidebarCollapsed(false);
+      // Keep it open for 5 seconds so user sees the tour button highlight
+      const t = setTimeout(() => setSidebarCollapsed(true), 5000);
+      collapseTimerRef.current = t;
+    };
+    window.addEventListener("bldr:tour-complete", handleTourComplete);
+    return () => window.removeEventListener("bldr:tour-complete", handleTourComplete);
+  }, [clearCollapseTimer]);
+
   return (
     <div style={{ minHeight: "100vh", background: "#050510" }}>
       <div
