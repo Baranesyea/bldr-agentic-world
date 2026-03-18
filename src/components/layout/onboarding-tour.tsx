@@ -210,6 +210,7 @@ function SiriGlowCard({
 
 export function OnboardingTour() {
   const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeAudioPlayed, setWelcomeAudioPlayed] = useState(false);
   const [active, setActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [steps, setSteps] = useState<TourStep[]>([]);
@@ -235,12 +236,7 @@ export function OnboardingTour() {
         setSteps(s);
         setSettings(st);
         setSoundEnabled(st.soundDefault);
-        setTimeout(() => {
-          setShowWelcome(true);
-          if (st.soundDefault && st.welcomeAudioUrl) {
-            playWelcomeAudio(st.welcomeAudioUrl);
-          }
-        }, 1000);
+        setTimeout(() => setShowWelcome(true), 1000);
       }
     }
 
@@ -256,9 +252,6 @@ export function OnboardingTour() {
           setSoundEnabled(st.soundDefault);
           setCurrentStep(0);
           setShowWelcome(true);
-          if (st.soundDefault && st.welcomeAudioUrl) {
-            playWelcomeAudio(st.welcomeAudioUrl);
-          }
         }
       }
     }, 500);
@@ -360,6 +353,8 @@ export function OnboardingTour() {
   }, [active, currentStep, soundEnabled, steps]);
 
   const startTour = () => {
+    // Stop welcome audio if playing
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     setShowWelcome(false);
     setCurrentStep(0);
     setActive(true);
@@ -526,14 +521,22 @@ export function OnboardingTour() {
           Welcome Screen — Siri Glow Edition
           ═══════════════════════════════════════ */}
       {showWelcome && createPortal(
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 99990,
-          background: "rgba(3,3,12,0.88)",
-          backdropFilter: "blur(12px) saturate(1.2)", WebkitBackdropFilter: "blur(12px) saturate(1.2)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          animation: "siriOverlayIn 0.6s ease",
-          direction: "rtl",
-        }}>
+        <div
+          onClick={() => {
+            // First user interaction — unlock audio autoplay and play welcome audio
+            if (!welcomeAudioPlayed && soundEnabled && settings.welcomeAudioUrl) {
+              setWelcomeAudioPlayed(true);
+              playWelcomeAudio(settings.welcomeAudioUrl);
+            }
+          }}
+          style={{
+            position: "fixed", inset: 0, zIndex: 99990,
+            background: "rgba(3,3,12,0.88)",
+            backdropFilter: "blur(12px) saturate(1.2)", WebkitBackdropFilter: "blur(12px) saturate(1.2)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            animation: "siriOverlayIn 0.6s ease",
+            direction: "rtl",
+          }}>
           <SiriGlowCard
             borderRadius={20}
             borderWidth={2}
