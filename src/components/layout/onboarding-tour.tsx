@@ -21,11 +21,11 @@ interface OnboardingSettings {
 }
 
 const DEFAULT_STEPS: TourStep[] = [
-  { id: "step-1", targetSelector: "[href='/dashboard']", title: "הלימודים", description: "כאן תמצא את כל הקורסים שלך, ממוינים בצורה נוחה כמו נטפליקס", audioUrl: "", position: "left" },
-  { id: "step-2", targetSelector: "[href='/notebook']", title: "המחברת", description: "כל ההערות שלך מכל השיעורים במקום אחד", audioUrl: "", position: "left" },
-  { id: "step-3", targetSelector: "[href='/calendar']", title: "לוח שנה", description: "כל האירועים והמפגשים החיים שלנו", audioUrl: "", position: "left" },
-  { id: "step-4", targetSelector: "[href='/qa']", title: "שאלות ותשובות", description: "שאל שאלות, קבל תשובות מהקהילה ומהצוות", audioUrl: "", position: "left" },
-  { id: "step-5", targetSelector: "[href='/profile']", title: "הפרופיל שלך", description: "עדכן את הפרטים שלך, הגדרות והעדפות", audioUrl: "", position: "left" },
+  { id: "step-1", targetSelector: "[data-nav='/dashboard']", title: "הלימודים", description: "כאן תמצא את כל הקורסים שלך, ממוינים בצורה נוחה כמו נטפליקס", audioUrl: "", position: "left" },
+  { id: "step-2", targetSelector: "[data-nav='/notebook']", title: "המחברת", description: "כל ההערות שלך מכל השיעורים במקום אחד", audioUrl: "", position: "left" },
+  { id: "step-3", targetSelector: "[data-nav='/calendar']", title: "לוח שנה", description: "כל האירועים והמפגשים החיים שלנו", audioUrl: "", position: "left" },
+  { id: "step-4", targetSelector: "[data-nav='/qa']", title: "שאלות ותשובות", description: "שאל שאלות, קבל תשובות מהקהילה ומהצוות", audioUrl: "", position: "left" },
+  { id: "step-5", targetSelector: "[data-nav='/profile']", title: "הפרופיל שלך", description: "עדכן את הפרטים שלך, הגדרות והעדפות", audioUrl: "", position: "left" },
 ];
 
 const DEFAULT_SETTINGS: OnboardingSettings = {

@@ -226,7 +226,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
     }
 
     return (
-      <Link href={item.href} style={{
+      <Link href={item.href} data-nav={item.href} style={{
         display: "flex", alignItems: "center", gap: "12px",
         padding: collapsed ? "10px" : "10px 12px", borderRadius: "4px",
         textDecoration: "none", fontSize: "14px",
