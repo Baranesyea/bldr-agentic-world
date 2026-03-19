@@ -443,7 +443,9 @@ export default function LessonViewPage() {
                               }}>{lesson.title}</p>
                             </div>
 
-                            <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.3)", flexShrink: 0 }}>{lesson.duration}</span>
+                            {lesson.duration && !/^[—–\-]+$/.test(lesson.duration.trim()) && lesson.duration.trim() !== "" && (
+                              <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.3)", flexShrink: 0 }}>{lesson.duration}</span>
+                            )}
                           </Link>
                         );
                       })}

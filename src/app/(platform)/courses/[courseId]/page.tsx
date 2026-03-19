@@ -211,7 +211,7 @@ export default function CourseViewPage() {
                           </div>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
                             {lesson.hasAssignment && <span style={{ fontSize: "11px", color: "#FFB300", background: "rgba(255,179,0,0.1)", padding: "2px 6px", borderRadius: "4px" }}>מטלה</span>}
-                            {lesson.duration && lesson.duration !== "—" && (
+                            {lesson.duration && !/^[—–\-]+$/.test(lesson.duration.trim()) && lesson.duration.trim() !== "" && (
                               <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)", display: "inline-flex", alignItems: "center", gap: "4px" }}><ClockIcon size={12} /> {lesson.duration}</span>
                             )}
                           </div>
