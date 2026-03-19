@@ -362,6 +362,8 @@ export function OnboardingTour() {
   };
 
   const skipTour = () => {
+    // Stop any playing audio
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     setShowWelcome(false);
     setActive(false);
     localStorage.setItem("bldr_onboarding_done", "true");

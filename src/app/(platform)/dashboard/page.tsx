@@ -259,7 +259,7 @@ export default function DashboardPage() {
                     position: "relative",
                     borderRadius: 4,
                     overflow: "hidden",
-                    minHeight: 220,
+                    aspectRatio: "16 / 10",
                     cursor: "pointer",
                     border: "1px solid rgba(255,255,255,0.06)",
                     transition: "all 0.3s",
@@ -277,7 +277,7 @@ export default function DashboardPage() {
                     <div style={{
                       position: "absolute",
                       inset: 0,
-                      background: "linear-gradient(to top, #050510 0%, rgba(5,5,16,0.9) 30%, rgba(5,5,16,0.4) 60%, rgba(5,5,16,0.15) 100%)",
+                      background: "linear-gradient(to top, #050510 0%, rgba(5,5,16,0.92) 35%, rgba(5,5,16,0.5) 55%, rgba(5,5,16,0.15) 80%, rgba(5,5,16,0.08) 100%)",
                     }} />
                     {/* Badge */}
                     {c.featured && (
@@ -348,7 +348,7 @@ export default function DashboardPage() {
                 position: "relative",
                 borderRadius: 4,
                 overflow: "hidden",
-                minHeight: 220,
+                aspectRatio: "16 / 10",
                 border: "1px solid rgba(255,255,255,0.06)",
                 background: "linear-gradient(135deg, #0a0a2a, #000033)",
                 animation: `dashFadeUp 0.6s ease-out ${0.15 * (idx + nonFeaturedActive.length)}s both`,
@@ -361,7 +361,7 @@ export default function DashboardPage() {
                 <div style={{
                   position: "absolute",
                   inset: 0,
-                  background: "linear-gradient(to top, #050510 0%, rgba(5,5,16,0.9) 30%, rgba(5,5,16,0.4) 60%, rgba(5,5,16,0.15) 100%)",
+                  background: "linear-gradient(to top, #050510 0%, rgba(5,5,16,0.92) 35%, rgba(5,5,16,0.5) 55%, rgba(5,5,16,0.15) 80%, rgba(5,5,16,0.08) 100%)",
                 }} />
                 {/* Badge */}
                 <span style={{ position: "absolute", top: 12, right: 12, background: "rgba(255,179,0,0.25)", color: "#FFB300", padding: "4px 14px", borderRadius: 4, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>בקרוב</span>
