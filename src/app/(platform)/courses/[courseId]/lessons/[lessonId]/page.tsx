@@ -51,19 +51,23 @@ function isDirectVideoUrl(url: string): boolean {
   return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
 }
 
-function convertToEmbedUrl(url: string): string {
+function convertToEmbedUrl(url: string, autoplay = false): string {
   if (!url) return "";
+  const ap = autoplay ? 1 : 0;
   // Already an embed URL
-  if (url.includes("/embed/") || url.includes("player.vimeo.com")) return url;
+  if (url.includes("player.vimeo.com")) {
+    return autoplay ? url.replace("autoplay=0", "autoplay=1") : url;
+  }
+  if (url.includes("/embed/")) return url;
   // Vimeo: vimeo.com/123456 or vimeo.com/video/123456
   const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=0&title=0&byline=0&portrait=0`;
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=${ap}&title=0&byline=0&portrait=0&share=0&watchlater=0&like=0`;
   // youtube.com/watch?v=xxx
   const watchMatch = url.match(/[?&]v=([^&]+)/);
-  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=${ap}&rel=0`;
   // youtu.be/xxx
   const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
-  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=${ap}&rel=0`;
   // Loom: loom.com/share/xxx
   const loomMatch = url.match(/loom\.com\/share\/([\w-]+)/);
   if (loomMatch) return `https://www.loom.com/embed/${loomMatch[1]}`;
@@ -175,12 +179,65 @@ export default function LessonViewPage() {
     return () => clearTimeout(t);
   }, [currentLesson?.id]);
 
-  // Video timestamp timer — only runs when user clicks play (isPlaying)
+  // Video timestamp timer — runs when playing
   useEffect(() => {
     if (!isPlaying) return;
     const interval = setInterval(() => setVideoTimer((prev) => prev + 1), 1000);
     return () => clearInterval(interval);
   }, [isPlaying]);
+
+  // Listen for video end events from Vimeo/YouTube iframes
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        // Vimeo sends JSON messages
+        if (typeof event.data === "string") {
+          const data = JSON.parse(event.data);
+          if (data.event === "ended" || data.event === "finish") {
+            handleVideoEnded();
+          }
+          if (data.event === "play" || data.event === "playProgress") {
+            if (!isPlaying) setIsPlaying(true);
+          }
+          if (data.event === "pause") {
+            setIsPlaying(false);
+          }
+        }
+        // YouTube sends object messages
+        if (typeof event.data === "object" && event.data?.event === "onStateChange") {
+          if (event.data.info === 0) handleVideoEnded(); // 0 = ended
+          if (event.data.info === 1 && !isPlaying) setIsPlaying(true); // 1 = playing
+          if (event.data.info === 2) setIsPlaying(false); // 2 = paused
+        }
+      } catch {}
+    };
+
+    const handleVideoEnded = () => {
+      if (currentLesson && !isLessonCompleted(currentLesson.id)) {
+        markCompleted(currentLesson.id);
+        setAutoCompleted(true);
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
+      if (autoPlayNext && nextLesson) {
+        setShowCountdown(true);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    // Tell Vimeo iframe to send events
+    const iframe = document.querySelector("iframe[src*='vimeo']") as HTMLIFrameElement;
+    if (iframe?.contentWindow) {
+      setTimeout(() => {
+        iframe.contentWindow?.postMessage('{"method":"addEventListener","value":"ended"}', "*");
+        iframe.contentWindow?.postMessage('{"method":"addEventListener","value":"play"}', "*");
+        iframe.contentWindow?.postMessage('{"method":"addEventListener","value":"pause"}', "*");
+      }, 1000);
+    }
+
+    return () => window.removeEventListener("message", handleMessage);
+  }, [currentLesson?.id, isPlaying, autoPlayNext, nextLesson]);
 
   const isLessonCompleted = useCallback(
     (id: string) => completedLessons.includes(id),
@@ -210,9 +267,10 @@ export default function LessonViewPage() {
     []
   );
 
-  // Auto-complete after 30 seconds of playback (demo)
+  // Auto-complete after 30 seconds for direct video files (fallback)
   useEffect(() => {
     if (!currentLesson || !isPlaying || autoCompleted || isLessonCompleted(currentLesson.id)) return;
+    if (!isDirectVideoUrl(currentLesson.videoUrl)) return; // iframe videos use postMessage events
     if (videoTimer >= 30) {
       markCompleted(currentLesson.id);
       setAutoCompleted(true);
@@ -220,15 +278,6 @@ export default function LessonViewPage() {
       setTimeout(() => setShowToast(false), 3000);
     }
   }, [videoTimer, autoCompleted, currentLesson?.id, isLessonCompleted, markCompleted, isPlaying]);
-
-  // Auto-play next countdown
-  useEffect(() => {
-    if (!currentLesson || !autoCompleted || !autoPlayNext || !nextLesson || showCountdown) return;
-    if (isLessonCompleted(currentLesson.id) && autoCompleted) {
-      const t = setTimeout(() => setShowCountdown(true), 500);
-      return () => clearTimeout(t);
-    }
-  }, [autoCompleted, autoPlayNext, nextLesson, showCountdown, currentLesson?.id, isLessonCompleted]);
 
   useEffect(() => {
     if (!showCountdown) return;
@@ -299,7 +348,7 @@ export default function LessonViewPage() {
   const progressPct = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0;
 
   const isCurrentCompleted = isLessonCompleted(currentLesson.id);
-  const embedUrl = convertToEmbedUrl(currentLesson.videoUrl);
+  const embedUrl = convertToEmbedUrl(currentLesson.videoUrl, true);
 
   return (
     <>
@@ -482,36 +531,7 @@ export default function LessonViewPage() {
                   לא הוגדר סרטון לשיעור הזה
                 </div>
               )}
-              {/* Play overlay — click to start timer */}
-              {!isPlaying && (
-                <div
-                  onClick={() => setIsPlaying(true)}
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "rgba(0,0,0,0.4)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    zIndex: 5,
-                    transition: "opacity 0.3s",
-                  }}
-                >
-                  <div style={{
-                    width: "64px",
-                    height: "64px",
-                    borderRadius: "50%",
-                    background: "rgba(0,0,255,0.8)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 0 30px rgba(0,0,255,0.4)",
-                  }}>
-                    <PlayIcon size={28} color="white" />
-                  </div>
-                </div>
-              )}
+              {/* Play overlay removed — iframe handles its own play button */}
 
               {/* Countdown overlay */}
               {showCountdown && nextLesson && (

@@ -50,7 +50,7 @@ function getEmbedUrl(url: string): string | null {
   if (!url) return null;
   // Vimeo: vimeo.com/123456 or player.vimeo.com/video/123456
   const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=0&title=0&byline=0&portrait=0`;
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=0&title=0&byline=0&portrait=0&share=0&watchlater=0&like=0`;
   // YouTube: youtube.com/watch?v=xxx or youtu.be/xxx
   const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
   if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?rel=0`;
