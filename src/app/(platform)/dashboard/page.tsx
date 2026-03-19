@@ -342,7 +342,7 @@ export default function DashboardPage() {
             עולה בקרוב
             <span style={{ background: "rgba(255,179,0,0.15)", color: "#FFB300", padding: "2px 10px", borderRadius: "4px", fontSize: "12px", fontWeight: 600 }}>{comingSoonCourses.length}</span>
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
             {comingSoonCourses.map((c, idx) => (
               <div key={c.id} style={{
                 position: "relative",
@@ -378,7 +378,10 @@ export default function DashboardPage() {
                   flexDirection: "column",
                   justifyContent: "flex-start",
                 }}>
-                  <h3 style={{ fontSize: 17, fontWeight: 700, color: "rgba(240,240,245,0.7)", marginBottom: 0, textShadow: "0 1px 6px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", lineHeight: 1.35 }}>{c.title}</h3>
+                  <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 6, textShadow: "0 1px 6px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", lineHeight: 1.35 }}>{c.title}</h3>
+                  {c.description && (
+                    <p style={{ fontSize: 12, color: "rgba(240,240,245,0.5)", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{c.description}</p>
+                  )}
                 </div>
               </div>
             ))}
