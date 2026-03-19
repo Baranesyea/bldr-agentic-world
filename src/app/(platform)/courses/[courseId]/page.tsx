@@ -112,7 +112,10 @@ export default function CourseViewPage() {
         {course.thumbnailUrl ? (
           <>
             <ResolvedImg src={course.thumbnailUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "70%", background: "linear-gradient(to top, #050510 15%, rgba(5,5,16,0.85) 50%, transparent 100%)" }} />
+            {/* Bottom gradient */}
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "80%", background: "linear-gradient(to top, #050510 15%, rgba(5,5,16,0.85) 50%, transparent 100%)" }} />
+            {/* Right gradient — strong for text readability (RTL) */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to left, #050510 0%, rgba(5,5,16,0.9) 25%, rgba(5,5,16,0.6) 45%, transparent 70%)" }} />
           </>
         ) : (
           <>
