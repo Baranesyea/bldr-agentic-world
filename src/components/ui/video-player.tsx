@@ -45,7 +45,43 @@ const CustomSlider = ({
   );
 };
 
+/** Convert a Vimeo/YouTube URL to an embeddable iframe URL */
+function getEmbedUrl(url: string): string | null {
+  if (!url) return null;
+  // Vimeo: vimeo.com/123456 or player.vimeo.com/video/123456
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=0&title=0&byline=0&portrait=0`;
+  // YouTube: youtube.com/watch?v=xxx or youtu.be/xxx
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?rel=0`;
+  // Loom: loom.com/share/xxx
+  const loomMatch = url.match(/loom\.com\/share\/([\w-]+)/);
+  if (loomMatch) return `https://www.loom.com/embed/${loomMatch[1]}`;
+  return null;
+}
+
 const VideoPlayer = ({ src }: { src: string }) => {
+  // If it's an embed-able URL (Vimeo, YouTube, Loom), use iframe
+  const embedUrl = getEmbedUrl(src);
+  if (embedUrl) {
+    return (
+      <motion.div
+        className="relative w-full max-w-4xl mx-auto rounded-xl overflow-hidden bg-black shadow-[0_0_20px_rgba(0,0,0,0.2)]"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        style={{ aspectRatio: "16 / 9" }}
+      >
+        <iframe
+          src={embedUrl}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+        />
+      </motion.div>
+    );
+  }
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
