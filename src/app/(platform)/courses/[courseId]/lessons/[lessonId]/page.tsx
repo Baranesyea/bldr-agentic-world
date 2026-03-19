@@ -54,13 +54,19 @@ function isDirectVideoUrl(url: string): boolean {
 function convertToEmbedUrl(url: string): string {
   if (!url) return "";
   // Already an embed URL
-  if (url.includes("/embed/")) return url;
+  if (url.includes("/embed/") || url.includes("player.vimeo.com")) return url;
+  // Vimeo: vimeo.com/123456 or vimeo.com/video/123456
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=0&title=0&byline=0&portrait=0`;
   // youtube.com/watch?v=xxx
   const watchMatch = url.match(/[?&]v=([^&]+)/);
   if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
   // youtu.be/xxx
   const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
   if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  // Loom: loom.com/share/xxx
+  const loomMatch = url.match(/loom\.com\/share\/([\w-]+)/);
+  if (loomMatch) return `https://www.loom.com/embed/${loomMatch[1]}`;
   return url;
 }
 
