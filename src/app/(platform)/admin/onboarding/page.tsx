@@ -16,6 +16,7 @@ interface TourStep {
 interface OnboardingSettings {
   welcomeTitle: string;
   welcomeSubtitle: string;
+  soundEnabled?: boolean;
   soundDefault: boolean;
   welcomeAudioUrl?: string;
 }
@@ -31,6 +32,7 @@ const DEFAULT_STEPS: TourStep[] = [
 const DEFAULT_SETTINGS: OnboardingSettings = {
   welcomeTitle: "ברוכים הבאים ל-Agentic World",
   welcomeSubtitle: "המועדון לאנשים שבונים בעידן האגנטי",
+  soundEnabled: false,
   soundDefault: true,
   welcomeAudioUrl: "",
 };
@@ -371,16 +373,27 @@ export default function OnboardingAdminPage() {
               onChange={(e) => setSettings({ ...settings, welcomeSubtitle: e.target.value })}
             />
           </div>
-          <AudioUpload
-            label="אודיו מסך פתיחה"
-            audioUrl={settings.welcomeAudioUrl || ""}
-            onUpload={(url) => setSettings({ ...settings, welcomeAudioUrl: url })}
-            onClear={() => setSettings({ ...settings, welcomeAudioUrl: "" })}
-          />
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)" }}>סאונד כברירת מחדל</span>
-            <ToggleSwitch checked={settings.soundDefault} onChange={(v) => setSettings({ ...settings, soundDefault: v })} size="sm" />
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 0", borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: 4 }}>
+            <span style={{ fontSize: "14px", fontWeight: 600, color: "#f0f0f5" }}>סאונד בסיור</span>
+            <ToggleSwitch checked={settings.soundEnabled ?? false} onChange={(v) => setSettings({ ...settings, soundEnabled: v })} size="sm" />
+            {!settings.soundEnabled && (
+              <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.3)" }}>מוחבא מהמשתמשים</span>
+            )}
           </div>
+          {settings.soundEnabled && (
+            <>
+              <AudioUpload
+                label="אודיו מסך פתיחה"
+                audioUrl={settings.welcomeAudioUrl || ""}
+                onUpload={(url) => setSettings({ ...settings, welcomeAudioUrl: url })}
+                onClear={() => setSettings({ ...settings, welcomeAudioUrl: "" })}
+              />
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)" }}>סאונד מופעל כברירת מחדל למשתמש</span>
+                <ToggleSwitch checked={settings.soundDefault} onChange={(v) => setSettings({ ...settings, soundDefault: v })} size="sm" />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -494,12 +507,14 @@ export default function OnboardingAdminPage() {
                 <option value="right">ימין</option>
               </select>
             </div>
-            <AudioUpload
-              label="אודיו לשלב"
-              audioUrl={step.audioUrl}
-              onUpload={(url) => updateStep(index, "audioUrl", url)}
-              onClear={() => updateStep(index, "audioUrl", "")}
-            />
+            {settings.soundEnabled && (
+              <AudioUpload
+                label="אודיו לשלב"
+                audioUrl={step.audioUrl}
+                onUpload={(url) => updateStep(index, "audioUrl", url)}
+                onClear={() => updateStep(index, "audioUrl", "")}
+              />
+            )}
           </div>
         </div>
       ))}

@@ -18,6 +18,7 @@ interface TourStep {
 interface OnboardingSettings {
   welcomeTitle: string;
   welcomeSubtitle: string;
+  soundEnabled?: boolean;
   soundDefault: boolean;
   welcomeAudioUrl?: string;
 }
@@ -235,7 +236,7 @@ export function OnboardingTour() {
       if (s.length > 0) {
         setSteps(s);
         setSettings(st);
-        setSoundEnabled(st.soundDefault);
+        setSoundEnabled(st.soundEnabled !== false && st.soundDefault);
         setTimeout(() => setShowWelcome(true), 1000);
       }
     }
@@ -249,7 +250,7 @@ export function OnboardingTour() {
         if (s.length > 0) {
           setSteps(s);
           setSettings(st);
-          setSoundEnabled(st.soundDefault);
+          setSoundEnabled(st.soundEnabled !== false && st.soundDefault);
           setCurrentStep(0);
           setShowWelcome(true);
         }
@@ -661,14 +662,16 @@ export function OnboardingTour() {
                 </button>
               </div>
 
-              {/* Sound toggle */}
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                marginBottom: 20,
-              }}>
-                <span style={{ fontSize: 13, color: "rgba(240,240,245,0.4)" }}>סיור עם סאונד</span>
-                <ToggleSwitch checked={soundEnabled} onChange={setSoundEnabled} size="sm" />
-              </div>
+              {/* Sound toggle — only shown when admin enabled sound */}
+              {settings.soundEnabled && (
+                <div style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                  marginBottom: 20,
+                }}>
+                  <span style={{ fontSize: 13, color: "rgba(240,240,245,0.4)" }}>סיור עם סאונד</span>
+                  <ToggleSwitch checked={soundEnabled} onChange={setSoundEnabled} size="sm" />
+                </div>
+              )}
 
               <button
                 onClick={skipTour}
