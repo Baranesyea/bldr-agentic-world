@@ -15,9 +15,11 @@ export interface Profile {
 }
 
 export interface TouristData {
-  courseId: string;
-  lessonId: string;
-  lessonTitle: string;
+  type?: "lesson" | "course" | "case_study";
+  courseId?: string;
+  lessonId?: string;
+  lessonTitle?: string;
+  caseStudyId?: string;
   name: string;
   email: string;
   phone: string;
