@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { CalendarIcon, PlusIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon } from "@/components/ui/icons";
+import { PricingPopup } from "@/components/ui/pricing-popup";
+import { getTouristData } from "@/hooks/useUser";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -85,6 +87,8 @@ export default function CalendarPage() {
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
   const [prefillDate, setPrefillDate] = useState<string>("");
+  const [showPricing, setShowPricing] = useState(false);
+  const isTourist = typeof window !== "undefined" ? !!getTouristData() : false;
 
   // Load events from localStorage
   useEffect(() => {
@@ -180,6 +184,7 @@ export default function CalendarPage() {
 
   return (
     <div style={{ padding: "32px", maxWidth: "1100px", margin: "0 auto" }}>
+      {showPricing && <PricingPopup onClose={() => setShowPricing(false)} />}
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px", flexWrap: "wrap", gap: "12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -187,7 +192,7 @@ export default function CalendarPage() {
           <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#f0f0f5", margin: 0 }}>לוח שנה</h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <button onClick={() => openAddModal()} style={btnPrimary}>
+          <button onClick={() => isTourist ? setShowPricing(true) : openAddModal()} style={btnPrimary}>
             <PlusIcon size={16} /> הוסף אירוע
           </button>
         </div>
@@ -260,7 +265,7 @@ export default function CalendarPage() {
                 {dayEvents.slice(0, 3).map(evt => (
                   <div
                     key={evt.id}
-                    onClick={e => { e.stopPropagation(); setDetailEvent(evt); }}
+                    onClick={e => { e.stopPropagation(); if (isTourist) { setShowPricing(true); } else { setDetailEvent(evt); } }}
                     style={{
                       fontSize: "11px",
                       padding: "2px 6px",

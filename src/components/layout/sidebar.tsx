@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/icons";
 import { Sparkles, BookOpen, Rocket, Layers, Calendar } from "lucide-react";
 import { MorphingCardStack, type CardData } from "@/components/ui/morphing-card-stack";
-import { useUser } from "@/hooks/useUser";
+import { useUser, getTouristData } from "@/hooks/useUser";
 import { createClient } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
@@ -56,6 +56,8 @@ const adminNav = [
   { label: "ניהול קורסים", href: "/admin/courses", icon: GraduationIcon },
   { label: "פידבקים", href: "/admin/feedback", icon: FeedbackIcon },
   { label: "משתמשים", href: "/admin/users", icon: UsersIcon },
+  { label: "קישורי שיתוף", href: "/admin/share-links", icon: LinkIcon },
+  { label: "חשבונות מחוקים", href: "/admin/deleted-accounts", icon: UsersIcon },
   { label: "רעיונות לתכנים", href: "/admin/content-ideas", icon: LightbulbIcon },
   { label: "רעיונות לפיתוח", href: "/admin/ideas", icon: LightbulbIcon },
   { label: "משימות", href: "/admin/tasks", icon: LightbulbIcon },
@@ -79,6 +81,8 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
   const pathname = usePathname();
   const router = useRouter();
   const { profile: userProfile, isAdmin } = useUser();
+  const touristData = typeof window !== "undefined" ? getTouristData() : null;
+  const isTourist = !!touristData;
   const [internalCollapsed, setInternalCollapsed] = useState(true);
   const collapsed = collapsedProp ?? internalCollapsed;
   const toggleCollapse = onToggle ?? (() => setInternalCollapsed(!internalCollapsed));
@@ -292,15 +296,34 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       </div>
 
       <nav style={{ flex: 1, padding: "16px 8px", display: "flex", flexDirection: "column", gap: "4px", overflowY: "auto" }}>
-        {mainNav.map((item) => (
-          <NavLink key={item.href} item={item} />
-        ))}
-        {isAdmin && !viewAsUser && (
+        {isTourist ? (
           <>
-            <div style={{ margin: "12px 0", borderTop: "1px solid rgba(255,255,255,0.06)" }} />
-            {adminNav.map((item) => (
+            {touristData?.type === "lesson" && touristData.courseId && touristData.lessonId && (
+              <NavLink item={{ label: "הסרטון שלי", href: `/courses/${touristData.courseId}/lessons/${touristData.lessonId}`, icon: CoursesIcon }} />
+            )}
+            {touristData?.type === "course" && touristData.courseId && (
+              <NavLink item={{ label: "הקורס שלי", href: `/courses/${touristData.courseId}`, icon: CoursesIcon }} />
+            )}
+            {touristData?.type === "case_study" && (
+              <NavLink item={{ label: "מקרי בוחן", href: "/case-studies", icon: BeakerIcon }} />
+            )}
+            <NavLink item={{ label: "תכנים נוספים", href: "/social", icon: SocialIcon }} />
+            <NavLink item={{ label: "לוח שנה", href: "/calendar", icon: CalendarIcon }} />
+            <NavLink item={{ label: "פרופיל", href: "/profile", icon: ProfileIcon }} />
+          </>
+        ) : (
+          <>
+            {mainNav.map((item) => (
               <NavLink key={item.href} item={item} />
             ))}
+            {isAdmin && !viewAsUser && (
+              <>
+                <div style={{ margin: "12px 0", borderTop: "1px solid rgba(255,255,255,0.06)" }} />
+                {adminNav.map((item) => (
+                  <NavLink key={item.href} item={item} />
+                ))}
+              </>
+            )}
           </>
         )}
       </nav>

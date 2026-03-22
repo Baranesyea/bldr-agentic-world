@@ -9,6 +9,7 @@ import {
   type ThumbnailOptions,
 } from "@/lib/thumbnail-generator";
 import { storeImageIfDataUrl, resolveImageUrl, saveImage, getImage } from "@/lib/image-store";
+import { ShareButton } from "@/components/ui/share-button";
 
 // ── Types ──────────────────────────────────────────────────────────
 interface Lesson {
@@ -1286,6 +1287,15 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                         >
                           ✕
                         </button>
+                        <ShareButton
+                          type="lesson"
+                          name={lesson.title || `שיעור ${lesson.number}`}
+                          courseId={courseId || existingIdRef.current}
+                          lessonId={lesson.id}
+                          lessonTitle={lesson.title}
+                          courseTitle={title}
+                          videoUrl={lesson.videoUrl}
+                        />
                       </div>
                     </td>
                   </tr>

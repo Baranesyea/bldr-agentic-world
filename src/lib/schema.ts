@@ -14,7 +14,7 @@ import {
 // Enums
 // ============================================
 export const courseStatusEnum = pgEnum("course_status", ["draft", "active", "archive"]);
-export const userRoleEnum = pgEnum("user_role", ["member", "admin"]);
+export const userRoleEnum = pgEnum("user_role", ["member", "admin", "tourist"]);
 export const progressStatusEnum = pgEnum("progress_status", ["not_started", "watching", "completed"]);
 export const submissionStatusEnum = pgEnum("submission_status", ["not_submitted", "submitted"]);
 export const questionStatusEnum = pgEnum("question_status", ["pending", "answered", "rejected"]);

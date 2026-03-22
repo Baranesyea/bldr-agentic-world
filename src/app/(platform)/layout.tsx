@@ -9,6 +9,7 @@ import { FeedbackWidget } from "@/components/layout/feedback-widget";
 import { WhatsAppCTA } from "@/components/layout/whatsapp-cta";
 import { OnboardingTour } from "@/components/layout/onboarding-tour";
 import { ProfileQuestionnaire } from "@/components/layout/profile-questionnaire";
+import { TouristGuard } from "@/components/ui/tourist-guard";
 
 const mockEvent = {
   title: "Office Hours",
@@ -92,7 +93,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       </div>
       <main style={{ marginRight: `${sidebarWidth}px`, minHeight: "100vh", paddingBottom: "64px", transition: "margin-right 0.3s" }}>
         <TrialBanner />
-        {children}
+        <TouristGuard>{children}</TouristGuard>
       </main>
       {!isAdmin && <FeedbackWidget />}
       {!isAdmin && <WhatsAppCTA />}

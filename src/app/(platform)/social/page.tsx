@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { PricingPopup } from "@/components/ui/pricing-popup";
+import { getTouristData } from "@/hooks/useUser";
 
 interface VideoItem {
   videoId: string;
@@ -19,6 +21,16 @@ export default function SocialPage() {
   const [error, setError] = useState(false);
   const [instaPosts, setInstaPosts] = useState<InstaPost[]>([]);
   const [instaLoading, setInstaLoading] = useState(true);
+  const [showPricing, setShowPricing] = useState(false);
+  const isTourist = typeof window !== "undefined" ? !!getTouristData() : false;
+
+  const handleContentClick = (e: React.MouseEvent) => {
+    if (isTourist) {
+      e.preventDefault();
+      e.stopPropagation();
+      setShowPricing(true);
+    }
+  };
 
   // Load Instagram embed script
   useEffect(() => {
@@ -61,6 +73,7 @@ export default function SocialPage() {
 
   return (
     <div style={{ padding: "32px", maxWidth: "1400px", margin: "0 auto" }}>
+      {showPricing && <PricingPopup onClose={() => setShowPricing(false)} />}
       <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px" }}>
         תכנים נוספים
       </h1>
@@ -68,7 +81,32 @@ export default function SocialPage() {
         תכנים שאני מעלה ברשתות החברתיות — טיפים, הדרכות ועדכונים
       </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", alignItems: "start" }}>
+      {/* Tourist teaser banner */}
+      {isTourist && (
+        <div
+          onClick={() => setShowPricing(true)}
+          style={{
+            padding: "14px 20px", borderRadius: "8px", marginBottom: "20px",
+            background: "rgba(0,0,255,0.08)", border: "1px solid rgba(0,0,255,0.25)",
+            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between",
+            direction: "rtl",
+          }}
+        >
+          <span style={{ fontSize: "14px", color: "rgba(240,240,245,0.8)" }}>
+            🔒 כדי לצפות בתכנים ולהשתתף בקהילה — הצטרף למערכת
+          </span>
+          <span style={{ fontSize: "13px", fontWeight: 700, color: "#5555ff" }}>להצטרפות ←</span>
+        </div>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", alignItems: "start", position: "relative" }}>
+        {/* Tourist click overlay */}
+        {isTourist && (
+          <div
+            onClick={handleContentClick}
+            style={{ position: "absolute", inset: 0, zIndex: 10, cursor: "pointer" }}
+          />
+        )}
         {/* ── YouTube (Right) ── */}
         <div style={{
           background: "rgba(255,255,255,0.03)",

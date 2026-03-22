@@ -10,8 +10,27 @@ export interface Profile {
   full_name: string;
   avatar_url: string | null;
   bio: string | null;
-  role: "admin" | "member";
+  role: "admin" | "member" | "tourist";
   created_at: string;
+}
+
+export interface TouristData {
+  courseId: string;
+  lessonId: string;
+  lessonTitle: string;
+  name: string;
+  email: string;
+  phone: string;
+  tokenUsed: string;
+  grantedAt: string;
+}
+
+export function getTouristData(): TouristData | null {
+  try {
+    const stored = localStorage.getItem("bldr_tourist");
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return null;
 }
 
 const CACHE_KEY = "bldr_profile_cache";
@@ -89,5 +108,15 @@ export function useUser() {
     return () => subscription.unsubscribe();
   }, []);
 
-  return { user, profile, loading, isAdmin: profile?.role === "admin" };
+  const touristData = typeof window !== "undefined" ? getTouristData() : null;
+  const isTourist = profile?.role === "tourist" || !!touristData;
+
+  return {
+    user,
+    profile,
+    loading,
+    isAdmin: profile?.role === "admin",
+    isTourist,
+    touristData,
+  };
 }

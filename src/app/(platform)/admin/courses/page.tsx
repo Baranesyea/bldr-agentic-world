@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { resolveImageUrl } from "@/lib/image-store";
+import { ShareButton } from "@/components/ui/share-button";
 
 /** Image component that resolves idb:// URLs from IndexedDB */
 function ResolvedImg({ src, alt, style }: { src: string; alt: string; style: React.CSSProperties }) {
@@ -383,7 +384,7 @@ export default function CourseManagerPage() {
                   </div>
 
                   {/* Actions */}
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <Link
                       href={`/admin/courses/${course.id}/edit`}
                       style={{
@@ -418,6 +419,14 @@ export default function CourseManagerPage() {
                     >
                       מחיקה
                     </button>
+                  </div>
+                  <div style={{ marginTop: 8 }}>
+                    <ShareButton
+                      type="course"
+                      name={course.title}
+                      courseId={course.id}
+                      courseTitle={course.title}
+                    />
                   </div>
                 </div>
               </div>

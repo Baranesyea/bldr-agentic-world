@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { TrophyIcon, BookIcon, FireIcon, NotebookIcon, SettingsIcon } from "@/components/ui/icons";
+import { getTouristData } from "@/hooks/useUser";
 
 interface UserProfile {
   name: string;
@@ -71,6 +72,7 @@ export default function ProfilePage() {
   const [autoPlayNext, setAutoPlayNext] = useState(true);
   const [showGenderPicker, setShowGenderPicker] = useState(false);
   const [genError, setGenError] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -632,6 +634,115 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
+
+      {/* Danger Zone */}
+      <div style={{
+        background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.15)",
+        borderRadius: "4px", padding: "24px", marginTop: "24px",
+      }}>
+        <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#ef4444", marginBottom: "8px" }}>אזור מסוכן</h2>
+        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)", marginBottom: "16px" }}>
+          מחיקת החשבון היא פעולה בלתי הפיכה.
+        </p>
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          style={{
+            padding: "10px 20px", borderRadius: "4px",
+            border: "1px solid rgba(239,68,68,0.3)",
+            background: "rgba(239,68,68,0.08)", color: "#ef4444",
+            fontSize: "13px", fontWeight: 600, cursor: "pointer",
+          }}
+        >
+          מחק חשבון
+        </button>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div
+          onClick={() => setShowDeleteConfirm(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)",
+            padding: "16px",
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: "#0e0e22", borderRadius: "12px",
+              border: "1px solid rgba(239,68,68,0.2)",
+              padding: "36px 32px", maxWidth: "440px", width: "100%",
+              direction: "rtl",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
+            }}
+          >
+            <div style={{ fontSize: "36px", textAlign: "center", marginBottom: "16px" }}>⚠️</div>
+            <h2 style={{ fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "14px", textAlign: "center" }}>
+              האם אתה בטוח שאתה רוצה למחוק את החשבון?
+            </h2>
+            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.6)", lineHeight: 1.7, textAlign: "center", marginBottom: "28px" }}>
+              אם תמחק את החשבון לא יהיה לך גישה לתכנים שפתוחים לך עכשיו,
+              ולא תקבל התראות על תכנים חדשים שעולים למערכת.
+            </p>
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                style={{
+                  flex: 1, padding: "12px", borderRadius: "8px",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.05)", color: "#fff",
+                  fontSize: "14px", fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                ביטול
+              </button>
+              <button
+                onClick={async () => {
+                  // Save to deleted accounts log
+                  try {
+                    const tourist = getTouristData();
+                    const userType = tourist ? "tourist" : "member";
+                    const log = JSON.parse(localStorage.getItem("bldr_deleted_accounts") || "[]");
+                    const now = new Date();
+                    log.unshift({
+                      id: Date.now().toString(),
+                      date: now.toLocaleDateString("he-IL"),
+                      time: now.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }),
+                      userType,
+                      name: tourist?.name || profile.name,
+                      email: tourist?.email || profile.email,
+                    });
+                    localStorage.setItem("bldr_deleted_accounts", JSON.stringify(log));
+                  } catch {}
+
+                  // Clear all local data
+                  const keysToRemove = [
+                    "bldr_tourist", "bldr_user_profile", "bldr_profile_cache",
+                    "bldr_user_settings", "bldr_completed_lessons", "bldr_notes",
+                    "bldr_trial", "bldr_calendar_events", "bldr_onboarding_v4",
+                  ];
+                  keysToRemove.forEach(k => localStorage.removeItem(k));
+
+                  // Sign out via Supabase
+                  try {
+                    await fetch("/api/auth/logout", { method: "POST" });
+                  } catch {}
+                  window.location.replace("/login");
+                }}
+                style={{
+                  flex: 1, padding: "12px", borderRadius: "8px",
+                  border: "none", background: "#ef4444", color: "#fff",
+                  fontSize: "14px", fontWeight: 700, cursor: "pointer",
+                }}
+              >
+                מחק חשבון
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

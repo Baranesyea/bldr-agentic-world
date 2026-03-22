@@ -36,7 +36,7 @@ interface Payment {
 }
 
 type UserStatus = "paying" | "trial" | "expired" | "blocked" | "admin";
-type FilterTab = "all" | "paying" | "trial" | "blocked" | "inactive";
+type FilterTab = "all" | "paying" | "trial" | "blocked" | "inactive" | "tourist";
 type SortKey = "joined" | "lastPayment" | "amount";
 
 interface MergedUser {
@@ -97,12 +97,13 @@ const GRADIENTS = [
   "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)",
 ];
 
-const STATUS_CONFIG: Record<UserStatus, { label: string; color: string; bg: string }> = {
+const STATUS_CONFIG: Record<UserStatus | "tourist", { label: string; color: string; bg: string }> = {
   paying: { label: "משלם", color: "#4ade80", bg: "rgba(74,222,128,0.12)" },
   trial: { label: "ניסיון", color: "#60a5fa", bg: "rgba(96,165,250,0.12)" },
   expired: { label: "פג תוקף", color: "#fb923c", bg: "rgba(251,146,60,0.12)" },
   blocked: { label: "חסום", color: "#f87171", bg: "rgba(248,113,113,0.12)" },
   admin: { label: "מנהל", color: "#c084fc", bg: "rgba(192,132,252,0.12)" },
+  tourist: { label: "תייר", color: "#FFB300", bg: "rgba(255,179,0,0.12)" },
 };
 
 /* ─── Helpers ─── */
@@ -226,6 +227,30 @@ export default function AdminUsersPage() {
       });
     }
 
+    // 3. Tourist users from localStorage
+    try {
+      const touristRaw = localStorage.getItem("bldr_tourist");
+      if (touristRaw) {
+        const t = JSON.parse(touristRaw);
+        if (t.email && !seen.has(t.email.toLowerCase())) {
+          seen.add(t.email.toLowerCase());
+          result.push({
+            id: `tourist_${t.email}`,
+            email: t.email,
+            fullName: t.name || "",
+            phone: t.phone || "",
+            status: "trial" as UserStatus,
+            amount: 0,
+            joinedAt: t.grantedAt || "",
+            lastPaymentDate: null,
+            subscriptionStart: null,
+            subscriberId: null,
+            role: "tourist",
+          });
+        }
+      }
+    } catch {}
+
     return result;
   }, [profiles, subscribers]);
 
@@ -249,6 +274,7 @@ export default function AdminUsersPage() {
     else if (filterTab === "trial") list = list.filter((u) => u.status === "trial" || u.status === "expired");
     else if (filterTab === "blocked") list = list.filter((u) => u.status === "blocked");
     else if (filterTab === "inactive") list = list.filter((u) => u.status === "expired" || u.status === "trial");
+    else if (filterTab === "tourist") list = list.filter((u) => u.role === "tourist");
 
     // Search
     if (search) {
@@ -343,6 +369,7 @@ export default function AdminUsersPage() {
   /* ─── Filter tabs ─── */
   const TABS: { key: FilterTab; label: string }[] = [
     { key: "all", label: "הכל" },
+    { key: "tourist", label: "תיירים" },
     { key: "paying", label: "משלמים" },
     { key: "trial", label: "ניסיון" },
     { key: "blocked", label: "חסומים" },
@@ -459,13 +486,14 @@ export default function AdminUsersPage() {
                 <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
                   {[
                     { label: "", width: "52px", sortable: false, key: null },
-                    { label: "Name", width: undefined, sortable: false, key: null },
-                    { label: "Email", width: undefined, sortable: false, key: null },
-                    { label: "Phone", width: "120px", sortable: false, key: null },
-                    { label: "Status", width: "120px", sortable: false, key: null },
-                    { label: "Amount", width: "100px", sortable: true, key: "amount" as SortKey },
-                    { label: "Joined", width: "110px", sortable: true, key: "joined" as SortKey },
-                    { label: "Last Payment", width: "120px", sortable: true, key: "lastPayment" as SortKey },
+                    { label: "שם", width: undefined, sortable: false, key: null },
+                    { label: "אימייל", width: undefined, sortable: false, key: null },
+                    { label: "טלפון", width: "120px", sortable: false, key: null },
+                    { label: "סטטוס", width: "120px", sortable: false, key: null },
+                    { label: "סכום", width: "100px", sortable: true, key: "amount" as SortKey },
+                    { label: "הצטרף", width: "110px", sortable: true, key: "joined" as SortKey },
+                    { label: "זמן במערכת", width: "110px", sortable: false, key: null },
+                    { label: "תשלום אחרון", width: "120px", sortable: true, key: "lastPayment" as SortKey },
                   ].map((col, i) => (
                     <th
                       key={i}
@@ -492,7 +520,7 @@ export default function AdminUsersPage() {
               <tbody>
                 {filtered.map((user, idx) => {
                   const isExpanded = expandedId === user.id;
-                  const statusInfo = STATUS_CONFIG[user.status];
+                  const statusInfo = user.role === "tourist" ? STATUS_CONFIG["tourist"] : STATUS_CONFIG[user.status];
                   const userPayments = getUserPayments(user.subscriberId);
                   const totalPaid = userPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
@@ -574,6 +602,18 @@ export default function AdminUsersPage() {
                         <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.5)", fontSize: 13 }}>
                           {formatDate(user.joinedAt)}
                         </td>
+                        {/* Time in system */}
+                        <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.5)", fontSize: 13 }}>
+                          {user.joinedAt ? (() => {
+                            const diff = Date.now() - new Date(user.joinedAt).getTime();
+                            const days = Math.floor(diff / 86400000);
+                            if (days === 0) return "היום";
+                            if (days < 7) return `${days} ימים`;
+                            if (days < 30) return `${Math.floor(days / 7)} שבועות`;
+                            if (days < 365) return `${Math.floor(days / 30)} חודשים`;
+                            return `${Math.floor(days / 365)} שנים`;
+                          })() : "—"}
+                        </td>
                         {/* Last Payment */}
                         <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.5)", fontSize: 13 }}>
                           {formatDate(user.lastPaymentDate)}
@@ -583,7 +623,7 @@ export default function AdminUsersPage() {
                       {/* Expanded Row */}
                       {isExpanded && (
                         <tr>
-                          <td colSpan={8} style={{ padding: 0 }}>
+                          <td colSpan={9} style={{ padding: 0 }}>
                             <div
                               style={{
                                 background: "rgba(100,100,255,0.02)",
