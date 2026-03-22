@@ -1290,7 +1290,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                         <ShareButton
                           type="lesson"
                           name={lesson.title || `שיעור ${lesson.number}`}
-                          courseId={courseId || existingIdRef.current}
+                          courseId={courseId || existingIdRef.current || undefined}
                           lessonId={lesson.id}
                           lessonTitle={lesson.title}
                           courseTitle={title}
