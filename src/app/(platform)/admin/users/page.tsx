@@ -317,15 +317,19 @@ export default function AdminUsersPage() {
   };
 
   /* ─── Add subscriber ─── */
+  const [addError, setAddError] = useState("");
+
   const handleAdd = async () => {
     if (!newEmail) return;
     setAddLoading(true);
+    setAddError("");
     try {
-      const now = new Date().toISOString();
-      const nextPayment = new Date();
-      nextPayment.setMonth(nextPayment.getMonth() + 1);
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("הבקשה לקחה יותר מדי זמן — בדוק חיבור לאינטרנט")), 10000)
+      );
 
-      const { error } = await supabase.from("subscribers").insert({
+      const now = new Date().toISOString();
+      const insert = supabase.from("subscribers").insert({
         email: newEmail.toLowerCase().trim(),
         full_name: newName || "",
         phone: newPhone || "",
@@ -335,9 +339,10 @@ export default function AdminUsersPage() {
         updated_at: now,
       });
 
+      const { error } = await Promise.race([insert, timeout]) as Awaited<typeof insert>;
+
       if (error) {
-        alert("שגיאה: " + error.message);
-        console.error("Supabase insert error:", error);
+        setAddError("שגיאה: " + error.message);
         return;
       }
 
@@ -345,11 +350,11 @@ export default function AdminUsersPage() {
       setNewEmail("");
       setNewPhone("");
       setNewAmount("99");
+      setAddError("");
       setShowAddModal(false);
       fetchData();
-    } catch (err) {
-      alert("שגיאה לא צפויה, נסה שוב.");
-      console.error(err);
+    } catch (err: unknown) {
+      setAddError(err instanceof Error ? err.message : "שגיאה לא צפויה");
     } finally {
       setAddLoading(false);
     }
@@ -905,7 +910,13 @@ export default function AdminUsersPage() {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: 10, marginTop: 24, justifyContent: "flex-start" }}>
+            {addError && (
+              <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 4, background: "rgba(255,60,60,0.1)", border: "1px solid rgba(255,60,60,0.3)", color: "#ff8080", fontSize: 13 }}>
+                {addError}
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: 10, marginTop: 16, justifyContent: "flex-start" }}>
               <button style={BTN} onClick={handleAdd} disabled={addLoading || !newEmail}>
                 {addLoading ? "מוסיף..." : "הוסף מנוי"}
               </button>
