@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,6 +24,19 @@ export default function LoginPage() {
   const [showSpinner, setShowSpinner] = useState(false);
 
   const supabase = createClient();
+
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+    });
+    setLoading(false);
+    if (error) { setError(error.message); return; }
+    setSuccess("נשלח אימייל עם קישור לאיפוס הסיסמה");
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,7 +231,7 @@ export default function LoginPage() {
                 marginTop: 0,
                 marginBottom: 24,
               }}>
-                {mode === "login" ? "התחברות" : "הרשמה"}
+                {mode === "login" ? "התחברות" : mode === "signup" ? "הרשמה" : "שחזור סיסמה"}
               </h2>
 
               {/* Success */}
@@ -251,8 +264,46 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {/* Google Button */}
-              <button
+              {/* Forgot Password Form */}
+              {mode === "forgot" && (
+                <form onSubmit={handleForgot} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {error && (
+                    <div style={{ background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.3)", borderRadius: 4, padding: "10px 14px", fontSize: 13, color: "#ff6b6b" }}>
+                      {error}
+                    </div>
+                  )}
+                  {success && (
+                    <div style={{ background: "rgba(0,200,83,0.1)", border: "1px solid rgba(0,200,83,0.3)", borderRadius: 4, padding: "10px 14px", fontSize: 13, color: "#00C853" }}>
+                      {success}
+                    </div>
+                  )}
+                  <input
+                    type="email"
+                    placeholder="כתובת אימייל"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onFocus={() => setFocusedInput("email")}
+                    onBlur={() => setFocusedInput(null)}
+                    style={inputStyle("email")}
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    style={{ width: "100%", padding: "14px 16px", background: "#0000FF", border: "none", borderRadius: 4, color: "#fff", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 0 15px rgba(0,0,255,0.2)" }}
+                  >
+                    {loading ? "שולח..." : "שלח קישור לאיפוס"}
+                  </button>
+                  <p style={{ textAlign: "center", fontSize: 13, color: "rgba(240,240,245,0.5)", margin: 0 }}>
+                    <span onClick={() => { setMode("login"); setError(""); setSuccess(""); }} style={{ color: "#3333FF", cursor: "pointer", fontWeight: 700 }}>
+                      חזרה להתחברות
+                    </span>
+                  </p>
+                </form>
+              )}
+
+              {/* Google Button + form — only for login/signup */}
+              {mode !== "forgot" && <><button
                 onClick={handleGoogleLogin}
                 onMouseEnter={() => setHoveredBtn("google")}
                 onMouseLeave={() => setHoveredBtn(null)}
@@ -395,20 +446,32 @@ export default function LoginPage() {
                     </span>
                   ) : mode === "login" ? "התחבר" : "הירשם"}
                 </button>
-              </form>
+              </form></>}
 
               {/* Links */}
-              <div style={{ textAlign: "center", marginTop: 20 }}>
-                <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)", margin: "0 0 10px" }}>
-                  {mode === "login" ? "אין לך חשבון?" : "כבר יש לך חשבון?"}{" "}
-                  <span
-                    onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setSuccess(""); }}
-                    style={{ color: "#3333FF", cursor: "pointer", fontWeight: 700 }}
-                  >
-                    {mode === "login" ? "הירשם" : "התחבר"}
-                  </span>
-                </p>
-              </div>
+              {mode !== "forgot" && (
+                <div style={{ textAlign: "center", marginTop: 20 }}>
+                  <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)", margin: "0 0 8px" }}>
+                    {mode === "login" ? "אין לך חשבון?" : "כבר יש לך חשבון?"}{" "}
+                    <span
+                      onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setSuccess(""); }}
+                      style={{ color: "#3333FF", cursor: "pointer", fontWeight: 700 }}
+                    >
+                      {mode === "login" ? "הירשם" : "התחבר"}
+                    </span>
+                  </p>
+                  {mode === "login" && (
+                    <p style={{ fontSize: 13, color: "rgba(240,240,245,0.35)", margin: 0 }}>
+                      <span
+                        onClick={() => { setMode("forgot"); setError(""); setSuccess(""); }}
+                        style={{ color: "rgba(100,100,255,0.7)", cursor: "pointer" }}
+                      >
+                        שכחת סיסמה?
+                      </span>
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

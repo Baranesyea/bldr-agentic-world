@@ -4,8 +4,13 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const type = searchParams.get("type");
 
-  const response = NextResponse.redirect(`${origin}/dashboard`);
+  // Recovery and invite flows → set password
+  const isPasswordFlow = type === "recovery" || type === "invite";
+  const redirectTo = isPasswordFlow ? `${origin}/reset-password` : `${origin}/dashboard`;
+
+  const response = NextResponse.redirect(redirectTo);
 
   if (code) {
     const supabase = createServerClient(

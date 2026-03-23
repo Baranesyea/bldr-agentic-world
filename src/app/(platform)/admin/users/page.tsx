@@ -224,8 +224,14 @@ export default function AdminUsersPage() {
   const sortArrow = (key: SortKey) => (sortKey === key ? (sortAsc ? " ▲" : " ▼") : "");
 
   /* ─── Add user ─── */
-  const handleAdd = () => {
+  const [addLoading, setAddLoading] = useState(false);
+  const [addError, setAddError] = useState("");
+
+  const handleAdd = async () => {
     if (!newEmail.trim()) return;
+    setAddLoading(true);
+    setAddError("");
+
     const now = new Date().toISOString();
     const newUser: User = {
       id: `user_${Date.now()}`,
@@ -241,11 +247,33 @@ export default function AdminUsersPage() {
       payments: [],
     };
     const updated = [...users, newUser];
-    // Don't save tourist users (they come from bldr_tourist)
     const toSave = updated.filter((u) => u.role !== "tourist");
     saveUsers(toSave);
     setUsers(updated);
+
+    // Send invite email
+    try {
+      const res = await fetch("/api/invite-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: newUser.email, fullName: newUser.fullName }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        // Not a fatal error — user was created, just invite failed
+        setAddError(`המשתמש נוצר אך שליחת ההזמנה נכשלה: ${data.error}`);
+        setAddLoading(false);
+        return;
+      }
+    } catch {
+      setAddError("המשתמש נוצר אך שליחת ההזמנה נכשלה");
+      setAddLoading(false);
+      return;
+    }
+
     setNewName(""); setNewEmail(""); setNewPhone(""); setNewAmount("99"); setNewStatus("paying");
+    setAddError("");
+    setAddLoading(false);
     setShowAddModal(false);
   };
 
@@ -666,9 +694,15 @@ export default function AdminUsersPage() {
               </div>
             </div>
 
+            {addError && (
+              <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 4, background: "rgba(255,60,60,0.1)", border: "1px solid rgba(255,60,60,0.3)", color: "#ff8080", fontSize: 13 }}>
+                {addError}
+              </div>
+            )}
+
             <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-start" }}>
-              <button style={BTN} onClick={handleAdd} disabled={!newEmail.trim()}>
-                הוסף מנוי
+              <button style={BTN} onClick={handleAdd} disabled={!newEmail.trim() || addLoading}>
+                {addLoading ? "שולח הזמנה..." : "הוסף מנוי"}
               </button>
               <button style={{ ...BTN, background: "rgba(255,255,255,0.06)" }} onClick={() => setShowAddModal(false)}>
                 ביטול
