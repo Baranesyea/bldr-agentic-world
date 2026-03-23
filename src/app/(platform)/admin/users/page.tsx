@@ -1,57 +1,47 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { createClient } from "@/lib/supabase";
+import React, { useState, useEffect, useMemo } from "react";
 import { SearchIcon } from "@/components/ui/icons";
 
 /* ─── Types ─── */
-interface Subscriber {
+interface UserPayment {
   id: string;
-  email: string;
-  full_name: string;
-  phone: string;
   amount: number;
-  status: string;
-  subscription_start: string;
-  last_payment_date: string;
-  next_payment_date: string;
-  created_at: string;
+  date: string;
+  status: "הצלחה" | "נכשל";
+  transactionId?: string;
 }
 
-interface Profile {
-  id: string;
-  email: string;
-  full_name: string;
-  role: string;
-  created_at: string;
-}
-
-interface Payment {
-  id: string;
-  subscriber_id: string;
-  amount: number;
-  transaction_id: string;
-  status: string;
-  payment_date: string;
-}
-
-type UserStatus = "paying" | "trial" | "expired" | "blocked" | "admin";
-type FilterTab = "all" | "paying" | "trial" | "blocked" | "inactive" | "tourist";
-type SortKey = "joined" | "lastPayment" | "amount";
-
-interface MergedUser {
+interface User {
   id: string;
   email: string;
   fullName: string;
   phone: string;
-  status: UserStatus;
+  role: "member" | "admin" | "tourist";
+  status: "paying" | "trial" | "expired" | "blocked" | "admin";
   amount: number;
   joinedAt: string;
   lastPaymentDate: string | null;
   subscriptionStart: string | null;
-  subscriberId: string | null;
-  role: string;
-  trialDaysRemaining?: number;
+  payments: UserPayment[];
+}
+
+type FilterTab = "all" | "paying" | "trial" | "blocked" | "inactive" | "tourist";
+type SortKey = "joined" | "lastPayment" | "amount";
+
+const LS_KEY = "bldr_users";
+
+function loadUsers(): User[] {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveUsers(users: User[]) {
+  localStorage.setItem(LS_KEY, JSON.stringify(users));
 }
 
 /* ─── Styles ─── */
@@ -97,7 +87,7 @@ const GRADIENTS = [
   "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)",
 ];
 
-const STATUS_CONFIG: Record<UserStatus | "tourist", { label: string; color: string; bg: string }> = {
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   paying: { label: "משלם", color: "#4ade80", bg: "rgba(74,222,128,0.12)" },
   trial: { label: "ניסיון", color: "#60a5fa", bg: "rgba(96,165,250,0.12)" },
   expired: { label: "פג תוקף", color: "#fb923c", bg: "rgba(251,146,60,0.12)" },
@@ -105,6 +95,13 @@ const STATUS_CONFIG: Record<UserStatus | "tourist", { label: string; color: stri
   admin: { label: "מנהל", color: "#c084fc", bg: "rgba(192,132,252,0.12)" },
   tourist: { label: "תייר", color: "#FFB300", bg: "rgba(255,179,0,0.12)" },
 };
+
+const STATUS_OPTIONS: { value: User["status"]; label: string }[] = [
+  { value: "paying", label: "משלם" },
+  { value: "trial", label: "ניסיון" },
+  { value: "expired", label: "פג תוקף" },
+  { value: "blocked", label: "חסום" },
+];
 
 /* ─── Helpers ─── */
 function formatDate(d: string | null): string {
@@ -122,162 +119,82 @@ function getInitials(name: string): string {
   return parts.length >= 2 ? (parts[0][0] + parts[1][0]) : parts[0][0];
 }
 
+function timeInSystem(joinedAt: string): string {
+  const diff = Date.now() - new Date(joinedAt).getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return "היום";
+  if (days < 7) return `${days} ימים`;
+  if (days < 30) return `${Math.floor(days / 7)} שבועות`;
+  if (days < 365) return `${Math.floor(days / 30)} חודשים`;
+  return `${Math.floor(days / 365)} שנים`;
+}
+
 /* ─── Component ─── */
 export default function AdminUsersPage() {
-  const supabaseRef = useRef(createClient());
-  const supabase = supabaseRef.current;
-
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [filterTab, setFilterTab] = useState<FilterTab>("all");
   const [sortKey, setSortKey] = useState<SortKey>("joined");
   const [sortAsc, setSortAsc] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Add modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [newAmount, setNewAmount] = useState("99");
-  const [addLoading, setAddLoading] = useState(false);
+  const [newStatus, setNewStatus] = useState<User["status"]>("paying");
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    const [profilesRes, subsRes, paysRes] = await Promise.all([
-      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-      supabase.from("subscribers").select("*").order("created_at", { ascending: false }),
-      supabase.from("payments").select("*").order("payment_date", { ascending: false }),
-    ]);
-    setProfiles(profilesRes.data || []);
-    setSubscribers(subsRes.data || []);
-    setPayments(paysRes.data || []);
-    setLoading(false);
-  }, []);
+  // Load from localStorage
+  useEffect(() => {
+    const stored = loadUsers();
 
-  useEffect(() => { fetchData(); }, [fetchData]);
-
-  /* ─── Merge Logic ─── */
-  const mergedUsers: MergedUser[] = useMemo(() => {
-    const subsByEmail = new Map<string, Subscriber>();
-    for (const s of subscribers) {
-      if (s.email) subsByEmail.set(s.email.toLowerCase(), s);
-    }
-
-    const seen = new Set<string>();
-    const result: MergedUser[] = [];
-
-    // 1. All profiles — left join with subscribers
-    for (const p of profiles) {
-      const email = (p.email || "").toLowerCase();
-      seen.add(email);
-      const sub = subsByEmail.get(email);
-
-      let status: UserStatus = "trial";
-      if (p.role === "admin") {
-        status = "admin";
-      } else if (sub) {
-        if (sub.status === "active") status = "paying";
-        else if (sub.status === "cancelled" || sub.status === "overdue") status = "blocked";
-        else if (sub.status === "trial") status = "trial";
-        else status = "blocked";
-      }
-
-      result.push({
-        id: p.id,
-        email: p.email,
-        fullName: sub?.full_name || p.full_name || "",
-        phone: sub?.phone || "",
-        status,
-        amount: sub?.amount || 0,
-        joinedAt: p.created_at || sub?.created_at || "",
-        lastPaymentDate: sub?.last_payment_date || null,
-        subscriptionStart: sub?.subscription_start || null,
-        subscriberId: sub?.id || null,
-        role: p.role || "member",
-      });
-    }
-
-    // 2. Subscribers not in profiles
-    for (const sub of subscribers) {
-      const email = (sub.email || "").toLowerCase();
-      if (seen.has(email)) continue;
-      seen.add(email);
-
-      let status: UserStatus = "paying";
-      if (sub.status === "cancelled" || sub.status === "overdue") status = "blocked";
-      else if (sub.status === "trial") status = "trial";
-      else if (sub.status === "active") status = "paying";
-
-      result.push({
-        id: sub.id,
-        email: sub.email,
-        fullName: sub.full_name || "",
-        phone: sub.phone || "",
-        status,
-        amount: sub.amount || 0,
-        joinedAt: sub.created_at || "",
-        lastPaymentDate: sub.last_payment_date || null,
-        subscriptionStart: sub.subscription_start || null,
-        subscriberId: sub.id,
-        role: "member",
-      });
-    }
-
-    // 3. Tourist users from localStorage
+    // Inject tourist users from bldr_tourist
     try {
       const touristRaw = localStorage.getItem("bldr_tourist");
       if (touristRaw) {
         const t = JSON.parse(touristRaw);
-        if (t.email && !seen.has(t.email.toLowerCase())) {
-          seen.add(t.email.toLowerCase());
-          result.push({
+        if (t.email && !stored.find((u) => u.email.toLowerCase() === t.email.toLowerCase())) {
+          stored.push({
             id: `tourist_${t.email}`,
             email: t.email,
             fullName: t.name || "",
             phone: t.phone || "",
-            status: "trial" as UserStatus,
+            role: "tourist",
+            status: "trial",
             amount: 0,
-            joinedAt: t.grantedAt || "",
+            joinedAt: t.grantedAt || new Date().toISOString(),
             lastPaymentDate: null,
             subscriptionStart: null,
-            subscriberId: null,
-            role: "tourist",
+            payments: [],
           });
         }
       }
     } catch {}
 
-    return result;
-  }, [profiles, subscribers]);
+    setUsers(stored);
+  }, []);
 
   /* ─── Stats ─── */
-  const totalUsers = mergedUsers.length;
-  const activePaying = mergedUsers.filter((u) => u.status === "paying").length;
-  const trialUsers = mergedUsers.filter((u) => u.status === "trial").length;
-  const monthlyRevenue = mergedUsers
-    .filter((u) => u.status === "paying")
-    .reduce((sum, u) => sum + u.amount, 0);
-  const totalPaymentsSum = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-  const payingCount = mergedUsers.filter((u) => u.subscriberId).length;
-  const avgLtv = payingCount > 0 ? Math.round(totalPaymentsSum / payingCount) : 0;
+  const totalUsers = users.length;
+  const activePaying = users.filter((u) => u.status === "paying").length;
+  const trialUsers = users.filter((u) => u.status === "trial").length;
+  const monthlyRevenue = users.filter((u) => u.status === "paying").reduce((s, u) => s + u.amount, 0);
+  const allPayments = users.flatMap((u) => u.payments);
+  const totalPaidAll = allPayments.reduce((s, p) => s + p.amount, 0);
+  const payingCount = users.filter((u) => u.payments.length > 0).length;
+  const avgLtv = payingCount > 0 ? Math.round(totalPaidAll / payingCount) : 0;
 
   /* ─── Filter & Sort ─── */
   const filtered = useMemo(() => {
-    let list = mergedUsers;
+    let list = users;
 
-    // Tab filter
     if (filterTab === "paying") list = list.filter((u) => u.status === "paying");
-    else if (filterTab === "trial") list = list.filter((u) => u.status === "trial" || u.status === "expired");
+    else if (filterTab === "trial") list = list.filter((u) => u.status === "trial");
     else if (filterTab === "blocked") list = list.filter((u) => u.status === "blocked");
     else if (filterTab === "inactive") list = list.filter((u) => u.status === "expired" || u.status === "trial");
     else if (filterTab === "tourist") list = list.filter((u) => u.role === "tourist");
 
-    // Search
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -288,99 +205,58 @@ export default function AdminUsersPage() {
       );
     }
 
-    // Sort
     list = [...list].sort((a, b) => {
       let cmp = 0;
-      switch (sortKey) {
-        case "joined":
-          cmp = new Date(a.joinedAt || 0).getTime() - new Date(b.joinedAt || 0).getTime();
-          break;
-        case "lastPayment":
-          cmp =
-            new Date(a.lastPaymentDate || 0).getTime() -
-            new Date(b.lastPaymentDate || 0).getTime();
-          break;
-        case "amount":
-          cmp = a.amount - b.amount;
-          break;
-      }
+      if (sortKey === "joined") cmp = new Date(a.joinedAt || 0).getTime() - new Date(b.joinedAt || 0).getTime();
+      else if (sortKey === "lastPayment") cmp = new Date(a.lastPaymentDate || 0).getTime() - new Date(b.lastPaymentDate || 0).getTime();
+      else if (sortKey === "amount") cmp = a.amount - b.amount;
       return sortAsc ? cmp : -cmp;
     });
 
     return list;
-  }, [mergedUsers, filterTab, search, sortKey, sortAsc]);
-
-  /* ─── Payments for user ─── */
-  const getUserPayments = (subscriberId: string | null) => {
-    if (!subscriberId) return [];
-    return payments.filter((p) => p.subscriber_id === subscriberId);
-  };
-
-  /* ─── Add subscriber ─── */
-  const [addError, setAddError] = useState("");
-
-  const handleAdd = async () => {
-    if (!newEmail) return;
-    setAddLoading(true);
-    setAddError("");
-    try {
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("הבקשה לקחה יותר מדי זמן — בדוק חיבור לאינטרנט")), 10000)
-      );
-
-      const now = new Date().toISOString();
-      const insert = supabase.from("subscribers").insert({
-        email: newEmail.toLowerCase().trim(),
-        full_name: newName || "",
-        phone: newPhone || "",
-        amount: parseFloat(newAmount) || 0,
-        status: "active",
-        created_at: now,
-        updated_at: now,
-      });
-
-      const { error } = await Promise.race([insert, timeout]) as Awaited<typeof insert>;
-
-      if (error) {
-        setAddError("שגיאה: " + error.message);
-        return;
-      }
-
-      setNewName("");
-      setNewEmail("");
-      setNewPhone("");
-      setNewAmount("99");
-      setAddError("");
-      setShowAddModal(false);
-      fetchData();
-    } catch (err: unknown) {
-      setAddError(err instanceof Error ? err.message : "שגיאה לא צפויה");
-    } finally {
-      setAddLoading(false);
-    }
-  };
-
-  /* ─── Update status ─── */
-  const handleStatusChange = async (user: MergedUser, newStatus: string) => {
-    if (!user.subscriberId) return;
-    await supabase
-      .from("subscribers")
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
-      .eq("id", user.subscriberId);
-    fetchData();
-  };
+  }, [users, filterTab, search, sortKey, sortAsc]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
-    else {
-      setSortKey(key);
-      setSortAsc(false);
-    }
+    else { setSortKey(key); setSortAsc(false); }
   };
 
   const sortArrow = (key: SortKey) => (sortKey === key ? (sortAsc ? " ▲" : " ▼") : "");
 
-  /* ─── Filter tabs ─── */
+  /* ─── Add user ─── */
+  const handleAdd = () => {
+    if (!newEmail.trim()) return;
+    const now = new Date().toISOString();
+    const newUser: User = {
+      id: `user_${Date.now()}`,
+      email: newEmail.toLowerCase().trim(),
+      fullName: newName.trim(),
+      phone: newPhone.trim(),
+      role: "member",
+      status: newStatus,
+      amount: parseFloat(newAmount) || 0,
+      joinedAt: now,
+      lastPaymentDate: null,
+      subscriptionStart: newStatus === "paying" ? now : null,
+      payments: [],
+    };
+    const updated = [...users, newUser];
+    // Don't save tourist users (they come from bldr_tourist)
+    const toSave = updated.filter((u) => u.role !== "tourist");
+    saveUsers(toSave);
+    setUsers(updated);
+    setNewName(""); setNewEmail(""); setNewPhone(""); setNewAmount("99"); setNewStatus("paying");
+    setShowAddModal(false);
+  };
+
+  /* ─── Update status ─── */
+  const handleStatusChange = (userId: string, status: User["status"]) => {
+    const updated = users.map((u) => u.id === userId ? { ...u, status } : u);
+    const toSave = updated.filter((u) => u.role !== "tourist");
+    saveUsers(toSave);
+    setUsers(updated);
+  };
+
   const TABS: { key: FilterTab; label: string }[] = [
     { key: "all", label: "הכל" },
     { key: "tourist", label: "תיירים" },
@@ -423,7 +299,6 @@ export default function AdminUsersPage() {
 
       {/* Filters Row */}
       <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
-        {/* Filter Tabs */}
         <div style={{ display: "flex", gap: 6 }}>
           {TABS.map((tab) => (
             <button
@@ -447,27 +322,25 @@ export default function AdminUsersPage() {
           ))}
         </div>
 
-        {/* Search */}
         <div style={{ position: "relative", maxWidth: 300, flex: 1, minWidth: 200 }}>
           <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(240,240,245,0.35)", display: "flex" }}>
             <SearchIcon size={15} />
           </span>
           <input
-            placeholder="Search name, email, phone..."
+            placeholder="חיפוש לפי שם, אימייל, טלפון..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ ...INPUT, paddingRight: 38 }}
           />
         </div>
 
-        {/* Sort */}
         <select
           value={sortKey}
           onChange={(e) => setSortKey(e.target.value as SortKey)}
           style={{
             ...INPUT,
             width: "auto",
-            minWidth: 140,
+            minWidth: 160,
             cursor: "pointer",
             appearance: "none" as const,
             WebkitAppearance: "none" as const,
@@ -477,21 +350,17 @@ export default function AdminUsersPage() {
             paddingLeft: 32,
           }}
         >
-          <option value="joined">Sort: Joined Date</option>
-          <option value="lastPayment">Sort: Last Payment</option>
-          <option value="amount">Sort: Amount</option>
+          <option value="joined">מיון: תאריך הצטרפות</option>
+          <option value="lastPayment">מיון: תשלום אחרון</option>
+          <option value="amount">מיון: סכום</option>
         </select>
       </div>
 
       {/* Table */}
       <div style={{ ...CARD, padding: 0, overflow: "hidden" }}>
-        {loading ? (
+        {filtered.length === 0 ? (
           <div style={{ padding: 48, textAlign: "center", color: "rgba(240,240,245,0.4)", fontSize: 14 }}>
-            Loading users...
-          </div>
-        ) : filtered.length === 0 ? (
-          <div style={{ padding: 48, textAlign: "center", color: "rgba(240,240,245,0.4)", fontSize: 14 }}>
-            No users found
+            לא נמצאו משתמשים
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
@@ -534,9 +403,9 @@ export default function AdminUsersPage() {
               <tbody>
                 {filtered.map((user, idx) => {
                   const isExpanded = expandedId === user.id;
-                  const statusInfo = user.role === "tourist" ? STATUS_CONFIG["tourist"] : STATUS_CONFIG[user.status];
-                  const userPayments = getUserPayments(user.subscriberId);
-                  const totalPaid = userPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+                  const statusKey = user.role === "tourist" ? "tourist" : user.status;
+                  const statusInfo = STATUS_CONFIG[statusKey] || STATUS_CONFIG.trial;
+                  const totalPaid = user.payments.reduce((s, p) => s + p.amount, 0);
 
                   return (
                     <React.Fragment key={user.id}>
@@ -548,120 +417,66 @@ export default function AdminUsersPage() {
                           transition: "background 0.15s",
                           background: isExpanded ? "rgba(100,100,255,0.03)" : "transparent",
                         }}
-                        onMouseEnter={(e) => {
-                          if (!isExpanded) e.currentTarget.style.background = "rgba(255,255,255,0.025)";
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isExpanded) e.currentTarget.style.background = "transparent";
-                        }}
+                        onMouseEnter={(e) => { if (!isExpanded) e.currentTarget.style.background = "rgba(255,255,255,0.025)"; }}
+                        onMouseLeave={(e) => { if (!isExpanded) e.currentTarget.style.background = "transparent"; }}
                       >
-                        {/* Avatar */}
                         <td style={{ padding: "12px 14px" }}>
-                          <div
-                            style={{
-                              width: 34,
-                              height: 34,
-                              borderRadius: "50%",
-                              background: GRADIENTS[idx % GRADIENTS.length],
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: 13,
-                              fontWeight: 700,
-                              color: "#fff",
-                              flexShrink: 0,
-                            }}
-                          >
+                          <div style={{
+                            width: 34, height: 34, borderRadius: "50%",
+                            background: GRADIENTS[idx % GRADIENTS.length],
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: 13, fontWeight: 700, color: "#fff", flexShrink: 0,
+                          }}>
                             {getInitials(user.fullName)}
                           </div>
                         </td>
-                        {/* Name */}
                         <td style={{ padding: "12px 14px", color: "#f0f0f5", fontWeight: 600 }}>
                           {user.fullName || "—"}
                         </td>
-                        {/* Email */}
                         <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.6)", direction: "ltr", textAlign: "right", fontSize: 13 }}>
                           {user.email}
                         </td>
-                        {/* Phone */}
                         <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.5)", direction: "ltr", textAlign: "right", fontSize: 13 }}>
                           {user.phone || "—"}
                         </td>
-                        {/* Status Badge */}
                         <td style={{ padding: "12px 14px" }}>
-                          <span
-                            style={{
-                              background: statusInfo.bg,
-                              color: statusInfo.color,
-                              padding: "4px 12px",
-                              borderRadius: 4,
-                              fontSize: 12,
-                              fontWeight: 600,
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <span style={{
+                            background: statusInfo.bg, color: statusInfo.color,
+                            padding: "4px 12px", borderRadius: 4, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap",
+                          }}>
                             {statusInfo.label}
-                            {user.status === "trial" && user.trialDaysRemaining !== undefined && (
-                              <span style={{ marginRight: 4, opacity: 0.7 }}>
-                                ({user.trialDaysRemaining}d)
-                              </span>
-                            )}
                           </span>
                         </td>
-                        {/* Amount */}
                         <td style={{ padding: "12px 14px", color: "#f0f0f5", fontWeight: 600, fontSize: 13 }}>
                           {user.amount > 0 ? formatCurrency(user.amount) : "—"}
                         </td>
-                        {/* Joined */}
                         <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.5)", fontSize: 13 }}>
                           {formatDate(user.joinedAt)}
                         </td>
-                        {/* Time in system */}
                         <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.5)", fontSize: 13 }}>
-                          {user.joinedAt ? (() => {
-                            const diff = Date.now() - new Date(user.joinedAt).getTime();
-                            const days = Math.floor(diff / 86400000);
-                            if (days === 0) return "היום";
-                            if (days < 7) return `${days} ימים`;
-                            if (days < 30) return `${Math.floor(days / 7)} שבועות`;
-                            if (days < 365) return `${Math.floor(days / 30)} חודשים`;
-                            return `${Math.floor(days / 365)} שנים`;
-                          })() : "—"}
+                          {user.joinedAt ? timeInSystem(user.joinedAt) : "—"}
                         </td>
-                        {/* Last Payment */}
                         <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.5)", fontSize: 13 }}>
                           {formatDate(user.lastPaymentDate)}
                         </td>
                       </tr>
 
-                      {/* Expanded Row */}
                       {isExpanded && (
                         <tr>
                           <td colSpan={9} style={{ padding: 0 }}>
-                            <div
-                              style={{
-                                background: "rgba(100,100,255,0.02)",
-                                borderBottom: "1px solid rgba(255,255,255,0.06)",
-                                padding: "24px 28px",
-                              }}
-                            >
+                            <div style={{
+                              background: "rgba(100,100,255,0.02)",
+                              borderBottom: "1px solid rgba(255,255,255,0.06)",
+                              padding: "24px 28px",
+                            }}>
                               {/* User Info Header */}
                               <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 24 }}>
-                                <div
-                                  style={{
-                                    width: 52,
-                                    height: 52,
-                                    borderRadius: "50%",
-                                    background: GRADIENTS[idx % GRADIENTS.length],
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    fontSize: 18,
-                                    fontWeight: 700,
-                                    color: "#fff",
-                                    flexShrink: 0,
-                                  }}
-                                >
+                                <div style={{
+                                  width: 52, height: 52, borderRadius: "50%",
+                                  background: GRADIENTS[idx % GRADIENTS.length],
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  fontSize: 18, fontWeight: 700, color: "#fff", flexShrink: 0,
+                                }}>
                                   {getInitials(user.fullName)}
                                 </div>
                                 <div style={{ flex: 1 }}>
@@ -669,16 +484,10 @@ export default function AdminUsersPage() {
                                     <span style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>
                                       {user.fullName || "—"}
                                     </span>
-                                    <span
-                                      style={{
-                                        background: statusInfo.bg,
-                                        color: statusInfo.color,
-                                        padding: "3px 10px",
-                                        borderRadius: 6,
-                                        fontSize: 11,
-                                        fontWeight: 600,
-                                      }}
-                                    >
+                                    <span style={{
+                                      background: statusInfo.bg, color: statusInfo.color,
+                                      padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                                    }}>
                                       {statusInfo.label}
                                     </span>
                                   </div>
@@ -692,23 +501,17 @@ export default function AdminUsersPage() {
                               {/* Summary Cards */}
                               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
                                 {[
-                                  { label: "Total Paid (LTV)", value: formatCurrency(totalPaid) },
-                                  { label: "Monthly Amount", value: user.amount > 0 ? formatCurrency(user.amount) : "—" },
-                                  { label: "Subscription Start", value: formatDate(user.subscriptionStart) },
-                                  { label: "Payments Count", value: userPayments.length.toString() },
+                                  { label: "סה״כ שולם (LTV)", value: formatCurrency(totalPaid) },
+                                  { label: "תשלום חודשי", value: user.amount > 0 ? formatCurrency(user.amount) : "—" },
+                                  { label: "תחילת מנוי", value: formatDate(user.subscriptionStart) },
+                                  { label: "מספר תשלומים", value: user.payments.length.toString() },
                                 ].map((s) => (
-                                  <div
-                                    key={s.label}
-                                    style={{
-                                      background: "rgba(255,255,255,0.03)",
-                                      border: "1px solid rgba(255,255,255,0.05)",
-                                      borderRadius: 4,
-                                      padding: 14,
-                                    }}
-                                  >
-                                    <div style={{ fontSize: 11, color: "rgba(240,240,245,0.4)", marginBottom: 4 }}>
-                                      {s.label}
-                                    </div>
+                                  <div key={s.label} style={{
+                                    background: "rgba(255,255,255,0.03)",
+                                    border: "1px solid rgba(255,255,255,0.05)",
+                                    borderRadius: 4, padding: 14,
+                                  }}>
+                                    <div style={{ fontSize: 11, color: "rgba(240,240,245,0.4)", marginBottom: 4 }}>{s.label}</div>
                                     <div style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>{s.value}</div>
                                   </div>
                                 ))}
@@ -717,61 +520,39 @@ export default function AdminUsersPage() {
                               {/* Payment History */}
                               <div style={{ marginBottom: 20 }}>
                                 <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(240,240,245,0.7)", marginBottom: 12 }}>
-                                  Payment History ({userPayments.length})
+                                  היסטוריית תשלומים ({user.payments.length})
                                 </div>
-                                {userPayments.length === 0 ? (
+                                {user.payments.length === 0 ? (
                                   <div style={{ color: "rgba(240,240,245,0.3)", fontSize: 13 }}>
-                                    No payments recorded
+                                    אין תשלומים רשומים
                                   </div>
                                 ) : (
                                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                    {userPayments.map((p) => (
-                                      <div
-                                        key={p.id}
-                                        style={{
-                                          display: "flex",
-                                          justifyContent: "space-between",
-                                          alignItems: "center",
-                                          padding: "10px 14px",
-                                          background: "rgba(255,255,255,0.02)",
-                                          borderRadius: 4,
-                                          border: "1px solid rgba(255,255,255,0.04)",
-                                        }}
-                                      >
+                                    {user.payments.map((p) => (
+                                      <div key={p.id} style={{
+                                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                                        padding: "10px 14px", background: "rgba(255,255,255,0.02)",
+                                        borderRadius: 4, border: "1px solid rgba(255,255,255,0.04)",
+                                      }}>
                                         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
                                           <span style={{ color: "#f0f0f5", fontWeight: 600, fontSize: 13 }}>
-                                            {formatCurrency(p.amount || 0)}
+                                            {formatCurrency(p.amount)}
                                           </span>
                                           <span style={{ color: "rgba(240,240,245,0.4)", fontSize: 12 }}>
-                                            {formatDate(p.payment_date)}
+                                            {formatDate(p.date)}
                                           </span>
                                         </div>
                                         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                                          {p.transaction_id && (
-                                            <span
-                                              style={{
-                                                color: "rgba(240,240,245,0.3)",
-                                                fontSize: 11,
-                                                fontFamily: "monospace",
-                                                direction: "ltr",
-                                              }}
-                                            >
-                                              #{p.transaction_id}
+                                          {p.transactionId && (
+                                            <span style={{ color: "rgba(240,240,245,0.3)", fontSize: 11, fontFamily: "monospace", direction: "ltr" }}>
+                                              #{p.transactionId}
                                             </span>
                                           )}
-                                          <span
-                                            style={{
-                                              background:
-                                                p.status === "success"
-                                                  ? "rgba(0,200,83,0.1)"
-                                                  : "rgba(255,59,48,0.1)",
-                                              color: p.status === "success" ? "#00C853" : "#ff6b6b",
-                                              padding: "2px 8px",
-                                              borderRadius: 4,
-                                              fontSize: 11,
-                                              fontWeight: 600,
-                                            }}
-                                          >
+                                          <span style={{
+                                            background: p.status === "הצלחה" ? "rgba(0,200,83,0.1)" : "rgba(255,59,48,0.1)",
+                                            color: p.status === "הצלחה" ? "#00C853" : "#ff6b6b",
+                                            padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600,
+                                          }}>
                                             {p.status}
                                           </span>
                                         </div>
@@ -781,36 +562,25 @@ export default function AdminUsersPage() {
                                 )}
                               </div>
 
-                              {/* Actions */}
-                              {user.subscriberId && (
-                                <div style={{ display: "flex", gap: 10, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                                  <div style={{ fontSize: 12, color: "rgba(240,240,245,0.4)", marginLeft: 8, display: "flex", alignItems: "center" }}>
-                                    Change Status:
+                              {/* Change Status */}
+                              {user.role !== "tourist" && (
+                                <div style={{ display: "flex", gap: 10, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.05)", alignItems: "center" }}>
+                                  <div style={{ fontSize: 12, color: "rgba(240,240,245,0.4)", marginLeft: 8 }}>
+                                    שינוי סטטוס:
                                   </div>
-                                  {["active", "cancelled", "overdue", "trial"].map((s) => (
+                                  {STATUS_OPTIONS.map((opt) => (
                                     <button
-                                      key={s}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleStatusChange(user, s);
-                                      }}
+                                      key={opt.value}
+                                      onClick={(e) => { e.stopPropagation(); handleStatusChange(user.id, opt.value); }}
                                       style={{
-                                        padding: "6px 14px",
-                                        borderRadius: 6,
+                                        padding: "6px 14px", borderRadius: 6,
                                         border: "1px solid rgba(255,255,255,0.08)",
-                                        background:
-                                          (user.status === "paying" && s === "active") ||
-                                          (user.status === "blocked" && (s === "cancelled" || s === "overdue")) ||
-                                          (user.status === "trial" && s === "trial")
-                                            ? "rgba(100,100,255,0.15)"
-                                            : "rgba(255,255,255,0.03)",
-                                        color: "rgba(240,240,245,0.6)",
-                                        fontSize: 12,
-                                        cursor: "pointer",
-                                        transition: "all 0.15s",
+                                        background: user.status === opt.value ? "rgba(100,100,255,0.15)" : "rgba(255,255,255,0.03)",
+                                        color: user.status === opt.value ? "#8888ff" : "rgba(240,240,245,0.6)",
+                                        fontSize: 12, cursor: "pointer", transition: "all 0.15s",
                                       }}
                                     >
-                                      {s}
+                                      {opt.label}
                                     </button>
                                   ))}
                                 </div>
@@ -832,26 +602,16 @@ export default function AdminUsersPage() {
       {showAddModal && (
         <div
           style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            backdropFilter: "blur(4px)",
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 1000, backdropFilter: "blur(4px)",
           }}
           onClick={() => setShowAddModal(false)}
         >
           <div
             style={{
-              background: "#0a0a1a",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 6,
-              padding: 32,
-              maxWidth: 440,
-              width: "90%",
-              direction: "rtl",
+              background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 6, padding: 32, maxWidth: 440, width: "90%", direction: "rtl",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -860,42 +620,23 @@ export default function AdminUsersPage() {
             </h2>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div>
-                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
-                  שם מלא
-                </label>
-                <input
-                  style={INPUT}
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="שם מלא"
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
-                  אימייל
-                </label>
-                <input
-                  style={{ ...INPUT, direction: "ltr" }}
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="email@example.com"
-                  required
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
-                  טלפון
-                </label>
-                <input
-                  style={{ ...INPUT, direction: "ltr" }}
-                  type="tel"
-                  value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value)}
-                  placeholder="050-000-0000"
-                />
-              </div>
+              {[
+                { label: "שם מלא", value: newName, onChange: setNewName, placeholder: "שם מלא", type: "text", dir: "rtl" },
+                { label: "אימייל *", value: newEmail, onChange: setNewEmail, placeholder: "email@example.com", type: "email", dir: "ltr" },
+                { label: "טלפון", value: newPhone, onChange: setNewPhone, placeholder: "050-000-0000", type: "tel", dir: "ltr" },
+              ].map((f) => (
+                <div key={f.label}>
+                  <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>{f.label}</label>
+                  <input
+                    style={{ ...INPUT, direction: f.dir as "rtl" | "ltr" }}
+                    type={f.type}
+                    value={f.value}
+                    onChange={(e) => f.onChange(e.target.value)}
+                    placeholder={f.placeholder}
+                  />
+                </div>
+              ))}
+
               <div>
                 <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
                   תשלום חודשי (₪)
@@ -908,22 +649,28 @@ export default function AdminUsersPage() {
                   min="0"
                 />
               </div>
+
+              <div>
+                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
+                  סטטוס
+                </label>
+                <select
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value as User["status"])}
+                  style={{ ...INPUT, cursor: "pointer" }}
+                >
+                  {STATUS_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            {addError && (
-              <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 4, background: "rgba(255,60,60,0.1)", border: "1px solid rgba(255,60,60,0.3)", color: "#ff8080", fontSize: 13 }}>
-                {addError}
-              </div>
-            )}
-
-            <div style={{ display: "flex", gap: 10, marginTop: 16, justifyContent: "flex-start" }}>
-              <button style={BTN} onClick={handleAdd} disabled={addLoading || !newEmail}>
-                {addLoading ? "מוסיף..." : "הוסף מנוי"}
+            <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-start" }}>
+              <button style={BTN} onClick={handleAdd} disabled={!newEmail.trim()}>
+                הוסף מנוי
               </button>
-              <button
-                style={{ ...BTN, background: "rgba(255,255,255,0.06)" }}
-                onClick={() => setShowAddModal(false)}
-              >
+              <button style={{ ...BTN, background: "rgba(255,255,255,0.06)" }} onClick={() => setShowAddModal(false)}>
                 ביטול
               </button>
             </div>
