@@ -107,11 +107,6 @@ const sections = [
     href: "/admin/content-ideas",
   },
   {
-    title: "ניהול נרשמים",
-    description: "CRM — ניהול מנויים, היסטוריית חיובים ומעקב הכנסות",
-    href: "/admin/subscribers",
-  },
-  {
     title: "משימות",
     description: "ניהול משימות לביצוע — הוספה, מעקב ואישור ביצוע",
     href: "/admin/tasks",

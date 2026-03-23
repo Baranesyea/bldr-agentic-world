@@ -122,9 +122,11 @@ function getInitials(name: string): string {
   return parts.length >= 2 ? (parts[0][0] + parts[1][0]) : parts[0][0];
 }
 
+// Single stable Supabase client — outside component to avoid recreating on every render
+const supabase = createClient();
+
 /* ─── Component ─── */
 export default function AdminUsersPage() {
-  const supabase = createClient();
 
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
@@ -156,7 +158,7 @@ export default function AdminUsersPage() {
     setSubscribers(subsRes.data || []);
     setPayments(paysRes.data || []);
     setLoading(false);
-  }, [supabase]);
+  }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
