@@ -327,20 +327,17 @@ export default function AdminUsersPage() {
 
       const { error } = await supabase.from("subscribers").insert({
         email: newEmail.toLowerCase().trim(),
-        full_name: newName,
-        phone: newPhone,
-        amount: parseFloat(newAmount) || 99,
+        full_name: newName || "",
+        phone: newPhone || "",
+        amount: parseFloat(newAmount) || 0,
         status: "active",
-        subscription_start: now,
-        last_payment_date: now,
-        next_payment_date: nextPayment.toISOString(),
-        password_token: crypto.randomUUID(),
         created_at: now,
         updated_at: now,
       });
 
       if (error) {
-        alert("שגיאה בהוספת המשתמש: " + error.message);
+        alert("שגיאה: " + error.message);
+        console.error("Supabase insert error:", error);
         return;
       }
 
