@@ -143,33 +143,39 @@ export function ShareButton(props: ShareButtonProps) {
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         title={`שתף ${TYPE_LABELS[props.type]}`}
         style={{
-          padding: "5px 10px", borderRadius: "4px",
-          border: "1px solid rgba(0,0,255,0.3)",
-          background: open ? "rgba(0,0,255,0.15)" : "rgba(0,0,255,0.08)",
-          color: "#7777ff", fontSize: "12px", fontWeight: 600,
-          cursor: "pointer", display: "flex", alignItems: "center", gap: "5px",
-          whiteSpace: "nowrap",
+          width: 30, height: 30, borderRadius: "50%", padding: 0,
+          border: "1px solid rgba(255,255,255,0.15)",
+          background: open ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
+          color: "rgba(240,240,245,0.6)",
+          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "background 0.2s, border-color 0.2s",
+          flexShrink: 0,
         }}
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
           <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
         </svg>
-        שתף
       </button>
 
       {open && (
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{
-            position: "absolute", top: "calc(100% + 8px)", left: "50%",
-            transform: "translateX(-50%)",
-            width: "300px", zIndex: 1000,
-            background: "#0e0e22", border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "8px", padding: "16px",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-            direction: "rtl",
-          }}
+        <>
+          {/* backdrop */}
+          <div
+            onClick={() => setOpen(false)}
+            style={{ position: "fixed", inset: 0, zIndex: 99998 }}
+          />
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: "fixed", top: "50%", left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "300px", zIndex: 99999,
+              background: "#0e0e22", border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "8px", padding: "16px",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
+              direction: "rtl",
+            }}
         >
           <p style={{ fontSize: "12px", fontWeight: 700, color: "rgba(240,240,245,0.5)", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             קישור שיתוף — {TYPE_LABELS[props.type]}
@@ -263,7 +269,8 @@ export function ShareButton(props: ShareButtonProps) {
               </button>
             </>
           )}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
