@@ -56,11 +56,24 @@ export default function WatchPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("bldr_share_links");
-    if (!stored) { setInvalid(true); return; }
-
-    const links: ShareLink[] = JSON.parse(stored);
-    const found = links.find(l => l.code === token && l.status === "active");
+    // Decode link data from the token itself (base64url encoded)
+    let found: ShareLink | null = null;
+    try {
+      const padded = token.replace(/-/g, "+").replace(/_/g, "/");
+      const json = decodeURIComponent(escape(atob(padded)));
+      const payload = JSON.parse(json);
+      found = {
+        id: token,
+        code: token,
+        createdAt: "",
+        uses: 0,
+        status: "active",
+        ...payload,
+      };
+    } catch {
+      setInvalid(true);
+      return;
+    }
 
     if (!found) { setInvalid(true); return; }
 

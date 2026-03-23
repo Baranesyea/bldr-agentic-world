@@ -16,6 +16,7 @@ import {
   LockIcon,
 } from "@/components/ui/icons";
 import VideoPlayer from "@/components/ui/video-player";
+import { ShareButton } from "@/components/ui/share-button";
 
 // ── Types ──
 interface CourseLesson {
@@ -600,7 +601,17 @@ export default function LessonViewPage() {
             marginBottom: "16px",
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-              <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#f0f0f5" }}>{currentLesson.title}</h1>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#f0f0f5" }}>{currentLesson.title}</h1>
+                <ShareButton
+                  type="lesson"
+                  name={currentLesson.title}
+                  courseId={courseId as string}
+                  lessonId={currentLesson.id}
+                  lessonTitle={currentLesson.title}
+                  videoUrl={currentLesson.videoUrl}
+                />
+              </div>
               <button
                 onClick={() => toggleCompleted(currentLesson.id)}
                 style={{
