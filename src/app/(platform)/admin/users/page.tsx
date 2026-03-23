@@ -319,31 +319,42 @@ export default function AdminUsersPage() {
   const handleAdd = async () => {
     if (!newEmail) return;
     setAddLoading(true);
-    const now = new Date().toISOString();
-    const nextPayment = new Date();
-    nextPayment.setMonth(nextPayment.getMonth() + 1);
+    try {
+      const now = new Date().toISOString();
+      const nextPayment = new Date();
+      nextPayment.setMonth(nextPayment.getMonth() + 1);
 
-    await supabase.from("subscribers").insert({
-      email: newEmail.toLowerCase().trim(),
-      full_name: newName,
-      phone: newPhone,
-      amount: parseFloat(newAmount) || 99,
-      status: "active",
-      subscription_start: now,
-      last_payment_date: now,
-      next_payment_date: nextPayment.toISOString(),
-      password_token: crypto.randomUUID(),
-      created_at: now,
-      updated_at: now,
-    });
+      const { error } = await supabase.from("subscribers").insert({
+        email: newEmail.toLowerCase().trim(),
+        full_name: newName,
+        phone: newPhone,
+        amount: parseFloat(newAmount) || 99,
+        status: "active",
+        subscription_start: now,
+        last_payment_date: now,
+        next_payment_date: nextPayment.toISOString(),
+        password_token: crypto.randomUUID(),
+        created_at: now,
+        updated_at: now,
+      });
 
-    setNewName("");
-    setNewEmail("");
-    setNewPhone("");
-    setNewAmount("99");
-    setShowAddModal(false);
-    setAddLoading(false);
-    fetchData();
+      if (error) {
+        alert("שגיאה בהוספת המשתמש: " + error.message);
+        return;
+      }
+
+      setNewName("");
+      setNewEmail("");
+      setNewPhone("");
+      setNewAmount("99");
+      setShowAddModal(false);
+      fetchData();
+    } catch (err) {
+      alert("שגיאה לא צפויה, נסה שוב.");
+      console.error(err);
+    } finally {
+      setAddLoading(false);
+    }
   };
 
   /* ─── Update status ─── */
@@ -381,24 +392,24 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: "32px", fontWeight: 700, color: "#fff", margin: 0 }}>Users</h1>
+          <h1 style={{ fontSize: "32px", fontWeight: 700, color: "#fff", margin: 0 }}>משתמשים</h1>
           <p style={{ color: "rgba(240,240,245,0.6)", marginTop: 6, fontSize: "14px", margin: "6px 0 0 0" }}>
-            Manage all users — subscribers, trials, and admins
+            ניהול כל המשתמשים — מנויים, ניסיון ומנהלים
           </p>
         </div>
         <button style={BTN} onClick={() => setShowAddModal(true)}>
-          + Add Subscriber
+          + הוסף מנוי
         </button>
       </div>
 
       {/* Stats Bar */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginTop: 24, marginBottom: 28 }}>
         {[
-          { label: "Total Users", value: totalUsers.toString(), color: "#f0f0f5" },
-          { label: "Active Paying", value: activePaying.toString(), color: "#4ade80" },
-          { label: "Trial Users", value: trialUsers.toString(), color: "#60a5fa" },
-          { label: "Monthly Revenue", value: formatCurrency(monthlyRevenue), color: "#4ade80" },
-          { label: "Average LTV", value: formatCurrency(avgLtv), color: "#c084fc" },
+          { label: "סה״כ משתמשים", value: totalUsers.toString(), color: "#f0f0f5" },
+          { label: "מנויים פעילים", value: activePaying.toString(), color: "#4ade80" },
+          { label: "משתמשי ניסיון", value: trialUsers.toString(), color: "#60a5fa" },
+          { label: "הכנסה חודשית", value: formatCurrency(monthlyRevenue), color: "#4ade80" },
+          { label: "ממוצע LTV", value: formatCurrency(avgLtv), color: "#c084fc" },
         ].map((s) => (
           <div key={s.label} style={CARD}>
             <div style={{ fontSize: 12, color: "rgba(240,240,245,0.5)", marginBottom: 6 }}>{s.label}</div>
@@ -842,24 +853,24 @@ export default function AdminUsersPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginTop: 0, marginBottom: 24 }}>
-              Add Subscriber
+              הוספת מנוי חדש
             </h2>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
                 <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
-                  Full Name
+                  שם מלא
                 </label>
                 <input
                   style={INPUT}
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Full name"
+                  placeholder="שם מלא"
                 />
               </div>
               <div>
                 <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
-                  Email
+                  אימייל
                 </label>
                 <input
                   style={{ ...INPUT, direction: "ltr" }}
@@ -872,7 +883,7 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
-                  Phone
+                  טלפון
                 </label>
                 <input
                   style={{ ...INPUT, direction: "ltr" }}
@@ -884,7 +895,7 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
-                  Monthly Amount (₪)
+                  תשלום חודשי (₪)
                 </label>
                 <input
                   style={{ ...INPUT, direction: "ltr" }}
@@ -898,13 +909,13 @@ export default function AdminUsersPage() {
 
             <div style={{ display: "flex", gap: 10, marginTop: 24, justifyContent: "flex-start" }}>
               <button style={BTN} onClick={handleAdd} disabled={addLoading || !newEmail}>
-                {addLoading ? "Adding..." : "Add Subscriber"}
+                {addLoading ? "מוסיף..." : "הוסף מנוי"}
               </button>
               <button
                 style={{ ...BTN, background: "rgba(255,255,255,0.06)" }}
                 onClick={() => setShowAddModal(false)}
               >
-                Cancel
+                ביטול
               </button>
             </div>
           </div>
