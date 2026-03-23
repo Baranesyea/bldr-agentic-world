@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase";
 import { SearchIcon } from "@/components/ui/icons";
 
@@ -122,11 +122,10 @@ function getInitials(name: string): string {
   return parts.length >= 2 ? (parts[0][0] + parts[1][0]) : parts[0][0];
 }
 
-// Single stable Supabase client — outside component to avoid recreating on every render
-const supabase = createClient();
-
 /* ─── Component ─── */
 export default function AdminUsersPage() {
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
 
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
