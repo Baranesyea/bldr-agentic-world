@@ -1,6 +1,7 @@
 import type { Metadata } from "next/types";
 import { Merriweather } from "next/font/google";
 import "./globals.css";
+import { SeedLoader } from "@/components/seed-loader";
 
 const merriweather = Merriweather({
   variable: "--font-merriweather",
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body
         className={`${merriweather.variable} antialiased bg-background text-foreground`}
       >
+        <SeedLoader />
         {children}
       </body>
     </html>

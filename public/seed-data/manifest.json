@@ -1,0 +1,5 @@
+{
+  "localStorageFile": "localStorage.json",
+  "idbImageCount": 24,
+  "idbImagePattern": "idb_image_{i}.json"
+}
