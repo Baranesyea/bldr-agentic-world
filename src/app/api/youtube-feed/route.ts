@@ -6,76 +6,80 @@ interface VideoItem {
   published: string;
 }
 
-const CHANNEL_ID = "UCIwzIk_Q3_axwgsbbW4FzSg";
-const API_KEY = process.env.YOUTUBE_API_KEY;
-
-let cache: { data: { videos: VideoItem[]; shorts: VideoItem[] }; timestamp: number } | null = null;
+let cache: { data: VideoItem[]; timestamp: number } | null = null;
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 
+async function getChannelId(): Promise<string> {
+  const res = await fetch("https://www.youtube.com/@eranbrownstain", {
+    headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" },
+  });
+  const html = await res.text();
+
+  const match =
+    html.match(/"channelId":"(UC[a-zA-Z0-9_-]+)"/) ||
+    html.match(/channel_id=(UC[a-zA-Z0-9_-]+)/) ||
+    html.match(/"externalId":"(UC[a-zA-Z0-9_-]+)"/);
+
+  if (match) return match[1];
+  throw new Error("Could not extract channel ID");
+}
+
 async function isShort(videoId: string): Promise<boolean> {
+  // Check if the /shorts/ URL redirects (meaning it IS a short)
+  // YouTube returns 200 for shorts at /shorts/ID and redirects for non-shorts
   try {
     const res = await fetch(`https://www.youtube.com/shorts/${videoId}`, {
       method: "HEAD",
       redirect: "manual",
       headers: { "User-Agent": "Mozilla/5.0" },
     });
-    // 200 = it's a short, 302/303 = regular video
+    // If 200 = it's a short, if 303/302 = it's a regular video
     return res.status === 200;
   } catch {
     return false;
   }
 }
 
-async function fetchAllUploads(): Promise<{ videos: VideoItem[]; shorts: VideoItem[] }> {
-  if (!API_KEY) throw new Error("YOUTUBE_API_KEY not set");
+async function fetchVideos(): Promise<VideoItem[]> {
+  const channelId = await getChannelId();
+  const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+  const res = await fetch(feedUrl);
+  const xml = await res.text();
 
-  const uploadsPlaylistId = CHANNEL_ID.replace("UC", "UU");
-  const allItems: VideoItem[] = [];
-  let pageToken = "";
+  // Parse all entries from RSS
+  const allCandidates: VideoItem[] = [];
+  const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
+  let entryMatch;
 
-  // Fetch up to 100 uploads to have enough after filtering
-  while (allItems.length < 100) {
-    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=50&key=${API_KEY}${pageToken ? `&pageToken=${pageToken}` : ""}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    if (!data.items) break;
+  while ((entryMatch = entryRegex.exec(xml)) !== null && allCandidates.length < 25) {
+    const entry = entryMatch[1];
+    const videoIdMatch = entry.match(/<yt:videoId>([^<]+)<\/yt:videoId>/);
+    const titleMatch = entry.match(/<title>([^<]+)<\/title>/);
+    const publishedMatch = entry.match(/<published>([^<]+)<\/published>/);
 
-    for (const item of data.items) {
-      allItems.push({
-        videoId: item.snippet.resourceId.videoId,
-        title: item.snippet.title,
-        published: item.snippet.publishedAt,
+    if (videoIdMatch && titleMatch) {
+      const title = titleMatch[1];
+      // Quick filter: skip obvious shorts by title
+      if (title.toLowerCase().includes("#short")) continue;
+      allCandidates.push({
+        videoId: videoIdMatch[1],
+        title,
+        published: publishedMatch ? publishedMatch[1] : "",
       });
     }
-
-    pageToken = data.nextPageToken;
-    if (!pageToken) break;
   }
 
-  // Check each video against YouTube's /shorts/ endpoint
-  const videos: VideoItem[] = [];
-  const shorts: VideoItem[] = [];
-
-  // Process in parallel batches of 10 for speed
-  for (let i = 0; i < allItems.length; i += 10) {
-    if (videos.length >= 20 && shorts.length >= 20) break;
-    const batch = allItems.slice(i, i + 10);
-    const results = await Promise.all(
-      batch.map(async (item) => ({
-        item,
-        isShortVideo: await isShort(item.videoId),
-      }))
-    );
-    for (const { item, isShortVideo } of results) {
-      if (isShortVideo) {
-        if (shorts.length < 20) shorts.push(item);
-      } else {
-        if (videos.length < 20) videos.push(item);
-      }
+  // Check each candidate against YouTube's /shorts/ endpoint
+  const results: VideoItem[] = [];
+  for (const video of allCandidates) {
+    if (results.length >= 10) break;
+    const short = await isShort(video.videoId);
+    if (!short) {
+      results.push(video);
     }
   }
 
-  return { videos, shorts };
+  return results;
 }
 
 export async function GET() {
@@ -84,9 +88,9 @@ export async function GET() {
       return NextResponse.json(cache.data);
     }
 
-    const result = await fetchAllUploads();
-    cache = { data: result, timestamp: Date.now() };
-    return NextResponse.json(result);
+    const videos = await fetchVideos();
+    cache = { data: videos, timestamp: Date.now() };
+    return NextResponse.json(videos);
   } catch (error) {
     console.error("YouTube feed error:", error);
     return NextResponse.json(

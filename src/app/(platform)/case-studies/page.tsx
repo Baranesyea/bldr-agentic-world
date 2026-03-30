@@ -104,7 +104,6 @@ export default function CaseStudiesPage() {
   const [loaded, setLoaded] = useState(false);
   const [touristCaseStudyId, setTouristCaseStudyId] = useState<string | null>(null);
   const [showPricing, setShowPricing] = useState(false);
-  const [showRequestForm, setShowRequestForm] = useState(false);
 
   useEffect(() => {
     try {
@@ -163,7 +162,10 @@ export default function CaseStudiesPage() {
           </p>
         </div>
         <button
-          onClick={() => setShowRequestForm(true)}
+          onClick={() => {
+            const el = document.getElementById("request-section");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
           style={{
             background: "#0000FF", color: "white", padding: "10px 24px",
             borderRadius: "4px", fontWeight: 600, fontSize: "14px",
@@ -265,84 +267,64 @@ export default function CaseStudiesPage() {
         </div>
       )}
 
-      {/* Request a Case Study — Popup */}
-      {showRequestForm && (
-        <div
-          onClick={() => setShowRequestForm(false)}
-          style={{
-            position: "fixed", inset: 0, zIndex: 50,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(12px)",
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "#0a0a1a",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 4,
-              padding: 40,
-              maxWidth: 500,
-              width: "90vw",
-              position: "relative",
-            }}
-          >
-            <button
-              onClick={() => setShowRequestForm(false)}
-              style={{
-                position: "absolute", top: 12, left: 12,
-                background: "none", border: "none", color: "rgba(240,240,245,0.5)",
-                fontSize: 20, cursor: "pointer", lineHeight: 1,
-              }}
-            >×</button>
-            <h2 style={{ fontSize: 22, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>
-              רוצה מקרה בוחן מותאם?
-            </h2>
-            <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)", marginBottom: 28, textAlign: "center" }}>
-              ספר לנו על הצורך שלך ונבנה מקרה בוחן רלוונטי
-            </p>
+      {/* Request a Case Study */}
+      <div id="request-section" style={{
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: 4,
+        padding: 40,
+        maxWidth: 600,
+        margin: "0 auto",
+      }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: "#fff", marginBottom: 8, textAlign: "center" }}>
+          רוצה מקרה בוחן מותאם?
+        </h2>
+        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)", marginBottom: 28, textAlign: "center" }}>
+          ספר לנו על הצורך שלך ונבנה מקרה בוחן רלוונטי
+        </p>
 
-            {submitted ? (
-              <div style={{
-                padding: "20px", borderRadius: 4,
-                background: "rgba(0,200,100,0.08)",
-                border: "1px solid rgba(0,200,100,0.2)",
-                textAlign: "center", color: "rgba(100,255,180,1)",
-                fontSize: 14, fontWeight: 500,
-              }}>
-                הבקשה נשלחה בהצלחה! ניצור איתך קשר בקרוב.
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <div>
-                  <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 8, fontWeight: 500 }}>שם</label>
-                  <input style={inputS} placeholder="השם שלך" value={formName} onChange={(e) => setFormName(e.target.value)} />
-                </div>
-                <div>
-                  <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 8, fontWeight: 500 }}>אימייל</label>
-                  <input style={inputS} type="email" placeholder="name@example.com" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} />
-                </div>
-                <div>
-                  <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 8, fontWeight: 500 }}>תיאור הצורך</label>
-                  <textarea
-                    style={{ ...inputS, minHeight: 100, resize: "vertical" }}
-                    placeholder="ספר לנו מה אתה מחפש..."
-                    value={formDesc}
-                    onChange={(e) => setFormDesc(e.target.value)}
-                  />
-                </div>
-                <button
-                  style={{ ...btnP, opacity: formName.trim() && formEmail.trim() && formDesc.trim() ? 1 : 0.4 }}
-                  onClick={handleSubmit}
-                  disabled={!formName.trim() || !formEmail.trim() || !formDesc.trim()}
-                >
-                  שלח בקשה
-                </button>
-              </div>
-            )}
+        {submitted ? (
+          <div style={{
+            padding: "20px",
+            borderRadius: 4,
+            background: "rgba(0,200,100,0.08)",
+            border: "1px solid rgba(0,200,100,0.2)",
+            textAlign: "center",
+            color: "rgba(100,255,180,1)",
+            fontSize: 14,
+            fontWeight: 500,
+          }}>
+            הבקשה נשלחה בהצלחה! ניצור איתך קשר בקרוב.
           </div>
-        </div>
-      )}
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 8, fontWeight: 500 }}>שם</label>
+              <input style={inputS} placeholder="השם שלך" value={formName} onChange={(e) => setFormName(e.target.value)} />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 8, fontWeight: 500 }}>אימייל</label>
+              <input style={inputS} type="email" placeholder="name@example.com" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 8, fontWeight: 500 }}>תיאור הצורך</label>
+              <textarea
+                style={{ ...inputS, minHeight: 100, resize: "vertical" }}
+                placeholder="ספר לנו מה אתה מחפש..."
+                value={formDesc}
+                onChange={(e) => setFormDesc(e.target.value)}
+              />
+            </div>
+            <button
+              style={{ ...btnP, opacity: formName.trim() && formEmail.trim() && formDesc.trim() ? 1 : 0.4 }}
+              onClick={handleSubmit}
+              disabled={!formName.trim() || !formEmail.trim() || !formDesc.trim()}
+            >
+              שלח בקשה
+            </button>
+          </div>
+        )}
+      </div>
 
     </div>
   );

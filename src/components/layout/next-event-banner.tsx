@@ -142,6 +142,18 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
           100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
         }
       `}</style>
+      <svg style={{ position: "absolute", width: 0, height: 0 }}>
+        <filter id="glass-distortion-banner" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
+          <feTurbulence type="fractalNoise" baseFrequency="0.001 0.005" numOctaves="1" seed="17" result="turbulence" />
+          <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
+          <feSpecularLighting in="softMap" surfaceScale="3" specularConstant="0.8" specularExponent="80" lightingColor="white" result="specLight">
+            <fePointLight x="-200" y="-200" z="300" />
+          </feSpecularLighting>
+          <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage" />
+          <feDisplacementMap in="SourceGraphic" in2="softMap" scale="60" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+
       <div
         ref={containerRef}
         onMouseMove={handleMouseMove}
@@ -161,7 +173,7 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
         <div style={{
           position: "relative",
           overflow: "visible",
-          borderRadius: 4,
+          borderRadius: hovered ? 14 : 12,
           padding: hovered ? "16px 28px 16px 22px" : "14px 24px 14px 20px",
           display: "flex",
           alignItems: "center",
@@ -187,7 +199,12 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
           <div style={{
             position: "absolute", inset: 0, zIndex: 2,
             borderRadius: "inherit",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15)",
+            boxShadow: "inset 1px 1px 0 rgba(255,255,255,0.35), inset -1px -1px 0 rgba(255,255,255,0.15)",
+          }} />
+          <div style={{
+            position: "absolute", top: 0, left: "10%", right: "10%", height: "50%", zIndex: 3,
+            background: "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%)",
+            borderRadius: "inherit",
           }} />
 
           {/* X dismiss — bright background, dark X */}

@@ -44,6 +44,7 @@ const mainNav = [
   { label: "מחברת", href: "/notebook", icon: NotebookIcon },
   { label: "לוח שנה", href: "/calendar", icon: CalendarIcon },
   { label: "מקרי בוחן", href: "/case-studies", icon: BeakerIcon },
+  { label: "תכנים נוספים", href: "/social", icon: SocialIcon },
   { label: "שאלות", href: "/qa", icon: QuestionIcon },
   { label: "פרופיל", href: "/profile", icon: ProfileIcon },
   { label: "סיור", href: "#tour", icon: TourIcon },
@@ -229,20 +230,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
     }
 
     return (
-      <Link href={item.href} data-nav={item.href}
-        onMouseEnter={(e) => {
-          if (!active) {
-            e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-            e.currentTarget.style.color = "rgba(240,240,245,0.85)";
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!active) {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "rgba(240,240,245,0.6)";
-          }
-        }}
-        style={{
+      <Link href={item.href} data-nav={item.href} style={{
         display: "flex", alignItems: "center", gap: "12px",
         padding: collapsed ? "10px" : "10px 12px", borderRadius: "4px",
         textDecoration: "none", fontSize: "14px",
@@ -254,7 +242,6 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         boxShadow: active ? "0 0 20px rgba(0,0,255,0.1)" : "none",
         overflow: "hidden",
         whiteSpace: "nowrap",
-        transition: "background 0.2s, color 0.2s",
       }}>
         <span style={{ flexShrink: 0, display: "flex", alignItems: "center" }}><Icon size={18} /></span>
         {!collapsed && <span style={{ opacity: 1, transition: "opacity 0.2s" }}>{item.label}</span>}
@@ -320,6 +307,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
             {touristData?.type === "case_study" && (
               <NavLink item={{ label: "מקרי בוחן", href: "/case-studies", icon: BeakerIcon }} />
             )}
+            <NavLink item={{ label: "תכנים נוספים", href: "/social", icon: SocialIcon }} />
             <NavLink item={{ label: "לוח שנה", href: "/calendar", icon: CalendarIcon }} />
             <NavLink item={{ label: "פרופיל", href: "/profile", icon: ProfileIcon }} />
           </>
