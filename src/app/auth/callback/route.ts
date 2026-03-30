@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getMemberByEmail } from "@/lib/data/members";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -30,7 +31,18 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    await supabase.auth.exchangeCodeForSession(code);
+    const { data } = await supabase.auth.exchangeCodeForSession(code);
+
+    // For non-password flows (e.g. Google login), check member access
+    if (!isPasswordFlow && data?.session?.user?.email) {
+      const member = await getMemberByEmail(data.session.user.email);
+      if (!member || member.status !== "active") {
+        await supabase.auth.signOut();
+        const loginUrl = new URL("/login", origin);
+        loginUrl.searchParams.set("error", "no_access");
+        return NextResponse.redirect(loginUrl.toString());
+      }
+    }
   }
 
   return response;

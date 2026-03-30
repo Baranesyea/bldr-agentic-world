@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { SplineScene } from "@/components/ui/spline";
 import { Spotlight } from "@/components/ui/spotlight";
@@ -24,6 +24,14 @@ export default function LoginPage() {
   const [showSpinner, setShowSpinner] = useState(false);
 
   const supabase = createClient();
+
+  // Check for error from Google OAuth redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "no_access") {
+      setError("אין לך גישה למערכת. פנה למנהל.");
+    }
+  }, []);
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
