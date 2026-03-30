@@ -396,7 +396,7 @@ export default function LoginPage() {
                       transform: "translateY(-50%)",
                       background: "none",
                       border: "none",
-                      color: "rgba(240,240,245,0.4)",
+                      color: "rgba(240,240,245,0.6)",
                       cursor: "pointer",
                       padding: 0,
                       fontSize: 13,
