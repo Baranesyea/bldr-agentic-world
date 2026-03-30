@@ -38,6 +38,26 @@ export default function LoginPage() {
     setSuccess("נשלח אימייל עם קישור לאיפוס הסיסמה");
   };
 
+  const checkMemberAccess = async (userEmail: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/members/check?email=${encodeURIComponent(userEmail)}`);
+      const data = await res.json();
+      return data.active === true;
+    } catch {
+      return false;
+    }
+  };
+
+  const checkMemberExists = async (userEmail: string): Promise<{ exists: boolean; active: boolean }> => {
+    try {
+      const res = await fetch(`/api/members/check?email=${encodeURIComponent(userEmail)}`);
+      const data = await res.json();
+      return { exists: data.member !== null, active: data.active === true };
+    } catch {
+      return { exists: false, active: false };
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -45,11 +65,20 @@ export default function LoginPage() {
     setLoading(true);
 
     if (mode === "signup") {
+      // First check if this email is in members table and active
+      const memberCheck = await checkMemberExists(email);
+      if (!memberCheck.exists || !memberCheck.active) {
+        setError("אין לך גישה למערכת. פנה למנהל.");
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { full_name: fullName || email.split("@")[0] },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
       if (error) {
@@ -57,71 +86,51 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      setSuccess("נרשמת בהצלחה! בדוק את האימייל לאימות.");
-      setLoading(false);
-      return;
-    } else {
-      const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        setError(error.message === "Invalid login credentials" ? "אימייל או סיסמה שגויים" : error.message);
+
+      // Auto-login after signup
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setSuccess("נרשמת בהצלחה! בדוק את האימייל לאימות.");
         setLoading(false);
         return;
       }
 
-      // Check subscriber access
-      const userEmail = authData.user?.email?.toLowerCase().trim() || email.toLowerCase().trim();
+      const count = parseInt(localStorage.getItem("bldr_login_count") || "0");
+      localStorage.setItem("bldr_login_count", String(count + 1));
+      router.push("/dashboard");
+      router.refresh();
+      return;
+    } else {
+      const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
 
-      // Check if admin
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", authData.user?.id)
-        .single();
-
-      if (profile?.role === "admin") {
-        // Admins always pass
-      } else {
-        // Check subscribers table
-        const { data: subscriber } = await supabase
-          .from("subscribers")
-          .select("id, status")
-          .eq("email", userEmail)
-          .single();
-
-        if (subscriber && subscriber.status === "active") {
-          // Active subscriber — proceed
-        } else if (!subscriber) {
-          // Not a subscriber — check trial
-          const trialData = localStorage.getItem("bldr_trial");
-          if (trialData) {
-            try {
-              const trial = JSON.parse(trialData);
-              if (trial.expiresAt && new Date(trial.expiresAt) < new Date()) {
-                await supabase.auth.signOut();
-                router.push("/trial-expired");
-                return;
-              }
-              // Trial still valid — proceed
-            } catch {
-              // Invalid trial data — show error
-              setError("This email was not found in our subscriber list. You may have signed up with a different email.");
-              await supabase.auth.signOut();
-              setLoading(false);
-              return;
-            }
-          } else {
-            setError("This email was not found in our subscriber list. You may have signed up with a different email.");
-            await supabase.auth.signOut();
+      if (error) {
+        // If invalid credentials, check if email exists in members — offer first-time signup
+        if (error.message === "Invalid login credentials") {
+          const memberCheck = await checkMemberExists(email);
+          if (memberCheck.exists && memberCheck.active) {
+            setError("");
+            setSuccess("נראה שזו הפעם הראשונה שלך. צור סיסמה כדי להתחיל.");
+            setMode("signup");
             setLoading(false);
             return;
           }
+          setError("אימייל או סיסמה שגויים");
         } else {
-          // Subscriber exists but not active
-          setError("Your subscription is not active. Please renew to continue.");
-          await supabase.auth.signOut();
-          setLoading(false);
-          return;
+          setError(error.message);
         }
+        setLoading(false);
+        return;
+      }
+
+      // Check member access
+      const userEmail = authData.user?.email?.toLowerCase().trim() || email.toLowerCase().trim();
+      const isActive = await checkMemberAccess(userEmail);
+
+      if (!isActive) {
+        setError("אין לך גישה למערכת. פנה למנהל.");
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
       }
     }
 

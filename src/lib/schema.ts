@@ -319,6 +319,25 @@ export const news = pgTable("news", {
 });
 
 // ============================================
+// Members
+// ============================================
+export const memberStatusEnum = pgEnum("member_status", ["active", "inactive"]);
+export const memberTypeEnum = pgEnum("member_type", ["free", "paid"]);
+
+export const members = pgTable("members", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  fullName: varchar("full_name", { length: 255 }).notNull(),
+  status: memberStatusEnum("status").default("active").notNull(),
+  type: memberTypeEnum("type").default("free").notNull(),
+  pricePaid: integer("price_paid").default(0),
+  supabaseUserId: text("supabase_user_id"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ============================================
 // Admin Settings
 // ============================================
 export const adminSettings = pgTable("admin_settings", {
