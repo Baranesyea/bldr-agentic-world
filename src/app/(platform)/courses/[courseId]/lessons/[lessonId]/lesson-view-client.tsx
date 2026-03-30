@@ -93,7 +93,6 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   const router = useRouter();
   const searchParams = useSearchParams();
   const courseId = course.id;
-  const courseSlug = course.slug || course.id;
 
   // Flatten all lessons for navigation
   const allLessons = useMemo(() => {
@@ -303,12 +302,12 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   useEffect(() => {
     if (!showCountdown) return;
     if (countdown <= 0 && nextLesson) {
-      router.push(`/courses/${courseSlug}/lessons/${nextLesson.slug || nextLesson.id}`);
+      router.push(`/courses/${courseId}/lessons/${nextLesson.id}`);
       return;
     }
     const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
     return () => clearTimeout(t);
-  }, [showCountdown, countdown, nextLesson, courseSlug, router]);
+  }, [showCountdown, countdown, nextLesson, courseId, router]);
 
   const toggleChapter = (id: string) => {
     setOpenChapters((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
@@ -399,7 +398,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
         }}>
           {/* Progress header */}
           <div style={{ padding: "16px 16px 12px" }}>
-            <Link href={`/courses/${courseSlug}`} style={{ textDecoration: "none" }}>
+            <Link href={`/courses/${courseId}`} style={{ textDecoration: "none" }}>
               <h3 style={{
                 fontSize: "14px",
                 fontWeight: 700,
@@ -460,7 +459,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                         return (
                           <Link
                             key={lesson.id}
-                            href={`/courses/${courseSlug}/lessons/${lesson.slug || lesson.id}`}
+                            href={`/courses/${courseId}/lessons/${lesson.id}`}
                             onClick={() => { if (!isCurrent) setNavigatingTo(lesson.id); }}
                             style={{
                               display: "flex",
@@ -721,7 +720,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "32px" }}>
             {prevLesson ? (
               <Link
-                href={`/courses/${courseSlug}/lessons/${prevLesson.slug || prevLesson.id}`}
+                href={`/courses/${courseId}/lessons/${prevLesson.id}`}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -740,7 +739,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
             ) : <div />}
             {nextLesson && (
               <Link
-                href={`/courses/${courseSlug}/lessons/${nextLesson.slug || nextLesson.id}`}
+                href={`/courses/${courseId}/lessons/${nextLesson.id}`}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",

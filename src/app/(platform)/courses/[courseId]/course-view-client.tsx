@@ -60,7 +60,7 @@ interface Course {
 }
 
 export default function CourseViewClient({ course }: { course: Course }) {
-  const courseSlug = course.slug || course.id;
+  const courseId = course.id;
   const [openChapters, setOpenChapters] = useState<string[]>([]);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
 
@@ -138,7 +138,7 @@ export default function CourseViewClient({ course }: { course: Course }) {
           {/* Buttons */}
           <div style={{ display: "flex", gap: "12px" }}>
             {firstUnwatched && (
-              <Link href={`/courses/${courseSlug}/lessons/${firstUnwatched.slug || firstUnwatched.id}`} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#0000FF", color: "white", padding: "12px 28px", borderRadius: "4px", fontWeight: 600, fontSize: "15px", textDecoration: "none", boxShadow: "0 0 30px rgba(0,0,255,0.35)" }}>
+              <Link href={`/courses/${course.id}/lessons/${firstUnwatched.id}`} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "#0000FF", color: "white", padding: "12px 28px", borderRadius: "4px", fontWeight: 600, fontSize: "15px", textDecoration: "none", boxShadow: "0 0 30px rgba(0,0,255,0.35)" }}>
                 <PlayIcon size={16} /> {doneLessons > 0 ? "המשך מאיפה שהפסקת" : "התחל לצפות"}
               </Link>
             )}
@@ -180,7 +180,7 @@ export default function CourseViewClient({ course }: { course: Course }) {
                       return (
                         <Link
                           key={lesson.id}
-                          href={`/courses/${courseSlug}/lessons/${lesson.slug || lesson.id}`}
+                          href={`/courses/${course.id}/lessons/${lesson.id}`}
                           style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", borderRadius: "4px", textDecoration: "none", transition: "background 0.15s" }}
                           onMouseEnter={(e) => e.currentTarget.style.background = "rgba(18,18,42,0.5)"}
                           onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
