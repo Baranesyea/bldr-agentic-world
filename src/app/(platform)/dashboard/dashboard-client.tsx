@@ -92,7 +92,14 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
         padding: "12px 32px", borderBottom: "1px solid rgba(255,255,255,0.04)",
         background: "rgba(10,10,26,0.6)", backdropFilter: "blur(12px)",
       }}>
-        <span style={{ fontSize: "15px", fontWeight: 600, color: "#f0f0f5" }}>שלום, {userName}</span>
+        <span style={{ fontSize: "15px", fontWeight: 600, color: "#f0f0f5" }}>{(() => {
+          const h = new Date().getHours();
+          if (h >= 5 && h < 12) return "בוקר טוב";
+          if (h >= 12 && h < 17) return "צהריים טובים";
+          if (h >= 17 && h < 21) return "ערב טוב";
+          if (h >= 21 && h <= 23) return "לילה טוב";
+          return "אמצע הלילה טוב";
+        })()}, {userName}</span>
         <div style={{ display: "flex", gap: "24px" }}>
           {[
             { icon: <BookIcon size={14} />, value: String(totalLessons), label: "שיעורים" },
