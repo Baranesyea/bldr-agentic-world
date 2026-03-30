@@ -81,7 +81,7 @@ export function WhatsAppCTA() {
       >
         <div style={{
           position: "relative",
-          overflow: "hidden",
+          overflow: "visible",
           borderRadius: 4,
           border: `2px solid ${hovered ? "rgba(37,211,102,0.5)" : "rgba(37,211,102,0.25)"}`,
           padding: "14px 20px",
