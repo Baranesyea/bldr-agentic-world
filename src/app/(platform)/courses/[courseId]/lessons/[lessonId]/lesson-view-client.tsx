@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LessonDiscussion } from "@/components/course/lesson-discussion";
@@ -61,9 +61,9 @@ function convertToEmbedUrl(url: string, autoplay = false): string {
   const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=${ap}&title=0&byline=0&portrait=0&share=0&watchlater=0&like=0`;
   const watchMatch = url.match(/[?&]v=([^&]+)/);
-  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=${ap}&rel=0`;
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=${ap}&rel=0&enablejsapi=1&origin=${typeof window !== "undefined" ? window.location.origin : ""}`;
   const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
-  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=${ap}&rel=0`;
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=${ap}&rel=0&enablejsapi=1&origin=${typeof window !== "undefined" ? window.location.origin : ""}`;
   const loomMatch = url.match(/loom\.com\/share\/([\w-]+)/);
   if (loomMatch) return `https://www.loom.com/embed/${loomMatch[1]}`;
   return url;
@@ -114,6 +114,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   const [noteText, setNoteText] = useState("");
   const [savedNotes, setSavedNotes] = useState<LessonNote[]>([]);
   const [videoTimer, setVideoTimer] = useState(0);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [autoCompleted, setAutoCompleted] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
@@ -155,10 +156,19 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
     return () => clearTimeout(t);
   }, [currentLesson?.id]);
 
-  // Video timestamp timer
+  // Video timestamp — poll real position from Vimeo/YouTube iframe
   useEffect(() => {
     if (!isPlaying) return;
-    const interval = setInterval(() => setVideoTimer((prev) => prev + 1), 1000);
+    const interval = setInterval(() => {
+      const iframe = iframeRef.current;
+      if (!iframe?.contentWindow) return;
+      const src = iframe.src || "";
+      if (src.includes("vimeo")) {
+        iframe.contentWindow.postMessage('{"method":"getCurrentTime"}', "*");
+      } else if (src.includes("youtube")) {
+        iframe.contentWindow.postMessage('{"event":"listening"}', "*");
+      }
+    }, 500);
     return () => clearInterval(interval);
   }, [isPlaying]);
 
@@ -173,15 +183,24 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           }
           if (data.event === "play" || data.event === "playProgress") {
             if (!isPlaying) setIsPlaying(true);
+            if (data.data?.seconds != null) setVideoTimer(Math.floor(data.data.seconds));
           }
           if (data.event === "pause") {
             setIsPlaying(false);
+            if (data.data?.seconds != null) setVideoTimer(Math.floor(data.data.seconds));
+          }
+          // Vimeo getCurrentTime response
+          if (data.method === "getCurrentTime" && data.value != null) {
+            setVideoTimer(Math.floor(data.value));
           }
         }
         if (typeof event.data === "object" && event.data?.event === "onStateChange") {
           if (event.data.info === 0) handleVideoEnded();
           if (event.data.info === 1 && !isPlaying) setIsPlaying(true);
           if (event.data.info === 2) setIsPlaying(false);
+        }
+        if (typeof event.data === "object" && event.data?.event === "infoDelivery" && event.data?.info?.currentTime != null) {
+          setVideoTimer(Math.floor(event.data.info.currentTime));
         }
       } catch {}
     };
@@ -200,12 +219,13 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
 
     window.addEventListener("message", handleMessage);
 
-    const iframe = document.querySelector("iframe[src*='vimeo']") as HTMLIFrameElement;
-    if (iframe?.contentWindow) {
+    const iframe = iframeRef.current;
+    if (iframe?.contentWindow && iframe.src?.includes("vimeo")) {
       setTimeout(() => {
         iframe.contentWindow?.postMessage('{"method":"addEventListener","value":"ended"}', "*");
         iframe.contentWindow?.postMessage('{"method":"addEventListener","value":"play"}', "*");
         iframe.contentWindow?.postMessage('{"method":"addEventListener","value":"pause"}', "*");
+        iframe.contentWindow?.postMessage('{"method":"addEventListener","value":"playProgress"}', "*");
       }, 1000);
     }
 
@@ -483,6 +503,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
             <div style={{ position: "relative", paddingBottom: "56.25%" }}>
               {embedUrl ? (
                 <iframe
+                  ref={iframeRef}
                   src={embedUrl}
                   style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -750,8 +771,8 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
               borderRadius: "4px",
               width: "fit-content",
             }}>
-              <ClockIcon size={12} color="#3333FF" />
-              <span style={{ fontSize: "13px", fontWeight: 600, color: "#3333FF", fontFamily: "var(--font-heading-en)" }}>
+              <ClockIcon size={12} color="rgba(240,240,245,0.7)" />
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "#f0f0f5", fontFamily: "var(--font-merriweather)" }}>
                 {formatTimestamp(videoTimer)}
               </span>
             </div>
@@ -814,12 +835,26 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                   <span style={{
                     fontSize: "11px",
                     fontWeight: 600,
-                    color: "#3333FF",
-                    background: "rgba(0,0,255,0.1)",
+                    color: "#f0f0f5",
+                    background: "rgba(255,255,255,0.08)",
                     padding: "2px 8px",
                     borderRadius: "6px",
-                    fontFamily: "var(--font-heading-en)",
-                  }}>
+                    fontFamily: "var(--font-merriweather)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    const iframe = iframeRef.current;
+                    if (!iframe?.contentWindow) return;
+                    const ts = note.videoTimestamp || "";
+                    const parts = ts.split(":").map(Number);
+                    const seconds = parts.length === 3 ? parts[0]*3600+parts[1]*60+parts[2] : parts.length === 2 ? parts[0]*60+parts[1] : 0;
+                    if (iframe.src?.includes("vimeo")) {
+                      iframe.contentWindow.postMessage(`{"method":"setCurrentTime","value":${seconds}}`, "*");
+                    } else if (iframe.src?.includes("youtube")) {
+                      iframe.contentWindow.postMessage(JSON.stringify({event:"command",func:"seekTo",args:[seconds,true]}), "*");
+                    }
+                  }}
+                  >
                     {note.videoTimestamp || note.timestamp}
                   </span>
                   <button
