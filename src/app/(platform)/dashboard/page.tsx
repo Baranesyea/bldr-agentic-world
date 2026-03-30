@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BookIcon, FireIcon, TrophyIcon, PlayIcon } from "@/components/ui/icons";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
 import { resolveImageUrl } from "@/lib/image-store";
+import { YouTubeCarousel, YouTubeShortsCarousel } from "@/components/youtube-carousel";
 
 const MOCK_STUDENTS = [
   { id: 1, name: "שירה כהן", designation: "סטודנטית", image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face" },
@@ -126,12 +127,11 @@ export default function DashboardPage() {
           {[
             { icon: <BookIcon size={14} />, value: String(totalLessons), label: "שיעורים" },
             { icon: <FireIcon size={14} />, value: String(activeCourses.length), label: "קורסים" },
-            { icon: <TrophyIcon size={14} />, value: "450", label: "נקודות" },
           ].map((s) => (
             <div key={s.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ color: "rgba(240,240,245,0.4)", display: "flex" }}>{s.icon}</span>
-              <span style={{ fontSize: "14px", fontWeight: 700, color: "#f0f0f5" }}>{s.value}</span>
-              <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.35)" }}>{s.label}</span>
+              <span style={{ color: "#f0f0f5", display: "flex", alignItems: "center" }}>{s.icon}</span>
+              <span style={{ fontSize: "14px", fontWeight: 700, color: "#f0f0f5", lineHeight: 1 }}>{s.value}</span>
+              <span style={{ fontSize: "12px", color: "#f0f0f5", lineHeight: 1 }}>{s.label}</span>
             </div>
           ))}
         </div>
@@ -245,6 +245,9 @@ export default function DashboardPage() {
           </Link>
         </div>
       )}
+
+      {/* ── YouTube Carousel ── */}
+      <YouTubeCarousel />
 
       {/* ── All Active Courses ── */}
       {nonFeaturedActive.length > 0 && (
@@ -388,6 +391,8 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+      {/* ── YouTube Shorts ── */}
+      <YouTubeShortsCarousel />
     </div>
   );
 }

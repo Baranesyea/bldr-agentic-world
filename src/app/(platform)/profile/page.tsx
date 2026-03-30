@@ -329,22 +329,6 @@ export default function ProfilePage() {
               >
                 העלה תמונה
               </button>
-              {!generating && (
-                <button
-                  onClick={() => setShowGenderPicker(true)}
-                  style={{
-                    background: "rgba(0,0,255,0.1)",
-                    border: "1px solid rgba(0,0,255,0.25)",
-                    borderRadius: "4px",
-                    padding: "6px 12px",
-                    color: "#3333FF",
-                    fontSize: "11px",
-                    cursor: "pointer",
-                  }}
-                >
-                  צור אווטאר
-                </button>
-              )}
             </div>
 
             {/* Gender picker */}
@@ -565,9 +549,8 @@ export default function ProfilePage() {
       </div>
 
       {/* Stats Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "24px" }}>
         {[
-          { label: "נקודות מוניטין", value: "450" },
           { label: "שיעורים שהושלמו", value: "21" },
           { label: "רצף ימים", value: "7" },
           { label: "הערות", value: "12" },
@@ -580,15 +563,6 @@ export default function ProfilePage() {
         ))}
       </div>
 
-      {/* Badges */}
-      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "24px", marginBottom: "24px" }}>
-        <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#f0f0f5", marginBottom: "16px" }}>תגים</h2>
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          {["Early Adopter", "Course Completer", "7-Day Streak", "Community Helper"].map((badge) => (
-            <span key={badge} style={{ background: "rgba(255,255,255,0.04)", color: "rgba(240,240,245,0.6)", padding: "8px 16px", borderRadius: "4px", fontSize: "13px", border: "1px solid rgba(255,255,255,0.06)", fontFamily: "var(--font-heading-en)" }}>{badge}</span>
-          ))}
-        </div>
-      </div>
 
       {/* Settings */}
       <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "24px" }}>

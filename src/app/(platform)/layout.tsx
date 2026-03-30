@@ -24,7 +24,8 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Start expanded
   const collapseTimerRef = useRef<NodeJS.Timeout | null>(null);
   const tourActiveRef = useRef(false);
-  const sidebarWidth = sidebarCollapsed ? 68 : 240;
+  const collapsedWidth = 68;
+  const sidebarWidth = sidebarCollapsed ? collapsedWidth : 240;
 
   // Auto-collapse after 10 seconds on first load
   useEffect(() => {
@@ -91,7 +92,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       >
         <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
       </div>
-      <main style={{ marginRight: `${sidebarWidth}px`, minHeight: "100vh", paddingBottom: "64px", transition: "margin-right 0.3s" }}>
+      <main style={{ marginRight: `${collapsedWidth}px`, minHeight: "100vh", paddingBottom: "64px" }}>
         <TrialBanner />
         <TouristGuard>{children}</TouristGuard>
       </main>
