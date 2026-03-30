@@ -17,6 +17,7 @@ export default async function CourseViewPage({
   // Serialize for client component
   const serializedCourse = {
     id: course.id,
+    slug: course.slug || course.id,
     title: course.title,
     description: course.description || "",
     status: course.status,
@@ -28,6 +29,7 @@ export default async function CourseViewPage({
       isLocked: false,
       lessons: ch.lessons.map((l) => ({
         id: l.id,
+        slug: l.slug || l.id,
         title: l.title,
         videoUrl: l.videoUrl || "",
         duration: l.duration ? `${Math.floor(l.duration / 60)}:${String(l.duration % 60).padStart(2, "0")}` : "",

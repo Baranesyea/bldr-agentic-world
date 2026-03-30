@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Play, XIcon } from "lucide-react";
+import { Play, XIcon, EyeOff, Eye } from "lucide-react";
+import { useUser } from "@/hooks/useUser";
 
 interface YouTubeVideo {
   videoId: string;
@@ -189,6 +190,8 @@ function VideoLightbox({
 export function YouTubeCarousel() {
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [activeVideo, setActiveVideo] = useState<YouTubeVideo | null>(null);
+  const [hiddenIds, setHiddenIds] = useState<string[]>([]);
+  const { isAdmin } = useUser();
 
   useEffect(() => {
     fetch("/api/youtube-feed")
@@ -197,11 +200,28 @@ export function YouTubeCarousel() {
         if (data.videos && Array.isArray(data.videos)) {
           setVideos(data.videos);
         }
+        if (data.hiddenVideoIds && Array.isArray(data.hiddenVideoIds)) {
+          setHiddenIds(data.hiddenVideoIds);
+        }
       })
       .catch(() => {});
   }, []);
 
-  if (videos.length === 0) return null;
+  const toggleHide = async (videoId: string) => {
+    const newHidden = hiddenIds.includes(videoId)
+      ? hiddenIds.filter((id) => id !== videoId)
+      : [...hiddenIds, videoId];
+    setHiddenIds(newHidden);
+    await fetch("/api/youtube-feed", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hiddenVideoIds: newHidden }),
+    });
+  };
+
+  const visibleVideos = isAdmin ? videos : videos.filter((v) => !hiddenIds.includes(v.videoId));
+
+  if (visibleVideos.length === 0) return null;
 
   return (
     <>
@@ -217,10 +237,12 @@ export function YouTubeCarousel() {
           להישאר בלופ
         </h2>
         <ScrollStrip>
-          {videos.map((v) => (
+          {visibleVideos.map((v) => {
+            const isHidden = hiddenIds.includes(v.videoId);
+            return (
             <div
               key={v.videoId}
-              onClick={() => setActiveVideo(v)}
+              onClick={() => { if (!isHidden || !isAdmin) setActiveVideo(v); }}
               style={{
                 flex: "0 0 220px",
                 cursor: "pointer",
@@ -229,6 +251,8 @@ export function YouTubeCarousel() {
                 border: "1px solid rgba(255,255,255,0.06)",
                 background: "rgba(10,10,26,0.6)",
                 transition: "all 0.25s",
+                opacity: isHidden ? 0.35 : 1,
+                position: "relative",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
@@ -310,8 +334,33 @@ export function YouTubeCarousel() {
                   </p>
                 </div>
               </div>
+              {isAdmin && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); toggleHide(v.videoId); }}
+                  title={isHidden ? "הצג סרטון" : "הסתר סרטון"}
+                  style={{
+                    position: "absolute",
+                    top: 6,
+                    left: 6,
+                    zIndex: 5,
+                    background: isHidden ? "rgba(255,80,80,0.8)" : "rgba(0,0,0,0.6)",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: 28,
+                    height: 28,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    transition: "background 0.2s",
+                  }}
+                >
+                  {isHidden ? <Eye size={14} color="white" /> : <EyeOff size={14} color="white" />}
+                </button>
+              )}
             </div>
-          ))}
+            );
+          })}
         </ScrollStrip>
       </div>
 
@@ -328,6 +377,8 @@ export function YouTubeCarousel() {
 export function YouTubeShortsCarousel() {
   const [shorts, setShorts] = useState<YouTubeVideo[]>([]);
   const [activeShort, setActiveShort] = useState<YouTubeVideo | null>(null);
+  const [hiddenIds, setHiddenIds] = useState<string[]>([]);
+  const { isAdmin } = useUser();
 
   useEffect(() => {
     fetch("/api/youtube-feed")
@@ -336,11 +387,28 @@ export function YouTubeShortsCarousel() {
         if (data.shorts && Array.isArray(data.shorts)) {
           setShorts(data.shorts);
         }
+        if (data.hiddenVideoIds && Array.isArray(data.hiddenVideoIds)) {
+          setHiddenIds(data.hiddenVideoIds);
+        }
       })
       .catch(() => {});
   }, []);
 
-  if (shorts.length === 0) return null;
+  const toggleHide = async (videoId: string) => {
+    const newHidden = hiddenIds.includes(videoId)
+      ? hiddenIds.filter((id) => id !== videoId)
+      : [...hiddenIds, videoId];
+    setHiddenIds(newHidden);
+    await fetch("/api/youtube-feed", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hiddenVideoIds: newHidden }),
+    });
+  };
+
+  const visibleShorts = isAdmin ? shorts : shorts.filter((v) => !hiddenIds.includes(v.videoId));
+
+  if (visibleShorts.length === 0) return null;
 
   return (
     <>
@@ -356,14 +424,13 @@ export function YouTubeShortsCarousel() {
           תכנים קצרים
         </h2>
         <ScrollStrip>
-          {shorts.map((v) => (
+          {visibleShorts.map((v) => {
+            const isHidden = hiddenIds.includes(v.videoId);
+            return (
             <div
               key={v.videoId}
-              onClick={() => setActiveShort(v)}
+              onClick={() => { if (!isHidden || !isAdmin) setActiveShort(v); }}
               style={{
-                // 6 full cards + half of 7th visible
-                // Container = 100vw - 96px(padding) - 68px(sidebar) = ~1376px on 1540px screen
-                // (1376 - 6*12gap) / 6.5 ≈ 200px
                 flex: "0 0 calc((100vw - 96px - 68px - 72px) / 6.5)",
                 cursor: "pointer",
                 borderRadius: "4px",
@@ -371,6 +438,8 @@ export function YouTubeShortsCarousel() {
                 border: "1px solid rgba(255,255,255,0.06)",
                 background: "rgba(10,10,26,0.6)",
                 transition: "all 0.25s",
+                opacity: isHidden ? 0.35 : 1,
+                position: "relative",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
@@ -455,8 +524,32 @@ export function YouTubeShortsCarousel() {
                   </p>
                 </div>
               </div>
+              {isAdmin && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); toggleHide(v.videoId); }}
+                  title={isHidden ? "הצג סרטון" : "הסתר סרטון"}
+                  style={{
+                    position: "absolute",
+                    top: 6,
+                    left: 6,
+                    zIndex: 5,
+                    background: isHidden ? "rgba(255,80,80,0.8)" : "rgba(0,0,0,0.6)",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: 28,
+                    height: 28,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                  }}
+                >
+                  {isHidden ? <Eye size={14} color="white" /> : <EyeOff size={14} color="white" />}
+                </button>
+              )}
             </div>
-          ))}
+            );
+          })}
         </ScrollStrip>
       </div>
 

@@ -17,6 +17,7 @@ export default async function LessonViewPage({
   // Serialize course for client component
   const serializedCourse = {
     id: course.id,
+    slug: course.slug || course.id,
     title: course.title,
     description: course.description || "",
     chapters: course.chapters.map((ch) => ({
@@ -25,6 +26,7 @@ export default async function LessonViewPage({
       title: ch.title,
       lessons: ch.lessons.map((l) => ({
         id: l.id,
+        slug: l.slug || l.id,
         number: l.displayOrder + 1,
         title: l.title,
         videoUrl: l.videoUrl || "",
@@ -40,13 +42,13 @@ export default async function LessonViewPage({
     })),
   };
 
-  // Verify the lesson exists
+  // Verify the lesson exists (support both UUID and slug)
   const allLessons = serializedCourse.chapters.flatMap((ch) => ch.lessons);
-  const lessonExists = allLessons.some((l) => l.id === lessonId);
+  const matchedLesson = allLessons.find((l) => l.id === lessonId || l.slug === lessonId);
 
-  if (!lessonExists) {
+  if (!matchedLesson) {
     notFound();
   }
 
-  return <LessonViewClient course={serializedCourse} lessonId={lessonId} />;
+  return <LessonViewClient course={serializedCourse} lessonId={matchedLesson.id} />;
 }

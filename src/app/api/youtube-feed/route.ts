@@ -1,4 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { adminSettings } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 
 interface VideoItem {
   videoId: string;
@@ -78,20 +81,53 @@ async function fetchAllUploads(): Promise<{ videos: VideoItem[]; shorts: VideoIt
   return { videos, shorts };
 }
 
+async function getHiddenVideoIds(): Promise<string[]> {
+  try {
+    const result = await db.select().from(adminSettings).where(eq(adminSettings.key, "hidden_youtube_videos"));
+    if (result.length > 0 && Array.isArray(result[0].value)) {
+      return result[0].value as string[];
+    }
+  } catch {}
+  return [];
+}
+
 export async function GET() {
   try {
     if (cache && Date.now() - cache.timestamp < CACHE_DURATION) {
-      return NextResponse.json(cache.data);
+      const hiddenVideoIds = await getHiddenVideoIds();
+      return NextResponse.json({ ...cache.data, hiddenVideoIds });
     }
 
     const result = await fetchAllUploads();
     cache = { data: result, timestamp: Date.now() };
-    return NextResponse.json(result);
+    const hiddenVideoIds = await getHiddenVideoIds();
+    return NextResponse.json({ ...result, hiddenVideoIds });
   } catch (error) {
     console.error("YouTube feed error:", error);
     return NextResponse.json(
       { error: "Failed to fetch YouTube feed" },
       { status: 500 }
     );
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const { hiddenVideoIds } = await req.json();
+    if (!Array.isArray(hiddenVideoIds)) {
+      return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+    }
+
+    const existing = await db.select().from(adminSettings).where(eq(adminSettings.key, "hidden_youtube_videos"));
+    if (existing.length > 0) {
+      await db.update(adminSettings).set({ value: hiddenVideoIds, updatedAt: new Date() }).where(eq(adminSettings.key, "hidden_youtube_videos"));
+    } else {
+      await db.insert(adminSettings).values({ key: "hidden_youtube_videos", value: hiddenVideoIds });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("YouTube hide error:", error);
+    return NextResponse.json({ error: "Failed to update" }, { status: 500 });
   }
 }

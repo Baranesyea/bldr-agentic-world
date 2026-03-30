@@ -34,12 +34,13 @@ function ResolvedImg({ src, alt, style }: { src: string; alt: string; style: Rea
 
 interface Course {
   id: string;
+  slug?: string;
   title: string;
   description: string;
   status: string;
   featured: boolean;
   thumbnailUrl: string;
-  chapters: { id: string; title: string; lessons: { id: string; title: string; videoUrl: string; duration: string }[] }[];
+  chapters: { id: string; title: string; lessons: { id: string; slug?: string; title: string; videoUrl: string; duration: string }[] }[];
 }
 
 interface DashboardClientProps {
@@ -174,7 +175,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
             </div>
             <div style={{ display: "flex", gap: "12px" }}>
               <Link
-                href={firstLesson ? `/courses/${featuredCourse.id}/lessons/${firstLesson.id}` : `/courses/${featuredCourse.id}`}
+                href={firstLesson ? `/courses/${featuredCourse.slug || featuredCourse.id}/lessons/${firstLesson.slug || firstLesson.id}` : `/courses/${featuredCourse.slug || featuredCourse.id}`}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: "8px",
                   background: "#0000FF", color: "white", padding: "12px 28px", borderRadius: "4px",
@@ -185,7 +186,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                 <PlayIcon size={16} /> התחל לצפות
               </Link>
               <Link
-                href={`/courses/${featuredCourse.id}`}
+                href={`/courses/${featuredCourse.slug || featuredCourse.id}`}
                 style={{
                   background: "rgba(255,255,255,0.08)", color: "#f0f0f5", padding: "12px 28px",
                   borderRadius: "4px", fontWeight: 600, fontSize: "15px",
@@ -226,7 +227,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
             {nonFeaturedActive.map((c, idx) => {
               const lessonCount = c.chapters?.reduce((s, ch) => s + ch.lessons.length, 0) || 0;
               return (
-                <Link key={c.id} href={`/courses/${c.id}`} style={{ textDecoration: "none" }}>
+                <Link key={c.id} href={`/courses/${c.slug || c.id}`} style={{ textDecoration: "none" }}>
                   <div className="course-card-wrap" style={{
                     position: "relative",
                     borderRadius: 4,

@@ -57,6 +57,7 @@ export const users = pgTable("users", {
 export const courses = pgTable("courses", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: varchar("title", { length: 500 }).notNull(),
+  slug: varchar("slug", { length: 500 }).unique(),
   description: text("description"),
   thumbnail: text("thumbnail"),
   status: courseStatusEnum("status").default("draft").notNull(),
@@ -80,6 +81,7 @@ export const lessons = pgTable("lessons", {
   id: uuid("id").primaryKey().defaultRandom(),
   chapterId: uuid("chapter_id").notNull().references(() => chapters.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 500 }).notNull(),
+  slug: varchar("slug", { length: 500 }),
   description: text("description"),
   videoUrl: text("video_url"),
   videoProvider: videoProviderEnum("video_provider"),

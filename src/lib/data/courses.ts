@@ -1,6 +1,12 @@
 import { db } from "@/lib/db";
 import { courses, chapters, lessons } from "@/lib/schema";
-import { eq, asc, inArray } from "drizzle-orm";
+import { eq, asc, inArray, or } from "drizzle-orm";
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUUID(value: string): boolean {
+  return UUID_REGEX.test(value);
+}
 
 export async function getCourses() {
   const allCourses = await db
@@ -41,10 +47,14 @@ export async function getCourses() {
 }
 
 export async function getCourseById(id: string) {
+  const condition = isUUID(id)
+    ? or(eq(courses.id, id), eq(courses.slug, id))
+    : eq(courses.slug, id);
+
   const [course] = await db
     .select()
     .from(courses)
-    .where(eq(courses.id, id));
+    .where(condition!);
 
   if (!course) return null;
 
@@ -80,6 +90,15 @@ export async function getCourseById(id: string) {
       lessons: lessonMap.get(ch.id) || [],
     })),
   };
+}
+
+export function generateSlug(title: string): string {
+  return title
+    .trim()
+    .replace(/[#@!?.,;:'"()\[\]{}<>\/\\|=+*&^%$~`]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 export async function createCourse(data: {
