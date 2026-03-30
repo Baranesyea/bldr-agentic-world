@@ -92,7 +92,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       >
         <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
       </div>
-      <main style={{ marginRight: `${collapsedWidth}px`, minHeight: "100vh", paddingBottom: "64px" }}>
+      <main style={{ marginRight: `${sidebarWidth}px`, minHeight: "100vh", paddingBottom: "64px", transition: "margin-right 0.3s" }}>
         <TrialBanner />
         <TouristGuard>{children}</TouristGuard>
       </main>
