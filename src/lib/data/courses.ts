@@ -61,7 +61,7 @@ export async function getCourseById(id: string) {
   const courseChapters = await db
     .select()
     .from(chapters)
-    .where(eq(chapters.courseId, id))
+    .where(eq(chapters.courseId, course.id))
     .orderBy(asc(chapters.displayOrder));
 
   const chapterIds = courseChapters.map((ch) => ch.id);
