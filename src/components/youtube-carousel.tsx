@@ -220,12 +220,26 @@ export function YouTubeCarousel() {
   };
 
   const visibleVideos = isAdmin ? videos : videos.filter((v) => !hiddenIds.includes(v.videoId));
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (visibleVideos.length > 0 && !loaded) setLoaded(true);
+  }, [visibleVideos.length, loaded]);
 
   if (visibleVideos.length === 0) return null;
 
   return (
     <>
-      <div style={{ padding: "0 48px 8px" }}>
+      <div style={{
+        padding: "0 48px 8px",
+        animation: loaded ? "ytSlideIn 0.4s ease-out both" : "none",
+      }}>
+      <style>{`
+        @keyframes ytSlideIn {
+          from { opacity: 0; transform: translateY(-20px); max-height: 0; margin-bottom: 0; }
+          to { opacity: 1; transform: translateY(0); max-height: 500px; margin-bottom: 0; }
+        }
+      `}</style>
         <h2
           style={{
             fontSize: "18px",
