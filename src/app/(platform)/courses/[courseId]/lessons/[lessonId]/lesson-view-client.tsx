@@ -123,6 +123,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   const [fadeIn, setFadeIn] = useState(true);
   const [autoPlayNext, setAutoPlayNext] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
 
   // Open current chapter when it's known
   useEffect(() => {
@@ -148,6 +149,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
     } catch {}
     setVideoTimer(0);
     setAutoCompleted(false);
+    setNavigatingTo(null);
     setShowToast(false);
     setShowCountdown(false);
     setCountdown(5);
@@ -450,11 +452,13 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                     <div style={{ padding: "0 4px 4px" }}>
                       {chapter.lessons.map((lesson) => {
                         const isCurrent = lesson.id === currentLesson.id;
+                        const isNavigating = navigatingTo === lesson.id;
                         const isDone = completedLessons.includes(lesson.id);
                         return (
                           <Link
                             key={lesson.id}
                             href={`/courses/${courseId}/lessons/${lesson.id}`}
+                            onClick={() => { if (!isCurrent) setNavigatingTo(lesson.id); }}
                             style={{
                               display: "flex",
                               alignItems: "center",
@@ -462,9 +466,10 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                               padding: "8px 10px",
                               borderRadius: "4px",
                               textDecoration: "none",
-                              background: isCurrent ? "rgba(0,0,255,0.15)" : "transparent",
-                              borderRight: isCurrent ? "3px solid #0000FF" : "3px solid transparent",
-                              transition: "background 0.15s",
+                              background: isNavigating ? "rgba(0,0,255,0.25)" : isCurrent ? "rgba(0,0,255,0.15)" : "transparent",
+                              borderRight: isNavigating || isCurrent ? "3px solid #0000FF" : "3px solid transparent",
+                              opacity: navigatingTo && !isNavigating && !isCurrent ? 0.4 : 1,
+                              transition: "all 0.15s",
                             }}
                           >
                             <div style={{
@@ -489,12 +494,12 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                             <div style={{ flex: 1, overflow: "hidden" }}>
                               <p style={{
                                 fontSize: "12px",
-                                fontWeight: isCurrent ? 600 : 400,
-                                color: isCurrent ? "#f0f0f5" : isDone ? "rgba(240,240,245,0.4)" : "rgba(240,240,245,0.7)",
+                                fontWeight: isCurrent || isNavigating ? 600 : 400,
+                                color: isNavigating ? "#f0f0f5" : isCurrent ? "#f0f0f5" : isDone ? "rgba(240,240,245,0.4)" : "rgba(240,240,245,0.7)",
                                 whiteSpace: "nowrap",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
-                              }}>{lesson.title}</p>
+                              }}>{lesson.title}{isNavigating ? " ..." : ""}</p>
                             </div>
 
                             {lesson.duration && !/^[—–\-]+$/.test(lesson.duration.trim()) && lesson.duration.trim() !== "" && (
