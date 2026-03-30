@@ -101,7 +101,7 @@ export default function NotebookPage() {
           <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.3)", marginBottom: "20px" }}>
             הוסף הערות מתוך שיעורים ותראה אותן כאן
           </p>
-          <Link href="/courses" style={{ color: "#3333FF", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
+          <Link href="/courses" style={{ color: "#f0f0f5", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
             עבור לקורסים →
           </Link>
         </div>
@@ -126,7 +126,7 @@ export default function NotebookPage() {
                     </Link>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
                       {note.videoTimestamp && (
-                        <span style={{ fontSize: "11px", fontWeight: 600, color: "#3333FF", background: "rgba(0,0,255,0.1)", padding: "2px 8px", borderRadius: "6px", fontFamily: "var(--font-heading-en)" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 600, color: "#f0f0f5", background: "rgba(255,255,255,0.08)", padding: "2px 8px", borderRadius: "6px", fontFamily: "var(--font-merriweather)" }}>
                           {note.videoTimestamp}
                         </span>
                       )}
@@ -137,16 +137,16 @@ export default function NotebookPage() {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     <Link
-                      href={`/courses/${note.courseId}/lessons/${note.lessonId}`}
+                      href={`/courses/${note.courseId}/lessons/${note.lessonId}${note.videoTimestamp ? `?t=${note.videoTimestamp}` : ""}`}
                       style={{
                         display: "inline-flex", alignItems: "center", gap: "4px",
-                        fontSize: "11px", color: "#3333FF", textDecoration: "none",
+                        fontSize: "11px", color: "#f0f0f5", textDecoration: "none",
                         padding: "4px 10px", borderRadius: "6px",
-                        border: "1px solid rgba(0,0,255,0.2)", background: "rgba(0,0,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.06)",
                         transition: "background 0.2s",
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = "rgba(0,0,255,0.15)"}
-                      onMouseLeave={(e) => e.currentTarget.style.background = "rgba(0,0,255,0.06)"}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.12)"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
                     >
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                       קח אותי לשם

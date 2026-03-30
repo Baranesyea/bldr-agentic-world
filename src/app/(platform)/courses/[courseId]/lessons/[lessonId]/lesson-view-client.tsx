@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { LessonDiscussion } from "@/components/course/lesson-discussion";
 import {
   CheckIcon,
@@ -89,6 +89,7 @@ interface LessonNote {
 
 export default function LessonViewClient({ course, lessonId }: { course: Course; lessonId: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const courseId = course.id;
 
   // Flatten all lessons for navigation
@@ -226,7 +227,29 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
         iframe.contentWindow?.postMessage('{"method":"addEventListener","value":"play"}', "*");
         iframe.contentWindow?.postMessage('{"method":"addEventListener","value":"pause"}', "*");
         iframe.contentWindow?.postMessage('{"method":"addEventListener","value":"playProgress"}', "*");
-      }, 1000);
+
+        // Seek to timestamp from URL ?t=MM:SS or ?t=HH:MM:SS
+        const tParam = searchParams.get("t");
+        if (tParam) {
+          const parts = tParam.split(":").map(Number);
+          const seconds = parts.length === 3 ? parts[0]*3600+parts[1]*60+parts[2] : parts.length === 2 ? parts[0]*60+parts[1] : 0;
+          if (seconds > 0) {
+            iframe.contentWindow?.postMessage(`{"method":"setCurrentTime","value":${seconds}}`, "*");
+          }
+        }
+      }, 1500);
+    }
+    if (iframe?.contentWindow && iframe.src?.includes("youtube")) {
+      setTimeout(() => {
+        const tParam = searchParams.get("t");
+        if (tParam) {
+          const parts = tParam.split(":").map(Number);
+          const seconds = parts.length === 3 ? parts[0]*3600+parts[1]*60+parts[2] : parts.length === 2 ? parts[0]*60+parts[1] : 0;
+          if (seconds > 0) {
+            iframe.contentWindow?.postMessage(JSON.stringify({event:"command",func:"seekTo",args:[seconds,true]}), "*");
+          }
+        }
+      }, 1500);
     }
 
     return () => window.removeEventListener("message", handleMessage);

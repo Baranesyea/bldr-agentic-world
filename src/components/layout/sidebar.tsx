@@ -86,6 +86,19 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
   const collapsed = collapsedProp ?? internalCollapsed;
   const toggleCollapse = onToggle ?? (() => setInternalCollapsed(!internalCollapsed));
   const width = collapsed ? 68 : 240;
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Close sidebar when clicking outside
+  useEffect(() => {
+    if (collapsed) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
+        setInternalCollapsed(true);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [collapsed]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [viewAsUser, setViewAsUser] = useState(false);
@@ -274,7 +287,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       }
     `}</style>
     {loggingOut && <LoadingSpinner text="מתנתק..." />}
-    <aside style={{
+    <aside ref={sidebarRef} style={{
       height: "100vh",
       width: "100%",
       display: "flex",
