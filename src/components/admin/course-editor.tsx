@@ -370,28 +370,60 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [mediaItems, setMediaItems] = useState<{ id: string; label: string; key: string; src: string }[]>([]);
 
-  // Load existing course
+  // Load existing course from DB via API
   useEffect(() => {
     if (!courseId) {
       setThumbStyle(getDefaultThumbStyle());
       return;
     }
-    try {
-      const stored = localStorage.getItem("bldr_courses");
-      if (!stored) return;
-      const courses: Course[] = JSON.parse(stored);
-      const found = courses.find((c) => c.id === courseId);
-      if (!found) return;
-      existingIdRef.current = found.id;
-      createdAtRef.current = found.createdAt;
-      setTitle(found.title);
-      setDescription(found.description);
-      setStatus(found.status);
-      setFeatured(found.featured || false);
-      setThumbnailUrl(found.thumbnailUrl);
-      setChapters(found.chapters.length > 0 ? found.chapters : [makeChapter(1)]);
-    } catch {}
-    setThumbStyle(getDefaultThumbStyle());
+    (async () => {
+      try {
+        const res = await fetch("/api/courses");
+        if (!res.ok) return;
+        const { courses } = await res.json();
+        const found = courses.find((c: { id: string }) => c.id === courseId);
+        if (!found) return;
+        existingIdRef.current = found.id;
+        createdAtRef.current = found.createdAt || new Date().toISOString();
+        setTitle(found.title || "");
+        setDescription(found.description || "");
+        // Map DB status to editor status
+        const statusMap: Record<string, "draft" | "active" | "coming_soon"> = {
+          draft: "draft",
+          active: "active",
+          archive: "coming_soon",
+        };
+        setStatus(statusMap[found.status] || "draft");
+        setFeatured(false);
+        setThumbnailUrl(found.thumbnail || "");
+        if (found.chapters && found.chapters.length > 0) {
+          setChapters(
+            found.chapters.map((ch: { id: string; title: string; displayOrder: number; lessons: Array<{ id: string; title: string; description: string; videoUrl: string; duration: number; displayOrder: number; hasAssignment: boolean; attachments: string[] }> }, ci: number) => ({
+              id: ch.id || crypto.randomUUID(),
+              number: ci + 1,
+              title: ch.title || "",
+              lessons: (ch.lessons || []).map((l: { id: string; title: string; description: string; videoUrl: string; duration: number; displayOrder: number; hasAssignment: boolean; attachments: string[] }, li: number) => ({
+                id: l.id || crypto.randomUUID(),
+                number: li + 1,
+                title: l.title || "",
+                videoUrl: l.videoUrl || "",
+                duration: l.duration ? `${Math.floor(l.duration / 60)}:${String(l.duration % 60).padStart(2, "0")}` : "—",
+                description: l.description || "",
+                skills: [],
+                hasAssignment: l.hasAssignment || false,
+                assignmentText: "",
+                attachments: (l.attachments as string[]) || [],
+                notes: "",
+                thumbnailUrl: "",
+              })),
+            }))
+          );
+        } else {
+          setChapters([makeChapter(1)]);
+        }
+      } catch {}
+      setThumbStyle(getDefaultThumbStyle());
+    })();
   }, [courseId]);
 
   // Resolve idb:// thumbnail URLs for display
@@ -602,64 +634,81 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
   }, [title, description, thumbStyle]);
 
   // ── Save ──────────────────────────────────────────────────────
-  const saveCourse = (publishStatus?: "active") => {
-    const course: Course = {
-      id: existingIdRef.current || crypto.randomUUID(),
-      title,
-      description,
-      status: publishStatus || status,
-      featured,
-      thumbnailUrl,
-      createdAt: createdAtRef.current,
-      updatedAt: new Date().toISOString(),
-      chapters,
+  const saveCourse = async (publishStatus?: "active") => {
+    // Map editor status to DB status
+    const editorStatus = publishStatus || status;
+    const dbStatusMap: Record<string, "draft" | "active" | "archive"> = {
+      draft: "draft",
+      active: "active",
+      coming_soon: "archive",
     };
+    const dbStatus = dbStatusMap[editorStatus] || "draft";
 
-    const stored = localStorage.getItem("bldr_courses");
-    let courses: Course[] = stored ? JSON.parse(stored) : [];
-
-    // If this course is featured, unfeatured all others
-    if (featured) {
-      courses = courses.map((c) => ({ ...c, featured: false }));
-    }
-
-    if (existingIdRef.current) {
-      courses = courses.map((c) => (c.id === existingIdRef.current ? course : c));
-    } else {
-      existingIdRef.current = course.id;
-      courses.push(course);
-    }
+    const chaptersPayload = chapters.map((ch) => ({
+      title: ch.title,
+      lessons: ch.lessons.map((l) => ({
+        title: l.title,
+        description: l.description || "",
+        videoUrl: l.videoUrl || "",
+        duration: parseDuration(l.duration),
+        hasAssignment: l.hasAssignment || false,
+        attachments: l.attachments || [],
+      })),
+    }));
 
     try {
-      localStorage.setItem("bldr_courses", JSON.stringify(courses));
-    } catch (e) {
-      // localStorage quota exceeded — try to save without thumbnails
-      const stripped = courses.map((c) => ({
-        ...c,
-        thumbnailUrl: c.thumbnailUrl?.startsWith("data:") ? "" : c.thumbnailUrl,
-        chapters: c.chapters.map((ch) => ({
-          ...ch,
-          lessons: ch.lessons.map((l) => ({
-            ...l,
-            thumbnailUrl: l.thumbnailUrl?.startsWith("data:") ? "" : (l.thumbnailUrl || ""),
-          })),
-        })),
-      }));
-      try {
-        localStorage.setItem("bldr_courses", JSON.stringify(stripped));
-        setThumbError("האחסון המקומי מלא — התמונות הממוזערות הוסרו. שקול להשתמש בכתובות URL חיצוניות.");
-      } catch {
-        setThumbError("האחסון המקומי מלא לחלוטין. נסה למחוק קורסים ישנים מעמוד ניהול הקורסים.");
+      let res: Response;
+      if (existingIdRef.current) {
+        // Update existing course
+        res = await fetch("/api/courses", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: existingIdRef.current,
+            title,
+            description,
+            status: dbStatus,
+            thumbnail: thumbnailUrl,
+            chapters: chaptersPayload,
+          }),
+        });
+      } else {
+        // Create new course
+        res = await fetch("/api/courses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            description,
+            status: dbStatus,
+            thumbnail: thumbnailUrl,
+            chapters: chaptersPayload,
+          }),
+        });
+      }
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setThumbError((err as { error?: string }).error || "שגיאה בשמירה");
         return;
       }
-    }
-    setLastSaved(new Date().toLocaleTimeString());
-    if (publishStatus) {
-      setStatus(publishStatus);
-      router.push("/admin/courses");
-    } else {
-      setSaveFlash(true);
-      setTimeout(() => setSaveFlash(false), 2000);
+
+      const { course } = await res.json();
+      if (course?.id) {
+        existingIdRef.current = course.id;
+      }
+
+      setLastSaved(new Date().toLocaleTimeString());
+      if (publishStatus) {
+        setStatus(publishStatus);
+        router.push("/admin/courses");
+      } else {
+        setSaveFlash(true);
+        setTimeout(() => setSaveFlash(false), 2000);
+      }
+    } catch (e) {
+      console.error("Failed to save course:", e);
+      setThumbError("שגיאת רשת. נסה שוב.");
     }
   };
 

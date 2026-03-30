@@ -276,6 +276,92 @@ export const notifications = pgTable("notifications", {
 });
 
 // ============================================
+// Case Studies
+// ============================================
+export const caseStudies = pgTable("case_studies", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: varchar("title", { length: 500 }).notNull(),
+  description: text("description"),
+  thumbnail: text("thumbnail"),
+  category: varchar("category", { length: 255 }),
+  content: text("content"),
+  tags: jsonb("tags").default([]),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ============================================
+// Knowledge Base
+// ============================================
+export const knowledgeBase = pgTable("knowledge_base", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  category: varchar("category", { length: 255 }),
+  tags: jsonb("tags").default([]),
+  source: text("source"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ============================================
+// News
+// ============================================
+export const news = pgTable("news", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: varchar("title", { length: 500 }).notNull(),
+  body: text("body"),
+  imageUrl: text("image_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ============================================
+// Admin Settings
+// ============================================
+export const adminSettings = pgTable("admin_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  key: varchar("key", { length: 255 }).notNull().unique(),
+  value: jsonb("value"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ============================================
+// Share Links
+// ============================================
+export const shareLinks = pgTable("share_links", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  token: varchar("token", { length: 255 }).notNull(),
+  courseId: uuid("course_id"),
+  lessonId: uuid("lesson_id"),
+  type: varchar("type", { length: 100 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ============================================
+// Feedback
+// ============================================
+export const feedback = pgTable("feedback", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userName: varchar("user_name", { length: 255 }),
+  userEmail: varchar("user_email", { length: 255 }),
+  type: varchar("type", { length: 100 }),
+  message: text("message"),
+  rating: integer("rating"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ============================================
+// Media Registry
+// ============================================
+export const mediaRegistry = pgTable("media_registry", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  label: varchar("label", { length: 500 }),
+  key: text("key").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ============================================
 // Theme Settings
 // ============================================
 export const themeSettings = pgTable("theme_settings", {
