@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8">
+<title>ייצוא מידע - BLDR</title>
+<style>
+  body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #1a1a2e; color: #eee; }
+  h1 { color: #7c3aed; }
+  .step { background: #16213e; padding: 20px; border-radius: 12px; margin: 16px 0; }
+  .step h3 { margin-top: 0; color: #a78bfa; }
+  a.bookmarklet {
+    display: inline-block; padding: 16px 32px; background: #2563eb; color: white;
+    border-radius: 12px; text-decoration: none; font-size: 20px; font-weight: bold;
+    cursor: grab;
+  }
+  a.bookmarklet:hover { background: #1d4ed8; }
+  code { background: #0f3460; padding: 2px 8px; border-radius: 4px; direction: ltr; display: inline-block; }
+</style>
+</head>
+<body>
+<h1>ייצוא מידע מהדפדפן</h1>
+
+<div class="step">
+  <h3>שלב 1</h3>
+  <p>גרור את הכפתור הזה לסרגל הסימניות שלך:</p>
+  <p style="text-align:center">
+    <a class="bookmarklet" href="javascript:void((async()=>{const API='http://localhost:3007/api/export-data';let c=0,errs=0;const log=m=>{document.title=m;console.log(m)};log('מייצא localStorage...');for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);let v;try{v=JSON.parse(localStorage.getItem(k))}catch{v=localStorage.getItem(k)}try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:v,type:'localStorage'})});const j=await r.json();if(j.ok)c++;else{errs++;log('err: '+k)}}catch(e){errs++;log('err: '+k+' '+e.message)}}log('מייצא IndexedDB...');try{const dbs=await indexedDB.databases();for(const d of dbs){if(!d.name)continue;const db=await new Promise((res,rej)=>{const r=indexedDB.open(d.name);r.onsuccess=()=>res(r.result);r.onerror=rej});for(const s of db.objectStoreNames){const items=await new Promise((res,rej)=>{const tx=db.transaction(s,'readonly');const r=tx.objectStore(s).getAll();r.onsuccess=()=>res(r.result);r.onerror=rej});const k=d.name+'__'+s;try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:items,type:'indexedDB'})});const j=await r.json();if(j.ok)c++;else errs++}catch{errs++}}db.close()}}catch(e){log('IDB err: '+e.message)}alert('ייצוא הושלם! '+c+' פריטים יוצאו.'+((errs>0)?(' שגיאות: '+errs):''))})())">📦 ייצא מידע BLDR</a>
+  </p>
+</div>
+
+<div class="step">
+  <h3>שלב 2</h3>
+  <p>עבור לאתר <code>app.bldr.co.il</code> בדפדפן הרגיל שלך</p>
+</div>
+
+<div class="step">
+  <h3>שלב 3</h3>
+  <p>לחץ על הסימנייה שגררת - "📦 ייצא מידע BLDR"</p>
+  <p>תקבל התראה כשהייצוא יסתיים</p>
+</div>
+
+</body>
+</html>

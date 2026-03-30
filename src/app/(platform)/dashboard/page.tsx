@@ -1,6 +1,8 @@
 import { getCourses } from "@/lib/data/courses";
 import DashboardClient from "./dashboard-client";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const courses = await getCourses();
 

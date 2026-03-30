@@ -1,4 +1,5 @@
 import { getForumQuestions } from "@/lib/data/forum";
+export const dynamic = "force-dynamic";
 import { getCourses } from "@/lib/data/courses";
 import QAPageClient from "./qa-client";
 

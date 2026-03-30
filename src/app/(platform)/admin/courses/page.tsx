@@ -1,4 +1,5 @@
 import { getCourses } from "@/lib/data/courses";
+export const dynamic = "force-dynamic";
 import AdminCoursesClient from "./admin-courses-client";
 
 export default async function CourseManagerPage() {

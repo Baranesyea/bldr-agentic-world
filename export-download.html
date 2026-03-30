@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8">
+<title>ייצוא מידע - BLDR</title>
+<style>
+  body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #1a1a2e; color: #eee; }
+  h1 { color: #7c3aed; }
+  .step { background: #16213e; padding: 20px; border-radius: 12px; margin: 16px 0; }
+  .step h3 { margin-top: 0; color: #a78bfa; }
+  a.bookmarklet {
+    display: inline-block; padding: 16px 32px; background: #2563eb; color: white;
+    border-radius: 12px; text-decoration: none; font-size: 20px; font-weight: bold;
+    cursor: grab;
+  }
+  a.bookmarklet:hover { background: #1d4ed8; }
+</style>
+</head>
+<body>
+<h1>ייצוא מידע מהדפדפן</h1>
+
+<div class="step">
+  <h3>שלב 1</h3>
+  <p>גרור את הכפתור הזה לסרגל הסימניות שלך:</p>
+  <p style="text-align:center">
+    <a class="bookmarklet" href="javascript:void((async()=>{document.title='מייצא...';const d={localStorage:{},indexedDB:{}};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);try{d.localStorage[k]=JSON.parse(localStorage.getItem(k))}catch{d.localStorage[k]=localStorage.getItem(k)}}try{const dbs=await indexedDB.databases();for(const info of dbs){if(!info.name)continue;const db=await new Promise((res,rej)=>{const r=indexedDB.open(info.name);r.onsuccess=()=>res(r.result);r.onerror=rej});for(const s of db.objectStoreNames){const items=await new Promise((res,rej)=>{const tx=db.transaction(s,'readonly');const r=tx.objectStore(s).getAll();r.onsuccess=()=>res(r.result);r.onerror=rej});d.indexedDB[info.name+'__'+s]=items}db.close()}}catch(e){d._idbError=e.message}const b=new Blob([JSON.stringify(d)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='bldr-export.json';a.click();document.title='ייצוא הושלם!';alert('הקובץ הורד! '+Object.keys(d.localStorage).length+' מפתחות localStorage, '+Object.keys(d.indexedDB).length+' טבלאות IndexedDB')})())">📦 ייצא מידע BLDR</a>
+  </p>
+</div>
+
+<div class="step">
+  <h3>שלב 2</h3>
+  <p>עבור לאתר app.bldr.co.il בדפדפן הרגיל שלך</p>
+</div>
+
+<div class="step">
+  <h3>שלב 3</h3>
+  <p>לחץ על הסימנייה - הקובץ יורד אוטומטית</p>
+</div>
+
+</body>
+</html>

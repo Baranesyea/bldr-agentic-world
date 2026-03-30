@@ -1,4 +1,5 @@
 import { getCalendarEvents } from "@/lib/data/calendar";
+export const dynamic = "force-dynamic";
 import CalendarClient from "./calendar-client";
 
 export default async function CalendarPage() {
