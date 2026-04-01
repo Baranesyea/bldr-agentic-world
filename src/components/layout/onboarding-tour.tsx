@@ -287,41 +287,39 @@ export function OnboardingTour() {
     });
   }, []);
 
-  const updateSpotlight = useCallback((stepIndex: number) => {
+  const updateSpotlight = useCallback((stepIndex: number, immediate = false) => {
     const step = steps[stepIndex];
     if (!step) return;
-    const isSidebarItem = step.targetSelector.includes("data-nav");
     const tryFind = (attempts = 0) => {
       const el = document.querySelector(step.targetSelector);
       if (el) {
         const rect = el.getBoundingClientRect();
-        // Check if element is actually visible (not off-screen or zero-size)
-        const isVisible = rect.width > 0 && rect.height > 0 && rect.right > 0;
-        // For sidebar items in RTL layout, verify element is on the right side of the screen
-        const isInPosition = !isSidebarItem || rect.left > (window.innerWidth * 0.5);
-        if (isVisible && isInPosition) {
+        if (rect.width > 0 && rect.height > 0) {
           setSpotlightRect(rect);
-        } else if (attempts < 20) {
-          setTimeout(() => tryFind(attempts + 1), 300);
+        } else if (attempts < 10) {
+          setTimeout(() => tryFind(attempts + 1), 100);
         } else {
           setSpotlightRect(rect);
         }
-      } else if (attempts < 20) {
-        setTimeout(() => tryFind(attempts + 1), 300);
+      } else if (attempts < 10) {
+        setTimeout(() => tryFind(attempts + 1), 100);
       } else {
         setSpotlightRect(null);
       }
     };
-    // Give sidebar time to expand before first check
-    setTimeout(() => tryFind(), 500);
+    if (immediate) {
+      tryFind();
+    } else {
+      setTimeout(() => tryFind(), 500);
+    }
   }, [steps]);
 
   // Update spotlight on step change and window resize/scroll
   useEffect(() => {
     if (!active) return;
-    updateSpotlight(currentStep);
+    updateSpotlight(currentStep, true);
 
-    const handleUpdate = () => updateSpotlight(currentStep);
+    const handleUpdate = () => updateSpotlight(currentStep, true);
     window.addEventListener("resize", handleUpdate);
     window.addEventListener("scroll", handleUpdate, true);
 
