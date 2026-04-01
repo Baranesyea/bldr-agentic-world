@@ -944,7 +944,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
               transition: "width 0.3s",
             }}
           >
-            <ChevronDownIcon size={14} style={{ transform: notesCollapsed ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.2s" }} />
+            <span style={{ transform: notesCollapsed ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.2s", display: "flex" }}><ChevronDownIcon size={14} /></span>
           </button>
           {!notesCollapsed && (
           <>
