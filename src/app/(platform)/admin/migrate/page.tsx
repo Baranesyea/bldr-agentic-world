@@ -179,7 +179,7 @@ export default function MigratePage() {
       <h1 style={{ fontSize: 28, fontWeight: 700, color: "#f0f0f5", marginBottom: 8 }}>
         ייצוא וייבוא מידע
       </h1>
-      <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 14, marginBottom: 32 }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", fontSize: 14, marginBottom: 32 }}>
         העבר את כל המידע מהמערכת המקומית לאתר החי — קורסים, הגדרות, תמונות והכל
       </p>
 
@@ -189,7 +189,7 @@ export default function MigratePage() {
           <h2 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f5", marginBottom: 8 }}>
             ייצוא
           </h2>
-          <p style={{ fontSize: 13, color: "rgba(240,240,245,0.4)", marginBottom: 16, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 16, lineHeight: 1.6 }}>
             מוריד קובץ JSON עם כל המידע שלך — קורסים, פרקים, שיעורים, הגדרות, תמונות ממוזערות
           </p>
           <button
@@ -210,7 +210,7 @@ export default function MigratePage() {
           <h2 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f5", marginBottom: 8 }}>
             ייבוא
           </h2>
-          <p style={{ fontSize: 13, color: "rgba(240,240,245,0.4)", marginBottom: 16, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 16, lineHeight: 1.6 }}>
             העלה קובץ שיוצא מהמערכת — כל המידע ייטען אוטומטית
           </p>
           <label style={{

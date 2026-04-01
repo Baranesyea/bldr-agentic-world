@@ -271,7 +271,7 @@ export default function KnowledgeBasePage() {
     borderRadius: "4px",
     border: "1px solid rgba(255,255,255,0.1)",
     background: "rgba(255,255,255,0.04)",
-    color: "rgba(240,240,245,0.6)",
+    color: "rgba(240,240,245,0.7)",
     fontSize: "12px",
     cursor: "pointer",
     display: "inline-flex",
@@ -285,7 +285,7 @@ export default function KnowledgeBasePage() {
     <div style={{ padding: "32px", maxWidth: "900px", margin: "0 auto" }}>
       {/* Header */}
       <h1 style={{ fontSize: "32px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>בסיס ידע</h1>
-      <p style={{ color: "rgba(240,240,245,0.5)", fontSize: "14px", marginBottom: "24px" }}>המוח של המערכת — שאלות, תשובות ומידע</p>
+      <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", marginBottom: "24px" }}>המוח של המערכת — שאלות, תשובות ומידע</p>
 
       {/* Stats */}
       <div style={{ display: "flex", gap: "16px", marginBottom: "28px", flexWrap: "wrap" }}>
@@ -295,7 +295,7 @@ export default function KnowledgeBasePage() {
           { label: "עדכון אחרון", value: lastUpdated ? formatDate(lastUpdated) : "—" },
         ].map(s => (
           <div key={s.label} style={{ padding: "14px 20px", borderRadius: "4px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", minWidth: "140px" }}>
-            <div style={{ fontSize: "12px", color: "rgba(240,240,245,0.4)", marginBottom: "4px" }}>{s.label}</div>
+            <div style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", marginBottom: "4px" }}>{s.label}</div>
             <div style={{ fontSize: "20px", fontWeight: 700, color: "#fff" }}>{s.value}</div>
           </div>
         ))}
@@ -371,7 +371,7 @@ export default function KnowledgeBasePage() {
 
       {/* Entries */}
       {filtered.length === 0 ? (
-        <div style={{ padding: "60px 20px", textAlign: "center", color: "rgba(240,240,245,0.4)", fontSize: "15px" }}>
+        <div style={{ padding: "60px 20px", textAlign: "center", color: "rgba(240,240,245,0.7)", fontSize: "15px" }}>
           {entries.length === 0
             ? "אין ערכים בבסיס הידע. התחל להוסיף שאלות ותשובות!"
             : "לא נמצאו תוצאות לחיפוש."}
@@ -411,7 +411,7 @@ export default function KnowledgeBasePage() {
                 {editing ? (
                   <textarea rows={4} value={editA} onChange={e => setEditA(e.target.value)} style={{ ...inputStyle, marginBottom: "8px" }} onClick={e => e.stopPropagation()} />
                 ) : (
-                  <div style={{ fontSize: "13px", color: "rgba(240,240,245,0.6)", lineHeight: 1.7, marginBottom: "12px", whiteSpace: "pre-wrap" }}>
+                  <div style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", lineHeight: 1.7, marginBottom: "12px", whiteSpace: "pre-wrap" }}>
                     {displayAnswer}
                     {truncated && (
                       <span style={{ color: "#0000FF", marginRight: "4px", fontWeight: 600 }}> הצג עוד</span>
@@ -447,12 +447,12 @@ export default function KnowledgeBasePage() {
                       padding: "2px 8px",
                       borderRadius: "4px",
                       background: "rgba(255,255,255,0.06)",
-                      color: "rgba(240,240,245,0.5)",
+                      color: "rgba(240,240,245,0.7)",
                       fontSize: "11px",
                     }}>{t}</span>
                   ))}
 
-                  <span style={{ color: "rgba(240,240,245,0.3)", marginRight: "auto" }}>{formatDate(entry.createdAt)}</span>
+                  <span style={{ color: "rgba(240,240,245,0.7)", marginRight: "auto" }}>{formatDate(entry.createdAt)}</span>
                 </div>
 
                 {/* Actions - show on expand */}
@@ -475,7 +475,7 @@ export default function KnowledgeBasePage() {
                         </button>
                         {confirming ? (
                           <>
-                            <span style={{ color: "rgba(240,240,245,0.5)", fontSize: "12px", alignSelf: "center" }}>בטוח?</span>
+                            <span style={{ color: "rgba(240,240,245,0.7)", fontSize: "12px", alignSelf: "center" }}>בטוח?</span>
                             <button onClick={() => handleDelete(entry.id)} style={{ ...btnSmall, color: "#FF4444", borderColor: "rgba(255,68,68,0.3)" }}>כן, מחק</button>
                             <button onClick={() => setDeleteConfirm(null)} style={btnSmall}>ביטול</button>
                           </>
@@ -505,7 +505,7 @@ export default function KnowledgeBasePage() {
         <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
           <ImportIcon size={16} /> ייבוא מרובה
         </h2>
-        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.4)", marginBottom: "12px" }}>
+        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "12px" }}>
           הדבק שאלות ותשובות בפורמט: ש: שאלה ↵ ת: תשובה (שורה ריקה בין ערכים)
         </p>
         <textarea
@@ -516,7 +516,7 @@ export default function KnowledgeBasePage() {
           style={inputStyle}
         />
         {bulkPreview.length > 0 && (
-          <div style={{ margin: "12px 0", padding: "10px 14px", borderRadius: "4px", background: "rgba(0,0,255,0.06)", border: "1px solid rgba(0,0,255,0.15)", fontSize: "13px", color: "rgba(240,240,245,0.6)" }}>
+          <div style={{ margin: "12px 0", padding: "10px 14px", borderRadius: "4px", background: "rgba(0,0,255,0.06)", border: "1px solid rgba(0,0,255,0.15)", fontSize: "13px", color: "rgba(240,240,245,0.7)" }}>
             זוהו <strong style={{ color: "#fff" }}>{bulkPreview.length}</strong> ערכים לייבוא
           </div>
         )}

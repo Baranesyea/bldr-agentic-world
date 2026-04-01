@@ -130,7 +130,7 @@ export default function AdminPage() {
       <h1 style={{ fontSize: "32px", fontWeight: 700, color: "#fff", marginBottom: "8px" }}>
         ניהול
       </h1>
-      <p style={{ color: "rgba(240,240,245,0.6)", marginBottom: "32px", fontSize: "14px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "32px", fontSize: "14px" }}>
         ניהול והגדרת הפלטפורמה.
       </p>
 
@@ -149,11 +149,11 @@ export default function AdminPage() {
               e.currentTarget.style.boxShadow = "none";
             }}
           >
-            <span style={{ display: "block", marginBottom: "12px", color: "rgba(240,240,245,0.6)" }}>{iconMap[s.href]}</span>
+            <span style={{ display: "block", marginBottom: "12px", color: "rgba(240,240,245,0.7)" }}>{iconMap[s.href]}</span>
             <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px" }}>
               {s.title}
             </h2>
-            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)", lineHeight: 1.5 }}>
+            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", lineHeight: 1.5 }}>
               {s.description}
             </p>
           </Link>
@@ -170,21 +170,21 @@ export default function AdminPage() {
           <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#f0f0f5", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ color: "#00C853", fontFamily: "var(--font-heading-en)", fontSize: "12px", background: "rgba(0,200,83,0.1)", padding: "2px 8px", borderRadius: "4px" }}>POST</span>
             <span style={{ fontFamily: "var(--font-heading-en)" }}>/api/news</span>
-            <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.4)", fontWeight: 400 }}>— הוספת חדשות</span>
+            <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", fontWeight: 400 }}>— הוספת חדשות</span>
           </h3>
-          <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)", marginBottom: "12px", lineHeight: 1.6 }}>
+          <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "12px", lineHeight: 1.6 }}>
             סוכן יכול לשלוח עדכוני חדשות למערכת. המערכת שומרת עד 10 עדכונים אחרונים.
           </p>
           <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: "4px", padding: "16px", fontFamily: "var(--font-heading-en)", fontSize: "12px", color: "rgba(240,240,245,0.7)", lineHeight: 1.8, overflowX: "auto", direction: "ltr", textAlign: "left" }}>
-            <div style={{ color: "rgba(240,240,245,0.3)" }}>{"// שליחת עדכון בודד"}</div>
+            <div style={{ color: "rgba(240,240,245,0.7)" }}>{"// שליחת עדכון בודד"}</div>
             <div><span style={{ color: "#00C853" }}>POST</span> /api/news</div>
             <div style={{ color: "#FFB300" }}>{"{"}</div>
             <div>&nbsp;&nbsp;<span style={{ color: "#3333FF" }}>&quot;title&quot;</span>: <span style={{ color: "#00C853" }}>&quot;כותרת העדכון&quot;</span>,</div>
             <div>&nbsp;&nbsp;<span style={{ color: "#3333FF" }}>&quot;description&quot;</span>: <span style={{ color: "#00C853" }}>&quot;תיאור מפורט של העדכון&quot;</span>,</div>
-            <div>&nbsp;&nbsp;<span style={{ color: "#3333FF" }}>&quot;icon&quot;</span>: <span style={{ color: "#00C853" }}>&quot;sparkles&quot;</span>, <span style={{ color: "rgba(240,240,245,0.3)" }}>// sparkles | book | rocket | layers | calendar</span></div>
-            <div>&nbsp;&nbsp;<span style={{ color: "#3333FF" }}>&quot;url&quot;</span>: <span style={{ color: "#00C853" }}>&quot;https://...&quot;</span> <span style={{ color: "rgba(240,240,245,0.3)" }}>// אופציונלי — קישור חיצוני</span></div>
+            <div>&nbsp;&nbsp;<span style={{ color: "#3333FF" }}>&quot;icon&quot;</span>: <span style={{ color: "#00C853" }}>&quot;sparkles&quot;</span>, <span style={{ color: "rgba(240,240,245,0.7)" }}>// sparkles | book | rocket | layers | calendar</span></div>
+            <div>&nbsp;&nbsp;<span style={{ color: "#3333FF" }}>&quot;url&quot;</span>: <span style={{ color: "#00C853" }}>&quot;https://...&quot;</span> <span style={{ color: "rgba(240,240,245,0.7)" }}>// אופציונלי — קישור חיצוני</span></div>
             <div style={{ color: "#FFB300" }}>{"}"}</div>
-            <div style={{ marginTop: "12px", color: "rgba(240,240,245,0.3)" }}>{"// שליחת מספר עדכונים בבת אחת"}</div>
+            <div style={{ marginTop: "12px", color: "rgba(240,240,245,0.7)" }}>{"// שליחת מספר עדכונים בבת אחת"}</div>
             <div><span style={{ color: "#00C853" }}>POST</span> /api/news</div>
             <div style={{ color: "#FFB300" }}>{"["}</div>
             <div>&nbsp;&nbsp;{"{ "}<span style={{ color: "#3333FF" }}>&quot;title&quot;</span>: ..., <span style={{ color: "#3333FF" }}>&quot;description&quot;</span>: ... {"}"},</div>
@@ -196,9 +196,9 @@ export default function AdminPage() {
             <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
               <span style={{ color: "#3333FF", fontFamily: "var(--font-heading-en)", fontSize: "12px", background: "rgba(0,0,255,0.1)", padding: "2px 8px", borderRadius: "4px" }}>GET</span>
               <span style={{ fontFamily: "var(--font-heading-en)" }}>/api/news</span>
-              <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.4)", fontWeight: 400 }}>— קריאת חדשות</span>
+              <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", fontWeight: 400 }}>— קריאת חדשות</span>
             </h3>
-            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)", lineHeight: 1.6 }}>
+            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", lineHeight: 1.6 }}>
               מחזיר את 10 העדכונים האחרונים.
             </p>
           </div>
@@ -207,7 +207,7 @@ export default function AdminPage() {
             <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
               <span style={{ color: "#FF3D00", fontFamily: "var(--font-heading-en)", fontSize: "12px", background: "rgba(255,61,0,0.1)", padding: "2px 8px", borderRadius: "4px" }}>DELETE</span>
               <span style={{ fontFamily: "var(--font-heading-en)" }}>/api/news?id=xxx</span>
-              <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.4)", fontWeight: 400 }}>— מחיקת עדכון</span>
+              <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", fontWeight: 400 }}>— מחיקת עדכון</span>
             </h3>
           </div>
         </div>

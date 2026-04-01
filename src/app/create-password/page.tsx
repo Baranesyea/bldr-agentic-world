@@ -59,7 +59,7 @@ function CreatePasswordForm() {
         }}>
           Agentic World
         </h1>
-        <p style={{ fontSize: 15, color: "rgba(240,240,245,0.6)", marginTop: 12, lineHeight: 1.7 }}>
+        <p style={{ fontSize: 15, color: "rgba(240,240,245,0.7)", marginTop: 12, lineHeight: 1.7 }}>
           צור סיסמה כדי להתחבר
         </p>
       </div>
@@ -73,22 +73,22 @@ function CreatePasswordForm() {
             {!email ? "חסר פרמטר אימייל. השתמש בקישור ממייל האישור." : "האימייל לא נמצא ברשימת הנרשמים. פנה לתמיכה."}
           </div>
         )}
-        {validEmail === null && <div style={{ textAlign: "center", padding: "20px 0", color: "rgba(240,240,245,0.5)", fontSize: 14 }}>מאמת אימייל...</div>}
+        {validEmail === null && <div style={{ textAlign: "center", padding: "20px 0", color: "rgba(240,240,245,0.7)", fontSize: 14 }}>מאמת אימייל...</div>}
         {success && <div style={{ background: "rgba(0,200,83,0.1)", border: "1px solid rgba(0,200,83,0.3)", borderRadius: 4, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#00C853" }}>{success}</div>}
         {error && <div style={{ background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.3)", borderRadius: 4, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#ff6b6b" }}>{error}</div>}
 
         {validEmail && (
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label style={{ fontSize: 13, color: "rgba(240,240,245,0.5)", marginBottom: 6, display: "block" }}>אימייל</label>
+              <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>אימייל</label>
               <input type="email" value={email} readOnly style={{ ...inputStyle("ro"), opacity: 0.6, cursor: "not-allowed" }} />
             </div>
             <div>
-              <label style={{ fontSize: 13, color: "rgba(240,240,245,0.5)", marginBottom: 6, display: "block" }}>סיסמה</label>
+              <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>סיסמה</label>
               <input type="password" placeholder="לפחות 6 תווים" value={password} onChange={(e) => setPassword(e.target.value)} onFocus={() => setFocusedInput("pw")} onBlur={() => setFocusedInput(null)} style={inputStyle("pw")} required minLength={6} />
             </div>
             <div>
-              <label style={{ fontSize: 13, color: "rgba(240,240,245,0.5)", marginBottom: 6, display: "block" }}>אימות סיסמה</label>
+              <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>אימות סיסמה</label>
               <input type="password" placeholder="הזן שוב" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onFocus={() => setFocusedInput("cpw")} onBlur={() => setFocusedInput(null)} style={inputStyle("cpw")} required minLength={6} />
             </div>
             <button type="submit" disabled={loading} onMouseEnter={() => setHoveredBtn(true)} onMouseLeave={() => setHoveredBtn(false)} style={{
@@ -104,9 +104,9 @@ function CreatePasswordForm() {
           </form>
         )}
         <div style={{ textAlign: "center", marginTop: 20 }}>
-          <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)", margin: 0 }}>
+          <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)", margin: 0 }}>
             כבר יש לך חשבון?{" "}
-            <span onClick={() => router.push("/login")} style={{ color: "#3333FF", cursor: "pointer", fontWeight: 700 }}>התחבר</span>
+            <span onClick={() => router.push("/login")} style={{ color: "#7777FF", cursor: "pointer", fontWeight: 700 }}>התחבר</span>
           </p>
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function CreatePasswordPage() {
         @keyframes fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
       <div style={{ minHeight: "100vh", background: "#050510", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
-        <Suspense fallback={<div style={{ color: "rgba(240,240,245,0.5)" }}>טוען...</div>}>
+        <Suspense fallback={<div style={{ color: "rgba(240,240,245,0.7)" }}>טוען...</div>}>
           <CreatePasswordForm />
         </Suspense>
       </div>

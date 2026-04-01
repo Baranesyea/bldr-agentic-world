@@ -45,7 +45,7 @@ const selectStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   display: "block",
   fontSize: 13,
-  color: "rgba(240,240,245,0.6)",
+  color: "rgba(240,240,245,0.7)",
   marginBottom: 8,
   fontWeight: 500,
 };
@@ -68,7 +68,7 @@ const btnSecondary: React.CSSProperties = {
   borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.04)",
-  color: "rgba(240,240,245,0.6)",
+  color: "rgba(240,240,245,0.7)",
   fontSize: 14,
   fontWeight: 500,
   cursor: "pointer",
@@ -184,11 +184,11 @@ export default function ImportCoursePage() {
     <div style={{ padding: "32px 40px", maxWidth: 960, margin: "0 auto" }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <Link href="/admin" style={{ fontSize: 13, color: "rgba(240,240,245,0.35)", textDecoration: "none" }}>
+        <Link href="/admin" style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", textDecoration: "none" }}>
           ניהול
         </Link>
-        <span style={{ color: "rgba(240,240,245,0.2)", margin: "0 8px" }}>/</span>
-        <span style={{ fontSize: 13, color: "rgba(240,240,245,0.6)" }}>ייבוא קורס</span>
+        <span style={{ color: "rgba(240,240,245,0.7)", margin: "0 8px" }}>/</span>
+        <span style={{ fontSize: 13, color: "rgba(240,240,245,0.7)" }}>ייבוא קורס</span>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
           <h1 style={{ fontSize: 28, fontWeight: 700, color: "#fff" }}>
             ייבוא קורס
@@ -224,7 +224,7 @@ export default function ImportCoursePage() {
             </a>
           </div>
         </div>
-        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)", marginTop: 4 }}>
+        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)", marginTop: 4 }}>
           העלה קובץ אקסל או CSV לייבוא תוכן קורס בכמויות
         </p>
       </div>
@@ -338,7 +338,7 @@ export default function ImportCoursePage() {
             {file ? (
               <>
                 <p style={{ color: "#fff", fontSize: 16, fontWeight: 600 }}>{file.name}</p>
-                <p style={{ color: "rgba(240,240,245,0.4)", fontSize: 13, marginTop: 4 }}>
+                <p style={{ color: "rgba(240,240,245,0.7)", fontSize: 13, marginTop: 4 }}>
                   {(file.size / 1024).toFixed(1)} KB
                 </p>
               </>
@@ -347,7 +347,7 @@ export default function ImportCoursePage() {
                 <p style={{ color: "#fff", fontSize: 16, fontWeight: 500 }}>
                   גרור ושחרר קובץ כאן
                 </p>
-                <p style={{ color: "rgba(240,240,245,0.35)", fontSize: 13, marginTop: 6 }}>
+                <p style={{ color: "rgba(240,240,245,0.7)", fontSize: 13, marginTop: 6 }}>
                   תומך בקבצי xlsx ו-csv
                 </p>
               </>
@@ -389,13 +389,13 @@ export default function ImportCoursePage() {
             marginTop: 20, padding: 16, borderRadius: 4,
             background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)",
           }}>
-            <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(240,240,245,0.5)", marginBottom: 8 }}>עמודות נדרשות בקובץ:</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(240,240,245,0.7)", marginBottom: 8 }}>עמודות נדרשות בקובץ:</p>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {["מספר_נושא", "שם_הנושא", "מספר_שיעור", "שם_השיעור", "כתובת_וידאו"].map((col) => (
                 <span key={col} style={{ background: "rgba(0,0,255,0.08)", color: "#3333FF", padding: "3px 10px", borderRadius: 6, fontSize: 11, fontFamily: "var(--font-heading-en)" }}>{col}</span>
               ))}
             </div>
-            <p style={{ fontSize: 11, color: "rgba(240,240,245,0.3)", marginTop: 8 }}>
+            <p style={{ fontSize: 11, color: "rgba(240,240,245,0.7)", marginTop: 8 }}>
               עמודות אופציונליות: תיאור, מטלה, טקסט_מטלה, כישורים, קבצים, הערות
             </p>
           </div>
@@ -463,7 +463,7 @@ export default function ImportCoursePage() {
                     left: 16,
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "rgba(240,240,245,0.35)",
+                    color: "rgba(240,240,245,0.7)",
                     pointerEvents: "none",
                     fontSize: 12,
                   }}
@@ -537,13 +537,13 @@ export default function ImportCoursePage() {
                       alt="Course thumbnail"
                       style={{ width: "100%", borderRadius: 4, display: "block" }}
                     />
-                    <p style={{ color: "rgba(240,240,245,0.35)", fontSize: 11, marginTop: 8 }}>
+                    <p style={{ color: "rgba(240,240,245,0.7)", fontSize: 11, marginTop: 8 }}>
                       משתמש בצבעי המותג והגרדיאנט מההגדרות
                     </p>
                   </div>
                 ) : (
                   <div style={{ textAlign: "center", padding: "24px 0" }}>
-                    <p style={{ color: "rgba(240,240,245,0.25)", fontSize: 13 }}>
+                    <p style={{ color: "rgba(240,240,245,0.7)", fontSize: 13 }}>
                       הזן שם קורס ולחץ על צור כדי ליצור תמונה ממוזערת
                     </p>
                   </div>
@@ -594,7 +594,7 @@ export default function ImportCoursePage() {
               ].map((s) => (
                 <div key={s.label} style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 20, fontWeight: 700, color: "#fff" }}>{s.value}</div>
-                  <div style={{ fontSize: 11, color: "rgba(240,240,245,0.4)" }}>{s.label}</div>
+                  <div style={{ fontSize: 11, color: "rgba(240,240,245,0.7)" }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -652,7 +652,7 @@ export default function ImportCoursePage() {
                         transition: "transform 0.2s",
                         display: "inline-block",
                         fontSize: 12,
-                        color: "rgba(240,240,245,0.35)",
+                        color: "rgba(240,240,245,0.7)",
                       }}
                     >
                       ▶
@@ -662,7 +662,7 @@ export default function ImportCoursePage() {
                     </span>
                     <span style={{ color: "#fff", fontSize: 14, fontWeight: 600 }}>{ch.title}</span>
                   </div>
-                  <span style={{ color: "rgba(240,240,245,0.35)", fontSize: 12 }}>
+                  <span style={{ color: "rgba(240,240,245,0.7)", fontSize: 12 }}>
                     {ch.lessons.length} שיעורים
                   </span>
                 </div>
@@ -682,17 +682,17 @@ export default function ImportCoursePage() {
                           flexWrap: "wrap",
                         }}
                       >
-                        <span style={{ color: "rgba(240,240,245,0.3)", fontSize: 12, minWidth: 24 }}>
+                        <span style={{ color: "rgba(240,240,245,0.7)", fontSize: 12, minWidth: 24 }}>
                           {ch.number}.{lesson.number}
                         </span>
                         <span style={{ color: "rgba(240,240,245,0.8)", fontSize: 13, flex: 1, minWidth: 150 }}>
                           {lesson.title}
                         </span>
-                        <span style={{ color: "rgba(240,240,245,0.3)", fontSize: 12 }}>
+                        <span style={{ color: "rgba(240,240,245,0.7)", fontSize: 12 }}>
                           {lesson.duration}
                         </span>
                         <span
-                          style={{ color: "rgba(240,240,245,0.25)", fontSize: 11, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                          style={{ color: "rgba(240,240,245,0.7)", fontSize: 11, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                           title={lesson.videoUrl}
                         >
                           {lesson.videoUrl}
@@ -761,7 +761,7 @@ export default function ImportCoursePage() {
               { label: "קובץ מקור", value: file?.name || "—" },
             ].map((row) => (
               <div key={row.label} style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "rgba(240,240,245,0.4)", fontSize: 13 }}>{row.label}</span>
+                <span style={{ color: "rgba(240,240,245,0.7)", fontSize: 13 }}>{row.label}</span>
                 <span style={{ color: "#fff", fontSize: 13, fontWeight: 500 }}>{row.value}</span>
               </div>
             ))}
@@ -807,7 +807,7 @@ export default function ImportCoursePage() {
           >
             הקורס יובא בהצלחה
           </h2>
-          <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 14, marginTop: 8 }}>
+          <p style={{ color: "rgba(240,240,245,0.7)", fontSize: 14, marginTop: 8 }}>
             &ldquo;{courseTitle}&rdquo; עם {parseResult?.stats.totalChapters} פרקים ו-{parseResult?.stats.totalLessons} שיעורים נשמר בהצלחה.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 32 }}>

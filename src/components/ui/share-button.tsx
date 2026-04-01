@@ -156,7 +156,7 @@ export function ShareButton(props: ShareButtonProps) {
           width: 30, height: 30, borderRadius: "50%", padding: 0,
           border: "1px solid rgba(255,255,255,0.15)",
           background: open ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
-          color: "rgba(240,240,245,0.6)",
+          color: "rgba(240,240,245,0.7)",
           cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
           transition: "background 0.2s, border-color 0.2s",
           flexShrink: 0,
@@ -183,7 +183,7 @@ export function ShareButton(props: ShareButtonProps) {
               direction: "rtl",
             }}
           >
-            <p style={{ fontSize: "12px", fontWeight: 700, color: "rgba(240,240,245,0.5)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <p style={{ fontSize: "12px", fontWeight: 700, color: "rgba(240,240,245,0.7)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               קישור שיתוף — {TYPE_LABELS[props.type]}
             </p>
             <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, marginBottom: "14px" }}>
@@ -197,7 +197,7 @@ export function ShareButton(props: ShareButtonProps) {
                   background: "rgba(255,255,255,0.04)", borderRadius: "4px",
                   padding: "8px 10px", marginBottom: "10px",
                 }}>
-                  <span style={{ flex: 1, fontSize: "11px", color: "rgba(240,240,245,0.6)", wordBreak: "break-all", fontFamily: "monospace" }}>
+                  <span style={{ flex: 1, fontSize: "11px", color: "rgba(240,240,245,0.7)", wordBreak: "break-all", fontFamily: "monospace" }}>
                     {getUrl(link.code)}
                   </span>
                   <button onClick={copyUrl} style={{
@@ -210,7 +210,7 @@ export function ShareButton(props: ShareButtonProps) {
                   </button>
                 </div>
 
-                <div style={{ fontSize: "11px", color: "rgba(240,240,245,0.35)", marginBottom: "10px" }}>
+                <div style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)", marginBottom: "10px" }}>
                   שימושים: {link.uses}
                   {link.expiresAt && (
                     <span style={{ marginRight: "8px" }}>
@@ -239,7 +239,7 @@ export function ShareButton(props: ShareButtonProps) {
                 <button
                   onClick={() => setShowExpiry(!showExpiry)}
                   style={{
-                    fontSize: "11px", color: "rgba(240,240,245,0.4)", background: "none",
+                    fontSize: "11px", color: "rgba(240,240,245,0.7)", background: "none",
                     border: "none", cursor: "pointer", marginBottom: "6px", padding: 0,
                   }}
                 >
@@ -260,7 +260,7 @@ export function ShareButton(props: ShareButtonProps) {
                         background: "rgba(255,255,255,0.05)", color: "#fff", fontSize: "12px", outline: "none",
                       }}
                     />
-                    <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.4)" }}>
+                    <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)" }}>
                       {expiryDays ? `(פג ב-${new Date(Date.now() + Number(expiryDays) * 86400000).toLocaleDateString("he-IL")})` : "ללא הגבלה"}
                     </span>
                   </div>

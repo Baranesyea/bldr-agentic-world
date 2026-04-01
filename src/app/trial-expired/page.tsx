@@ -41,10 +41,10 @@ export default function TrialExpiredPage() {
           תקופת הניסיון שלך הסתיימה
         </h1>
 
-        <p style={{ color: "rgba(240,240,245,0.5)", fontSize: "15px", marginBottom: "8px" }}>
+        <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "15px", marginBottom: "8px" }}>
           קישור הגישה שלך כבר לא פעיל.
         </p>
-        <p style={{ color: "rgba(240,240,245,0.6)", fontSize: "15px", marginBottom: "36px" }}>
+        <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "15px", marginBottom: "36px" }}>
           כדי להמשיך ללמוד, הצטרף לקהילת BLDR:
         </p>
 
@@ -68,12 +68,12 @@ export default function TrialExpiredPage() {
           הצטרף למועדון BLDR
         </a>
 
-        <p style={{ color: "rgba(240,240,245,0.4)", fontSize: "14px", marginTop: "16px" }}>
+        <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", marginTop: "16px" }}>
           החל מ-₪99 לחודש
         </p>
 
         <div style={{ marginTop: "32px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "20px" }}>
-          <Link href="/login" style={{ color: "rgba(240,240,245,0.4)", fontSize: "13px", textDecoration: "none" }}>
+          <Link href="/login" style={{ color: "rgba(240,240,245,0.7)", fontSize: "13px", textDecoration: "none" }}>
             כבר חבר? התחבר
           </Link>
         </div>

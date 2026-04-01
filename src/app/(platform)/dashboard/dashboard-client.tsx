@@ -170,7 +170,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
               {featuredCourse.title}
             </h1>
             {featuredCourse.description && (
-              <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.6)", marginBottom: "16px", lineHeight: 1.6, textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
+              <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.7)", marginBottom: "16px", lineHeight: 1.6, textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
                 {featuredCourse.description.slice(0, 150)}
               </p>
             )}
@@ -178,7 +178,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
               <div style={{ width: "fit-content", marginRight: "20px" }}>
                 <AnimatedTooltip items={MOCK_STUDENTS} />
               </div>
-              <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.4)", display: "block", marginTop: "8px" }}>32 סטודנטים לומדים עכשיו</span>
+              <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", display: "block", marginTop: "8px" }}>32 סטודנטים לומדים עכשיו</span>
             </div>
             <div style={{ display: "flex", gap: "12px" }}>
               <Link
@@ -212,8 +212,8 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
           background: "linear-gradient(135deg, #050510, #0a0a2a, #050510)",
           display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px",
         }}>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "rgba(240,240,245,0.5)" }}>ברוך הבא, {userName}!</h1>
-          <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.3)" }}>עדיין אין קורסים. צור את הקורס הראשון שלך.</p>
+          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "rgba(240,240,245,0.7)" }}>ברוך הבא, {userName}!</h1>
+          <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.7)" }}>עדיין אין קורסים. צור את הקורס הראשון שלך.</p>
           <Link href="/admin/courses/new" style={{
             background: "#0000FF", color: "white", padding: "12px 28px", borderRadius: "4px",
             fontWeight: 600, fontSize: "15px", textDecoration: "none", boxShadow: "0 0 30px rgba(0,0,255,0.35)",
@@ -304,7 +304,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                     }}>
                       <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 6, textShadow: "0 1px 6px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", lineHeight: 1.35 }}>{c.title}</h3>
                       {c.description && (
-                        <p style={{ fontSize: 12, color: "rgba(240,240,245,0.5)", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{c.description}</p>
+                        <p style={{ fontSize: 12, color: "rgba(240,240,245,0.7)", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{c.description}</p>
                       )}
                     </div>
                   </div>
@@ -360,7 +360,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                 }}>
                   <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 6, textShadow: "0 1px 6px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", lineHeight: 1.35 }}>{c.title}</h3>
                   {c.description && (
-                    <p style={{ fontSize: 12, color: "rgba(240,240,245,0.5)", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{c.description}</p>
+                    <p style={{ fontSize: 12, color: "rgba(240,240,245,0.7)", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{c.description}</p>
                   )}
                 </div>
               </div>

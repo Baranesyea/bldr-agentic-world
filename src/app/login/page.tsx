@@ -42,7 +42,14 @@ export default function LoginPage() {
       redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
     });
     setLoading(false);
-    if (error) { setError(error.message); return; }
+    if (error) {
+      if (error.message.includes("invalid") || error.message.includes("Invalid")) {
+        setError("המייל הזה מחובר דרך Google. לחץ על 'המשך עם Google' כדי להתחבר.");
+      } else {
+        setError(error.message);
+      }
+      return;
+    }
     setSuccess("נשלח אימייל עם קישור לאיפוס הסיסמה");
   };
 
@@ -194,6 +201,7 @@ export default function LoginPage() {
     transition: "border-color 0.2s, box-shadow 0.2s",
     boxShadow: focusedInput === name ? "0 0 20px rgba(0,0,255,0.15)" : "none",
     boxSizing: "border-box" as const,
+    fontFamily: "'Merriweather', var(--font-merriweather), serif",
   });
 
   if (showSpinner) {
@@ -237,12 +245,12 @@ export default function LoginPage() {
             maxWidth: 420,
             width: "100%",
             animation: "fade-up 0.6s ease-out",
-            fontFamily: "var(--font-merriweather), 'Merriweather', serif",
+            fontFamily: "'Merriweather', var(--font-merriweather), serif",
           }}>
             {/* Title */}
             <div style={{ marginBottom: 32, textAlign: "center" }}>
               <h1 style={{
-                fontFamily: "var(--font-merriweather), 'Merriweather', serif",
+                fontFamily: "'Merriweather', var(--font-merriweather), serif",
                 fontSize: 42,
                 fontWeight: 700,
                 color: "#fff",
@@ -254,7 +262,7 @@ export default function LoginPage() {
               </h1>
               <p style={{
                 fontSize: 14,
-                color: "rgba(240,240,245,0.5)",
+                color: "rgba(240,240,245,0.7)",
                 marginTop: 12,
                 lineHeight: 1.7,
               }}>
@@ -320,18 +328,18 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     onFocus={() => setFocusedInput("email")}
                     onBlur={() => setFocusedInput(null)}
-                    style={inputStyle("email")}
+                    style={{ ...inputStyle("email"), direction: "ltr", textAlign: "left" }}
                     required
                   />
                   <button
                     type="submit"
                     disabled={loading}
-                    style={{ width: "100%", padding: "14px 16px", background: "#0000FF", border: "none", borderRadius: 4, color: "#fff", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 0 15px rgba(0,0,255,0.2)" }}
+                    style={{ width: "100%", padding: "14px 16px", background: "#0000FF", border: "none", borderRadius: 4, color: "#fff", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 0 15px rgba(0,0,255,0.2)", fontFamily: "'Merriweather', var(--font-merriweather), serif" }}
                   >
                     {loading ? "שולח..." : "שלח קישור לאיפוס"}
                   </button>
-                  <p style={{ textAlign: "center", fontSize: 13, color: "rgba(240,240,245,0.5)", margin: 0 }}>
-                    <span onClick={() => { setMode("login"); setError(""); setSuccess(""); }} style={{ color: "#3333FF", cursor: "pointer", fontWeight: 700 }}>
+                  <p style={{ textAlign: "center", fontSize: 13, color: "rgba(240,240,245,0.7)", margin: 0 }}>
+                    <span onClick={() => { setMode("login"); setError(""); setSuccess(""); }} style={{ color: "#f0f0f5", cursor: "pointer", fontWeight: 700 }}>
                       חזרה להתחברות
                     </span>
                   </p>
@@ -357,6 +365,7 @@ export default function LoginPage() {
                   fontSize: 15,
                   fontWeight: 700,
                   color: "#1a1a2e",
+                  fontFamily: "'Merriweather', var(--font-merriweather), serif",
                   transition: "box-shadow 0.2s, transform 0.15s",
                   boxShadow: hoveredBtn === "google"
                     ? "0 4px 24px rgba(255,255,255,0.15)"
@@ -381,7 +390,7 @@ export default function LoginPage() {
                 margin: "24px 0",
               }}>
                 <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-                <span style={{ fontSize: 13, color: "rgba(240,240,245,0.35)" }}>או</span>
+                <span style={{ fontSize: 13, color: "rgba(240,240,245,0.7)" }}>או</span>
                 <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
               </div>
 
@@ -406,7 +415,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   onFocus={() => setFocusedInput("email")}
                   onBlur={() => setFocusedInput(null)}
-                  style={inputStyle("email")}
+                  style={{ ...inputStyle("email"), direction: "ltr", textAlign: "left" }}
                   required
                 />
 
@@ -432,7 +441,7 @@ export default function LoginPage() {
                       transform: "translateY(-50%)",
                       background: "none",
                       border: "none",
-                      color: "rgba(240,240,245,0.6)",
+                      color: "rgba(240,240,245,0.7)",
                       cursor: "pointer",
                       padding: 0,
                       fontSize: 13,
@@ -467,6 +476,7 @@ export default function LoginPage() {
                     fontSize: 16,
                     fontWeight: 700,
                     cursor: loading ? "not-allowed" : "pointer",
+                    fontFamily: "'Merriweather', var(--font-merriweather), serif",
                     marginTop: 4,
                     transition: "box-shadow 0.2s, background 0.2s, transform 0.15s",
                     boxShadow: hoveredBtn === "login"
@@ -485,27 +495,29 @@ export default function LoginPage() {
               </form></>}
 
               {/* Links */}
-              {mode !== "forgot" && (
+              {mode !== "forgot" && mode === "login" && (
                 <div style={{ textAlign: "center", marginTop: 20 }}>
-                  <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)", margin: "0 0 8px" }}>
-                    {mode === "login" ? "אין לך חשבון?" : "כבר יש לך חשבון?"}{" "}
+                  <p style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", margin: 0 }}>
                     <span
-                      onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setSuccess(""); }}
-                      style={{ color: "#3333FF", cursor: "pointer", fontWeight: 700 }}
+                      onClick={() => { setMode("forgot"); setError(""); setSuccess(""); }}
+                      style={{ color: "#f0f0f5", cursor: "pointer" }}
                     >
-                      {mode === "login" ? "הירשם" : "התחבר"}
+                      שכחת סיסמה?
                     </span>
                   </p>
-                  {mode === "login" && (
-                    <p style={{ fontSize: 13, color: "rgba(240,240,245,0.35)", margin: 0 }}>
-                      <span
-                        onClick={() => { setMode("forgot"); setError(""); setSuccess(""); }}
-                        style={{ color: "rgba(100,100,255,0.7)", cursor: "pointer" }}
-                      >
-                        שכחת סיסמה?
-                      </span>
-                    </p>
-                  )}
+                </div>
+              )}
+              {mode === "signup" && (
+                <div style={{ textAlign: "center", marginTop: 20 }}>
+                  <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)", margin: 0 }}>
+                    כבר יש לך חשבון?{" "}
+                    <span
+                      onClick={() => { setMode("login"); setError(""); setSuccess(""); }}
+                      style={{ color: "#f0f0f5", cursor: "pointer", fontWeight: 700 }}
+                    >
+                      התחבר
+                    </span>
+                  </p>
                 </div>
               )}
             </div>

@@ -117,7 +117,7 @@ export default function QAPageClient({
     const map: Record<string, { bg: string; color: string; label: string }> = {
       pending: { bg: "rgba(51,51,255,0.15)", color: "#5555FF", label: "ממתין" },
       answered: { bg: "rgba(0,200,83,0.15)", color: "#00C853", label: "נענה" },
-      closed: { bg: "rgba(255,255,255,0.08)", color: "rgba(240,240,245,0.5)", label: "סגור" },
+      closed: { bg: "rgba(255,255,255,0.08)", color: "rgba(240,240,245,0.7)", label: "סגור" },
     };
     const s = map[status] || map.pending;
     return (
@@ -132,7 +132,7 @@ export default function QAPageClient({
       <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
         <QuestionIcon size={24} /> שאלות ותשובות
       </h1>
-      <p style={{ color: "rgba(240,240,245,0.6)", marginBottom: "24px", fontSize: "14px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "24px", fontSize: "14px" }}>
         כל השאלות מכל הקורסים — שאל, ענה, למד
       </p>
 
@@ -168,7 +168,7 @@ export default function QAPageClient({
 
       {/* Questions list */}
       {filtered.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "64px 24px", color: "rgba(240,240,245,0.35)" }}>
+        <div style={{ textAlign: "center", padding: "64px 24px", color: "rgba(240,240,245,0.7)" }}>
           <QuestionIcon size={48} color="rgba(240,240,245,0.15)" />
           <p style={{ marginTop: "16px", fontSize: "15px" }}>אין שאלות עדיין. שאל את השאלה הראשונה מתוך שיעור!</p>
         </div>
@@ -191,7 +191,7 @@ export default function QAPageClient({
                   onClick={() => setExpandedId(expanded ? null : q.id)}
                   style={{ padding: "20px", cursor: "pointer" }}
                 >
-                  <div style={{ fontSize: "11px", color: "rgba(240,240,245,0.35)", marginBottom: "6px" }}>
+                  <div style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)", marginBottom: "6px" }}>
                     {q.courseName} &gt; {q.lessonTitle}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
@@ -199,17 +199,17 @@ export default function QAPageClient({
                     {statusBadge(q.status)}
                   </div>
                   {!expanded && (
-                    <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)", margin: "0 0 8px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", margin: "0 0 8px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                       {q.content}
                     </p>
                   )}
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "12px", color: "rgba(240,240,245,0.35)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                       {q.userAvatar ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={q.userAvatar} alt="" style={{ width: 20, height: 20, borderRadius: "50%" }} />
                       ) : (
-                        <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#12122a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 700, color: "rgba(240,240,245,0.6)" }}>
+                        <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#12122a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 700, color: "rgba(240,240,245,0.7)" }}>
                           {q.userName?.[0] || "?"}
                         </div>
                       )}
@@ -248,7 +248,7 @@ export default function QAPageClient({
                     {/* Answers */}
                     {q.answers && q.answers.length > 0 && (
                       <div style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                        <h4 style={{ fontSize: "13px", fontWeight: 600, color: "rgba(240,240,245,0.5)", margin: 0 }}>תשובות ({q.answers.length})</h4>
+                        <h4 style={{ fontSize: "13px", fontWeight: 600, color: "rgba(240,240,245,0.7)", margin: 0 }}>תשובות ({q.answers.length})</h4>
                         {q.answers.map((a) => (
                           <div key={a.id} style={{ background: a.isAdmin ? "rgba(0,0,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${a.isAdmin ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.04)"}`, borderRadius: "4px", padding: "14px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
@@ -256,15 +256,15 @@ export default function QAPageClient({
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={a.userAvatar} alt="" style={{ width: 22, height: 22, borderRadius: "50%" }} />
                               ) : (
-                                <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#12122a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 700, color: "rgba(240,240,245,0.6)" }}>
+                                <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#12122a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 700, color: "rgba(240,240,245,0.7)" }}>
                                   {a.userName?.[0] || "?"}
                                 </div>
                               )}
                               <span style={{ fontSize: "13px", fontWeight: 600, color: a.isAdmin ? "#5555FF" : "#f0f0f5" }}>{a.userName}</span>
                               {a.isAdmin && <span style={{ fontSize: "10px", background: "rgba(0,0,255,0.15)", color: "#5555FF", padding: "1px 6px", borderRadius: "4px" }}>מנהל</span>}
-                              <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.3)" }}>{timeAgo(a.createdAt)}</span>
+                              <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)" }}>{timeAgo(a.createdAt)}</span>
                             </div>
-                            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.65)", lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap" }}>{a.content}</p>
+                            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", lineHeight: 1.6, margin: 0, whiteSpace: "pre-wrap" }}>{a.content}</p>
                             {a.mediaUrls?.map((url, i) => (
                               <div key={i} style={{ marginTop: "8px" }}>
                                 {isYouTubeUrl(url) ? (

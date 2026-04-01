@@ -502,7 +502,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
             </Link>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
               <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)" }}>{doneLessons} / {totalLessons} שיעורים</span>
-              <span style={{ fontSize: "11px", color: "#3333FF", fontWeight: 600 }}>{progressPct}%</span>
+              <span style={{ fontSize: "11px", color: "#7777FF", fontWeight: 600 }}>{progressPct}%</span>
             </div>
             <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "4px", height: "4px", overflow: "hidden" }}>
               <div style={{ width: `${progressPct}%`, height: "100%", background: "linear-gradient(90deg, #0000FF, #3333FF)", borderRadius: "4px", transition: "width 0.3s" }} />

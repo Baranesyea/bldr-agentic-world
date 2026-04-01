@@ -120,7 +120,7 @@ export function LoadingSpinner({ text }: { text?: string }) {
           </div>
         </div>
         {text && (
-          <p style={{ color: "rgba(240,240,245,0.6)", fontSize: 14 }}>{text}</p>
+          <p style={{ color: "rgba(240,240,245,0.7)", fontSize: 14 }}>{text}</p>
         )}
       </div>
     </>

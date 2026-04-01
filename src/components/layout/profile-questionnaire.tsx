@@ -107,7 +107,7 @@ export function ProfileQuestionnaire() {
         <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#f0f0f5", margin: "0 0 8px", lineHeight: 1.4 }}>
           {"אנחנו רוצים להכיר אותך טיפה יותר \u{1F642}"}
         </h2>
-        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)", margin: "0 0 24px", lineHeight: 1.6 }}>
+        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", margin: "0 0 24px", lineHeight: 1.6 }}>
           זה עוזר לנו לחדד את התכנים ולהבין מה אתם צריכים. זה ייקח בדיוק 35 שניות.
         </p>
 
@@ -164,7 +164,7 @@ export function ProfileQuestionnaire() {
               min={1}
               max={120}
             />
-            <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.35)", margin: "6px 0 0", lineHeight: 1.5 }}>
+            <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)", margin: "6px 0 0", lineHeight: 1.5 }}>
               {"כמובן שלא שואלים אישה את גילה, ואצלנו יש שוויון \u{1F604} אתם לא חייבים לענות, זה רק כדי שנכיר אתכם טוב יותר"}
             </p>
           </div>
@@ -197,7 +197,7 @@ export function ProfileQuestionnaire() {
             style={{
               background: "none",
               border: "none",
-              color: "rgba(240,240,245,0.4)",
+              color: "rgba(240,240,245,0.7)",
               fontSize: "13px",
               cursor: "pointer",
               padding: "4px 8px",

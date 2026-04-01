@@ -119,7 +119,7 @@ export function MorphingCardStack({
                     <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px", lineHeight: 1.3 }}>
                       {card.title}
                     </h3>
-                    <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.5)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>
+                    <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.7)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>
                       {card.description}
                     </p>
                   </div>
@@ -130,7 +130,7 @@ export function MorphingCardStack({
                   <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-start" }}>
                     <span style={{
                       display: "inline-flex", alignItems: "center", gap: "6px",
-                      fontSize: "12px", color: "#3333FF", fontWeight: 600,
+                      fontSize: "12px", color: "#7777FF", fontWeight: 600,
                       padding: "6px 14px", borderRadius: "4px",
                       background: "rgba(0,0,255,0.08)", border: "1px solid rgba(0,0,255,0.15)",
                     }}>
@@ -143,7 +143,7 @@ export function MorphingCardStack({
                 {/* Swipe hint */}
                 {isTop && cards.length > 1 && (
                   <div style={{ position: "absolute", bottom: "10px", left: 0, right: 0, textAlign: "center" }}>
-                    <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.2)" }}>החלק לניווט</span>
+                    <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)" }}>החלק לניווט</span>
                   </div>
                 )}
               </motion.div>

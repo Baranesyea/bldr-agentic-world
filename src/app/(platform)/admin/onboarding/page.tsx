@@ -59,7 +59,7 @@ const INPUT_STYLE: React.CSSProperties = {
 
 const LABEL_STYLE: React.CSSProperties = {
   fontSize: "12px",
-  color: "rgba(240,240,245,0.5)",
+  color: "rgba(240,240,245,0.7)",
   marginBottom: "4px",
   display: "block",
 };
@@ -77,7 +77,7 @@ const UPLOAD_BTN_STYLE: React.CSSProperties = {
   border: "1px solid rgba(255,255,255,0.1)",
   borderRadius: "4px",
   padding: "8px 14px",
-  color: "rgba(240,240,245,0.6)",
+  color: "rgba(240,240,245,0.7)",
   fontSize: "13px",
   cursor: "pointer",
   transition: "border-color 0.2s",
@@ -313,7 +313,7 @@ export default function OnboardingAdminPage() {
           <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
             ניהול אונבורדינג
           </h1>
-          <p style={{ color: "rgba(240,240,245,0.5)", fontSize: "14px" }}>
+          <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px" }}>
             הגדר את שלבי סיור המערכת למשתמשים חדשים
           </p>
         </div>
@@ -325,7 +325,7 @@ export default function OnboardingAdminPage() {
               border: "1px solid rgba(255,255,255,0.1)",
               borderRadius: "4px",
               padding: "10px 16px",
-              color: "rgba(240,240,245,0.6)",
+              color: "rgba(240,240,245,0.7)",
               fontSize: "13px",
               cursor: "pointer",
             }}
@@ -377,7 +377,7 @@ export default function OnboardingAdminPage() {
             <span style={{ fontSize: "14px", fontWeight: 600, color: "#f0f0f5" }}>סאונד בסיור</span>
             <ToggleSwitch checked={settings.soundEnabled ?? false} onChange={(v) => setSettings({ ...settings, soundEnabled: v })} size="sm" />
             {!settings.soundEnabled && (
-              <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.3)" }}>מוחבא מהמשתמשים</span>
+              <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>מוחבא מהמשתמשים</span>
             )}
           </div>
           {settings.soundEnabled && (
@@ -389,7 +389,7 @@ export default function OnboardingAdminPage() {
                 onClear={() => setSettings({ ...settings, welcomeAudioUrl: "" })}
               />
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)" }}>סאונד מופעל כברירת מחדל למשתמש</span>
+                <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)" }}>סאונד מופעל כברירת מחדל למשתמש</span>
                 <ToggleSwitch checked={settings.soundDefault} onChange={(v) => setSettings({ ...settings, soundDefault: v })} size="sm" />
               </div>
             </>
@@ -527,13 +527,13 @@ export default function OnboardingAdminPage() {
           border: "2px dashed rgba(255,255,255,0.1)",
           borderRadius: "4px",
           padding: "20px",
-          color: "rgba(240,240,245,0.5)",
+          color: "rgba(240,240,245,0.7)",
           fontSize: "14px",
           cursor: "pointer",
           transition: "border-color 0.2s, color 0.2s",
         }}
         onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(51,51,255,0.3)"; e.currentTarget.style.color = "#3333FF"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(240,240,245,0.5)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(240,240,245,0.7)"; }}
       >
         + הוסף שלב
       </button>

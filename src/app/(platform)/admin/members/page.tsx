@@ -150,7 +150,7 @@ export default function AdminMembersPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: "40px", color: "rgba(240,240,245,0.5)", textAlign: "center" }}>
+      <div style={{ padding: "40px", color: "rgba(240,240,245,0.7)", textAlign: "center" }}>
         טוען...
       </div>
     );
@@ -211,7 +211,7 @@ export default function AdminMembersPage() {
           <div style={{ display: "flex", gap: "8px", marginTop: "16px", justifyContent: "flex-end" }}>
             <button
               onClick={() => setShowAdd(false)}
-              style={{ ...BTN, background: "rgba(255,255,255,0.06)", color: "rgba(240,240,245,0.6)" }}
+              style={{ ...BTN, background: "rgba(255,255,255,0.06)", color: "rgba(240,240,245,0.7)" }}
             >
               ביטול
             </button>
@@ -233,7 +233,7 @@ export default function AdminMembersPage() {
                   style={{
                     padding: "14px 16px",
                     textAlign: "right",
-                    color: "rgba(240,240,245,0.4)",
+                    color: "rgba(240,240,245,0.7)",
                     fontWeight: 500,
                     fontSize: "12px",
                     textTransform: "uppercase",
@@ -248,7 +248,7 @@ export default function AdminMembersPage() {
           <tbody>
             {members.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: "40px", textAlign: "center", color: "rgba(240,240,245,0.3)" }}>
+                <td colSpan={7} style={{ padding: "40px", textAlign: "center", color: "rgba(240,240,245,0.7)" }}>
                   אין סטודנטים עדיין
                 </td>
               </tr>
@@ -287,7 +287,7 @@ export default function AdminMembersPage() {
                     <td style={{ padding: "10px 16px" }}>
                       <input type="number" value={editPrice} onChange={(e) => setEditPrice(Number(e.target.value))} style={{ ...INPUT, padding: "6px 10px", width: "80px" }} />
                     </td>
-                    <td style={{ padding: "10px 16px", color: "rgba(240,240,245,0.5)" }}>{formatDate(m.createdAt)}</td>
+                    <td style={{ padding: "10px 16px", color: "rgba(240,240,245,0.7)" }}>{formatDate(m.createdAt)}</td>
                     <td style={{ padding: "10px 16px" }}>
                       <div style={{ display: "flex", gap: "6px" }}>
                         <button onClick={saveEdit} style={{ ...BTN, padding: "6px 14px", fontSize: "12px" }}>
@@ -295,7 +295,7 @@ export default function AdminMembersPage() {
                         </button>
                         <button
                           onClick={() => setEditingId(null)}
-                          style={{ ...BTN, padding: "6px 14px", fontSize: "12px", background: "rgba(255,255,255,0.06)", color: "rgba(240,240,245,0.6)" }}
+                          style={{ ...BTN, padding: "6px 14px", fontSize: "12px", background: "rgba(255,255,255,0.06)", color: "rgba(240,240,245,0.7)" }}
                         >
                           ביטול
                         </button>
@@ -305,7 +305,7 @@ export default function AdminMembersPage() {
                 ) : (
                   <>
                     <td style={{ padding: "14px 16px", color: "#f0f0f5", fontWeight: 500 }}>{m.fullName}</td>
-                    <td style={{ padding: "14px 16px", color: "rgba(240,240,245,0.6)", direction: "ltr", textAlign: "right" }}>{m.email}</td>
+                    <td style={{ padding: "14px 16px", color: "rgba(240,240,245,0.7)", direction: "ltr", textAlign: "right" }}>{m.email}</td>
                     <td style={{ padding: "14px 16px" }}>
                       <button
                         onClick={() => toggleStatus(m)}
@@ -319,13 +319,13 @@ export default function AdminMembersPage() {
                         {m.status === "active" ? "פעיל" : "לא פעיל"}
                       </button>
                     </td>
-                    <td style={{ padding: "14px 16px", color: "rgba(240,240,245,0.6)" }}>
+                    <td style={{ padding: "14px 16px", color: "rgba(240,240,245,0.7)" }}>
                       {m.type === "paid" ? "בתשלום" : "חינם"}
                     </td>
-                    <td style={{ padding: "14px 16px", color: "rgba(240,240,245,0.6)" }}>
+                    <td style={{ padding: "14px 16px", color: "rgba(240,240,245,0.7)" }}>
                       {m.pricePaid > 0 ? `${m.pricePaid} ₪` : "—"}
                     </td>
-                    <td style={{ padding: "14px 16px", color: "rgba(240,240,245,0.5)", fontSize: "13px" }}>
+                    <td style={{ padding: "14px 16px", color: "rgba(240,240,245,0.7)", fontSize: "13px" }}>
                       {formatDate(m.createdAt)}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
@@ -336,7 +336,7 @@ export default function AdminMembersPage() {
                           border: "1px solid rgba(255,255,255,0.08)",
                           borderRadius: "4px",
                           padding: "6px 14px",
-                          color: "rgba(240,240,245,0.6)",
+                          color: "rgba(240,240,245,0.7)",
                           fontSize: "12px",
                           cursor: "pointer",
                         }}

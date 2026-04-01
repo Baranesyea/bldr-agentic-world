@@ -114,7 +114,7 @@ function Select({ value, onChange, options }: { value: string; onChange: (v: str
           <option key={k} value={k} style={{ background: "#1a1a2e" }}>{v}</option>
         ))}
       </select>
-      <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "rgba(240,240,245,0.4)" }}>
+      <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "rgba(240,240,245,0.7)" }}>
         <ChevronDownIcon size={14} />
       </span>
     </div>
@@ -173,7 +173,7 @@ export default function PromptLogsPage() {
       <h1 style={{ fontSize: "32px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
         לוג פרומפטים
       </h1>
-      <p style={{ color: "rgba(240,240,245,0.5)", marginBottom: "24px", fontSize: "14px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "24px", fontSize: "14px" }}>
         כל הפרומפטים שיצאו מהמערכת ומה חזר
       </p>
 
@@ -187,7 +187,7 @@ export default function PromptLogsPage() {
             padding: "16px 20px",
           }}>
             <div style={{ fontSize: "24px", fontWeight: 700, color: s.color }}>{s.value}</div>
-            <div style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", marginTop: "2px" }}>{s.label}</div>
+            <div style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", marginTop: "2px" }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -195,7 +195,7 @@ export default function PromptLogsPage() {
       {/* Filters */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap", alignItems: "center" }}>
         <div style={{ position: "relative", flex: "1 1 200px", maxWidth: "320px" }}>
-          <span style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", color: "rgba(240,240,245,0.3)", pointerEvents: "none" }}>
+          <span style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", color: "rgba(240,240,245,0.7)", pointerEvents: "none" }}>
             <SearchIcon size={15} />
           </span>
           <input
@@ -232,7 +232,7 @@ export default function PromptLogsPage() {
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           fontSize: "11px",
           fontWeight: 600,
-          color: "rgba(240,240,245,0.4)",
+          color: "rgba(240,240,245,0.7)",
         }}>
           <span>זמן</span>
           <span>סוג</span>
@@ -245,7 +245,7 @@ export default function PromptLogsPage() {
         </div>
 
         {filtered.length === 0 && (
-          <div style={{ padding: "40px", textAlign: "center", color: "rgba(240,240,245,0.3)", fontSize: "14px" }}>
+          <div style={{ padding: "40px", textAlign: "center", color: "rgba(240,240,245,0.7)", fontSize: "14px" }}>
             אין תוצאות
           </div>
         )}
@@ -276,17 +276,17 @@ export default function PromptLogsPage() {
                 onMouseEnter={(e) => { if (!expanded) e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
                 onMouseLeave={(e) => { if (!expanded) e.currentTarget.style.background = rowBg; }}
               >
-                <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)" }}>
+                <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>
                   <div>{formatDate(entry.timestamp)}</div>
-                  <div style={{ fontSize: "11px", color: "rgba(240,240,245,0.3)" }}>{formatTime(entry.timestamp)}</div>
+                  <div style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)" }}>{formatTime(entry.timestamp)}</div>
                 </span>
                 <span><Badge bg={tc.bg} color={tc.text}>{TYPE_LABELS[entry.type]}</Badge></span>
                 <span><Badge bg={sc.bg} color={sc.text} glow={sc.glow}>{STATUS_LABELS[entry.status]}</Badge></span>
                 <span>
                   <div style={{ fontSize: "12px" }}>{entry.userName}</div>
-                  <div style={{ fontSize: "10px", color: "rgba(240,240,245,0.3)" }}>{entry.userEmail}</div>
+                  <div style={{ fontSize: "10px", color: "rgba(240,240,245,0.7)" }}>{entry.userEmail}</div>
                 </span>
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "12px", color: "rgba(240,240,245,0.5)" }}>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>
                   {entry.prompt}
                 </span>
                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
@@ -294,14 +294,14 @@ export default function PromptLogsPage() {
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={entry.response} alt="" style={{ width: "28px", height: "28px", borderRadius: "4px", objectFit: "cover", background: "rgba(255,255,255,0.05)" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                      <span style={{ color: "rgba(240,240,245,0.4)" }}>תמונה</span>
+                      <span style={{ color: "rgba(240,240,245,0.7)" }}>תמונה</span>
                     </>
                   ) : (
                     <span style={{ color: entry.status === "error" ? "#f87171" : "rgba(240,240,245,0.5)" }}>{entry.response}</span>
                   )}
                 </span>
-                <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.4)", fontFamily: "monospace" }}>{entry.duration.toLocaleString()}</span>
-                <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.4)" }}>{entry.apiProvider}</span>
+                <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", fontFamily: "monospace" }}>{entry.duration.toLocaleString()}</span>
+                <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)" }}>{entry.apiProvider}</span>
               </div>
 
               {/* Expanded view */}
@@ -315,7 +315,7 @@ export default function PromptLogsPage() {
                     {/* Prompt */}
                     <div>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(240,240,245,0.5)" }}>פרומפט</span>
+                        <span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(240,240,245,0.7)" }}>פרומפט</span>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleCopy(entry.prompt, "prompt-" + entry.id); }}
                           style={{
@@ -352,7 +352,7 @@ export default function PromptLogsPage() {
                     {/* Response */}
                     <div>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(240,240,245,0.5)" }}>תגובה</span>
+                        <span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(240,240,245,0.7)" }}>תגובה</span>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleCopy(entry.response, "response-" + entry.id); }}
                           style={{
@@ -381,7 +381,7 @@ export default function PromptLogsPage() {
                             style={{ width: "60px", height: "60px", borderRadius: "6px", objectFit: "cover", background: "rgba(255,255,255,0.05)", marginBottom: "8px" }}
                             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                           />
-                          <div style={{ fontSize: "11px", color: "rgba(240,240,245,0.4)", wordBreak: "break-all", fontFamily: "monospace" }}>{entry.response}</div>
+                          <div style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)", wordBreak: "break-all", fontFamily: "monospace" }}>{entry.response}</div>
                         </div>
                       ) : (
                         <pre style={{

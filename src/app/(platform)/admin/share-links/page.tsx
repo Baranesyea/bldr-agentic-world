@@ -122,7 +122,7 @@ export default function ShareLinksPage() {
       <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#fff", marginBottom: "8px" }}>
         קישורי שיתוף סרטונים
       </h1>
-      <p style={{ color: "rgba(240,240,245,0.6)", fontSize: "14px", marginBottom: "32px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", marginBottom: "32px" }}>
         צור קישורי שיתוף שמאפשרים גישה לסרטון ספציפי ללידים חיצוניים
       </p>
 
@@ -132,7 +132,7 @@ export default function ShareLinksPage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <div>
-            <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.6)", marginBottom: "6px" }}>
+            <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "6px" }}>
               שם הקמפיין
             </label>
             <input
@@ -144,7 +144,7 @@ export default function ShareLinksPage() {
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.6)", marginBottom: "6px" }}>
+            <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "6px" }}>
               קורס
             </label>
             <select
@@ -161,7 +161,7 @@ export default function ShareLinksPage() {
 
           {selectedCourseId && (
             <div>
-              <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.6)", marginBottom: "6px" }}>
+              <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "6px" }}>
                 שיעור
               </label>
               <select
@@ -225,7 +225,7 @@ export default function ShareLinksPage() {
         <h2 style={{ fontSize: "18px", color: "#fff", marginBottom: "20px" }}>קישורים פעילים</h2>
 
         {links.length === 0 ? (
-          <p style={{ color: "rgba(240,240,245,0.35)", fontSize: "14px", textAlign: "center", padding: "32px 0" }}>
+          <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", textAlign: "center", padding: "32px 0" }}>
             אין קישורי שיתוף עדיין. צור אחד למעלה.
           </p>
         ) : (
@@ -234,7 +234,7 @@ export default function ShareLinksPage() {
               <thead>
                 <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
                   {["שם", "שיעור", "קוד", "נוצר", "שימושים", "סטטוס", "פעולות"].map(h => (
-                    <th key={h} style={{ padding: "10px 12px", textAlign: "right", color: "rgba(240,240,245,0.35)", fontWeight: 500, whiteSpace: "nowrap" }}>
+                    <th key={h} style={{ padding: "10px 12px", textAlign: "right", color: "rgba(240,240,245,0.7)", fontWeight: 500, whiteSpace: "nowrap" }}>
                       {h}
                     </th>
                   ))}
@@ -244,14 +244,14 @@ export default function ShareLinksPage() {
                 {links.map(link => (
                   <tr key={link.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                     <td style={{ padding: "12px", color: "#fff" }}>{link.name}</td>
-                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.6)", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.7)", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {link.lessonTitle}
                     </td>
-                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.6)", fontFamily: "monospace" }}>{link.code}</td>
-                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.6)", whiteSpace: "nowrap" }}>
+                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.7)", fontFamily: "monospace" }}>{link.code}</td>
+                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.7)", whiteSpace: "nowrap" }}>
                       {new Date(link.createdAt).toLocaleDateString("he-IL")}
                     </td>
-                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.6)" }}>{link.uses}</td>
+                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.7)" }}>{link.uses}</td>
                     <td style={{ padding: "12px" }}>
                       <span style={{
                         padding: "3px 10px", borderRadius: "6px",
@@ -267,7 +267,7 @@ export default function ShareLinksPage() {
                         <button onClick={() => copyLink(link.code)} style={{
                           padding: "4px 10px", borderRadius: "6px",
                           border: "1px solid rgba(255,255,255,0.1)",
-                          background: "rgba(255,255,255,0.04)", color: "rgba(240,240,245,0.6)",
+                          background: "rgba(255,255,255,0.04)", color: "rgba(240,240,245,0.7)",
                           fontSize: "11px", cursor: "pointer",
                         }}>
                           {copied === link.code ? "הועתק!" : "העתק"}
@@ -275,7 +275,7 @@ export default function ShareLinksPage() {
                         <button onClick={() => toggleStatus(link.id)} style={{
                           padding: "4px 10px", borderRadius: "6px",
                           border: "1px solid rgba(255,255,255,0.1)",
-                          background: "rgba(255,255,255,0.04)", color: "rgba(240,240,245,0.6)",
+                          background: "rgba(255,255,255,0.04)", color: "rgba(240,240,245,0.7)",
                           fontSize: "11px", cursor: "pointer",
                         }}>
                           {link.status === "active" ? "השבת" : "הפעל"}

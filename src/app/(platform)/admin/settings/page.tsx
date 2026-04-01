@@ -22,7 +22,7 @@ const HEADING_STYLE: React.CSSProperties = {
 
 const LABEL_STYLE: React.CSSProperties = {
   fontSize: "13px",
-  color: "rgba(240,240,245,0.6)",
+  color: "rgba(240,240,245,0.7)",
   marginBottom: "6px",
   display: "block",
 };
@@ -254,7 +254,7 @@ export default function SettingsPage() {
       >
         הגדרות
       </h1>
-      <p style={{ color: "rgba(240,240,245,0.6)", marginBottom: "32px", fontSize: "14px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "32px", fontSize: "14px" }}>
         ניהול מפתחות API, הגדרות מותג ויצירת תמונות ממוזערות.
       </p>
 
@@ -486,7 +486,7 @@ export default function SettingsPage() {
       {/* ============ SECTION 3: AVATAR REFERENCE ============ */}
       <div style={CARD_STYLE}>
         <h2 style={HEADING_STYLE}>תמונת אווטאר</h2>
-        <p style={{ color: "rgba(240,240,245,0.5)", fontSize: "13px", marginBottom: "20px", lineHeight: 1.5 }}>
+        <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "13px", marginBottom: "20px", lineHeight: 1.5 }}>
           העלה תמונת רפרנס ליצירת אווטארים אוטומטיים. כל משתמש יכול ליצור אווטאר פעם אחת. תמונת הרפרנס ובחירת המגדר נשלחות עם הפרומפט ליצירה.
         </p>
 
@@ -537,7 +537,7 @@ export default function SettingsPage() {
                 onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
               />
               <div style={{ flex: 1, minWidth: "200px" }}>
-                <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.6)", marginBottom: "8px" }}>
+                <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "8px" }}>
                   תמונת הרפרנס הזו תישלח עם הפרומפט ליצירת AI כשמשתמש חדש יוצר את האווטאר שלו.
                 </p>
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -568,7 +568,7 @@ export default function SettingsPage() {
       {/* ============ SECTION 4: THUMBNAIL DEFAULTS ============ */}
       <div style={CARD_STYLE}>
         <h2 style={HEADING_STYLE}>ברירות מחדל לתמונות ממוזערות</h2>
-        <p style={{ color: "rgba(240,240,245,0.5)", fontSize: "13px", marginBottom: "20px", lineHeight: 1.5 }}>
+        <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "13px", marginBottom: "20px", lineHeight: 1.5 }}>
           הגדר סגנון ברירת מחדל ותמונות רפרנס לתמונות ממוזערות של קורסים. ההגדרות משמשות ביצירת תמונות ממוזערות בעת יצירת קורס.
         </p>
 
@@ -587,7 +587,7 @@ export default function SettingsPage() {
 
         <div style={{ marginBottom: "20px" }}>
           <label style={LABEL_STYLE}>תמונות רפרנס</label>
-          <p style={{ color: "rgba(240,240,245,0.35)", fontSize: "12px", marginBottom: "10px" }}>
+          <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "12px", marginBottom: "10px" }}>
             הוסף כתובות תמונות רפרנס להגדרת האווירה. אלו יישלחו עם כל פרומפט ליצירת תמונות ממוזערות.
           </p>
           {thumbDefaults.referenceUrls.map((url, i) => (
@@ -662,7 +662,7 @@ export default function SettingsPage() {
       {/* ============ SECTION: PAYMENT & SUBSCRIPTIONS ============ */}
       <div style={CARD_STYLE}>
         <h2 style={HEADING_STYLE}>סליקה ומנויים</h2>
-        <p style={{ color: "rgba(240,240,245,0.5)", fontSize: "13px", marginBottom: "20px", lineHeight: 1.5 }}>
+        <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "13px", marginBottom: "20px", lineHeight: 1.5 }}>
           הגדרות תשלום וסליקה עבור Grow (Meshulam). הוובהוק URL הוא: <code style={{ background: "rgba(255,255,255,0.05)", padding: "2px 6px", borderRadius: 4, fontSize: 12, direction: "ltr", display: "inline-block" }}>/api/subscribers/webhook</code>
         </p>
 
@@ -704,7 +704,7 @@ export default function SettingsPage() {
       {/* WhatsApp CTA */}
       <div style={CARD_STYLE}>
         <h2 style={HEADING_STYLE}>WhatsApp CTA</h2>
-        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.4)", marginBottom: "16px" }}>
+        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px" }}>
           כפתור הצטרפות לוואטסאפ שמוצג למשתמשים חדשים
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>

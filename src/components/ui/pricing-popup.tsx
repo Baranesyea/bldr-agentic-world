@@ -46,7 +46,7 @@ export function PricingPopup({ onClose }: PricingPopupProps) {
             background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: "50%", width: "36px", height: "36px",
             display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", color: "rgba(240,240,245,0.5)", fontSize: "18px",
+            cursor: "pointer", color: "rgba(240,240,245,0.7)", fontSize: "18px",
           }}
         >
           ×
@@ -57,7 +57,7 @@ export function PricingPopup({ onClose }: PricingPopupProps) {
           <h2 style={{ fontSize: "28px", fontWeight: 900, color: "#fff", marginBottom: "10px" }}>
             93% מהאנשים לא עושים שינוי בגלל הפחד
           </h2>
-          <p style={{ color: "rgba(240,240,245,0.5)", fontSize: "14px", lineHeight: 1.6 }}>
+          <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", lineHeight: 1.6 }}>
             הפחד היחיד הוא: מה יקרה אם לא נעשה את הצעד
             <br />
             וכדי לעזור לך לעשות שינוי, אפשר להצטרף בשני מסלולים. מסלול חודשי זול ומסלול שנתי זול באופן קיצוני
@@ -86,9 +86,9 @@ export function PricingPopup({ onClose }: PricingPopupProps) {
             </p>
             <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "4px" }}>
               <span style={{ fontSize: "48px", fontWeight: 900, color: "#fff" }}>110</span>
-              <span style={{ fontSize: "16px", color: "rgba(240,240,245,0.6)" }}>₪ לחודש</span>
+              <span style={{ fontSize: "16px", color: "rgba(240,240,245,0.7)" }}>₪ לחודש</span>
             </div>
-            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.4)", marginBottom: "12px" }}>
+            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "12px" }}>
               חודשיים מתנה בהצטרפות במחיר 1,320 ₪
             </p>
             <div style={{
@@ -130,16 +130,16 @@ export function PricingPopup({ onClose }: PricingPopupProps) {
             </p>
             <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "4px" }}>
               <span style={{ fontSize: "48px", fontWeight: 900, color: "#fff" }}>137</span>
-              <span style={{ fontSize: "16px", color: "rgba(240,240,245,0.6)" }}>₪ לחודש</span>
+              <span style={{ fontSize: "16px", color: "rgba(240,240,245,0.7)" }}>₪ לחודש</span>
             </div>
-            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.4)", marginBottom: "32px" }}>
+            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "32px" }}>
               אין התחייבות. אפשר לעזוב מתי שרוצים.
             </p>
 
             {features.map((f, i) => (
               <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "10px" }}>
-                <span style={{ color: "rgba(240,240,245,0.4)", flexShrink: 0, marginTop: "2px" }}>✓</span>
-                <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)", lineHeight: 1.5 }}>{f}</span>
+                <span style={{ color: "rgba(240,240,245,0.7)", flexShrink: 0, marginTop: "2px" }}>✓</span>
+                <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", lineHeight: 1.5 }}>{f}</span>
               </div>
             ))}
 
@@ -157,7 +157,7 @@ export function PricingPopup({ onClose }: PricingPopupProps) {
           </div>
         </div>
 
-        <p style={{ textAlign: "center", fontSize: "12px", color: "rgba(240,240,245,0.3)", marginTop: "20px" }}>
+        <p style={{ textAlign: "center", fontSize: "12px", color: "rgba(240,240,245,0.7)", marginTop: "20px" }}>
           לא מרגיש שקיבלת ערך? נחזיר לך את הכסף באהבה גדולה.
         </p>
       </div>

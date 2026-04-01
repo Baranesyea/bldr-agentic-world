@@ -85,7 +85,7 @@ export default function NotificationsPage() {
             התראות
           </h1>
           {unreadCount > 0 && (
-            <p style={{ fontSize: 13, color: "rgba(240,240,245,0.4)" }}>
+            <p style={{ fontSize: 13, color: "rgba(240,240,245,0.7)" }}>
               {unreadCount} התראות שלא נקראו
             </p>
           )}
@@ -98,7 +98,7 @@ export default function NotificationsPage() {
               borderRadius: 4,
               border: "1px solid rgba(255,255,255,0.1)",
               background: "rgba(255,255,255,0.04)",
-              color: "rgba(240,240,245,0.6)",
+              color: "rgba(240,240,245,0.7)",
               fontSize: 13,
               cursor: "pointer",
               fontFamily: "inherit",
@@ -167,7 +167,7 @@ export default function NotificationsPage() {
               </div>
 
               {/* Time */}
-              <span style={{ fontSize: 12, color: "rgba(240,240,245,0.25)", flexShrink: 0, whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: 12, color: "rgba(240,240,245,0.7)", flexShrink: 0, whiteSpace: "nowrap" }}>
                 {n.timeAgo}
               </span>
             </div>
@@ -187,7 +187,7 @@ export default function NotificationsPage() {
           <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 8 }}>
             אין התראות
           </h2>
-          <p style={{ fontSize: 14, color: "rgba(240,240,245,0.4)" }}>
+          <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)" }}>
             כשיהיו התראות חדשות, הן יופיעו כאן
           </p>
         </div>

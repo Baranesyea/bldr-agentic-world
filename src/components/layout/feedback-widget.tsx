@@ -218,7 +218,7 @@ export function FeedbackWidget() {
 
             {/* Mood */}
             <div style={{ marginBottom: 18 }}>
-              <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 13, marginBottom: 10 }}>איך אתה מרגיש?</p>
+              <p style={{ color: "rgba(240,240,245,0.7)", fontSize: 13, marginBottom: 10 }}>איך אתה מרגיש?</p>
               <div style={{ display: "flex", gap: 12 }}>
                 <MoodFace type={0} selected={mood === 0} onClick={() => setMood(mood === 0 ? null : 0)} />
                 <MoodFace type={1} selected={mood === 1} onClick={() => setMood(mood === 1 ? null : 1)} />

@@ -300,7 +300,7 @@ export default function AdminUsersPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8, flexWrap: "wrap", gap: 12 }}>
         <div>
           <h1 style={{ fontSize: "32px", fontWeight: 700, color: "#fff", margin: 0 }}>משתמשים</h1>
-          <p style={{ color: "rgba(240,240,245,0.6)", marginTop: 6, fontSize: "14px", margin: "6px 0 0 0" }}>
+          <p style={{ color: "rgba(240,240,245,0.7)", marginTop: 6, fontSize: "14px", margin: "6px 0 0 0" }}>
             ניהול כל המשתמשים — מנויים, ניסיון ומנהלים
           </p>
         </div>
@@ -319,7 +319,7 @@ export default function AdminUsersPage() {
           { label: "ממוצע LTV", value: formatCurrency(avgLtv), color: "#c084fc" },
         ].map((s) => (
           <div key={s.label} style={CARD}>
-            <div style={{ fontSize: 12, color: "rgba(240,240,245,0.5)", marginBottom: 6 }}>{s.label}</div>
+            <div style={{ fontSize: 12, color: "rgba(240,240,245,0.7)", marginBottom: 6 }}>{s.label}</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: s.color }}>{s.value}</div>
           </div>
         ))}
@@ -351,7 +351,7 @@ export default function AdminUsersPage() {
         </div>
 
         <div style={{ position: "relative", maxWidth: 300, flex: 1, minWidth: 200 }}>
-          <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(240,240,245,0.35)", display: "flex" }}>
+          <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(240,240,245,0.7)", display: "flex" }}>
             <SearchIcon size={15} />
           </span>
           <input
@@ -387,7 +387,7 @@ export default function AdminUsersPage() {
       {/* Table */}
       <div style={{ ...CARD, padding: 0, overflow: "hidden" }}>
         {filtered.length === 0 ? (
-          <div style={{ padding: 48, textAlign: "center", color: "rgba(240,240,245,0.4)", fontSize: 14 }}>
+          <div style={{ padding: 48, textAlign: "center", color: "rgba(240,240,245,0.7)", fontSize: 14 }}>
             לא נמצאו משתמשים
           </div>
         ) : (
@@ -412,7 +412,7 @@ export default function AdminUsersPage() {
                       style={{
                         padding: "14px 14px",
                         textAlign: "right",
-                        color: "rgba(240,240,245,0.4)",
+                        color: "rgba(240,240,245,0.7)",
                         fontWeight: 600,
                         fontSize: 12,
                         letterSpacing: "0.3px",
@@ -461,10 +461,10 @@ export default function AdminUsersPage() {
                         <td style={{ padding: "12px 14px", color: "#f0f0f5", fontWeight: 600 }}>
                           {user.fullName || "—"}
                         </td>
-                        <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.6)", direction: "ltr", textAlign: "right", fontSize: 13 }}>
+                        <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.7)", direction: "ltr", textAlign: "right", fontSize: 13 }}>
                           {user.email}
                         </td>
-                        <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.5)", direction: "ltr", textAlign: "right", fontSize: 13 }}>
+                        <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.7)", direction: "ltr", textAlign: "right", fontSize: 13 }}>
                           {user.phone || "—"}
                         </td>
                         <td style={{ padding: "12px 14px" }}>
@@ -478,13 +478,13 @@ export default function AdminUsersPage() {
                         <td style={{ padding: "12px 14px", color: "#f0f0f5", fontWeight: 600, fontSize: 13 }}>
                           {user.amount > 0 ? formatCurrency(user.amount) : "—"}
                         </td>
-                        <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.5)", fontSize: 13 }}>
+                        <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.7)", fontSize: 13 }}>
                           {formatDate(user.joinedAt)}
                         </td>
-                        <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.5)", fontSize: 13 }}>
+                        <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.7)", fontSize: 13 }}>
                           {user.joinedAt ? timeInSystem(user.joinedAt) : "—"}
                         </td>
-                        <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.5)", fontSize: 13 }}>
+                        <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.7)", fontSize: 13 }}>
                           {formatDate(user.lastPaymentDate)}
                         </td>
                       </tr>
@@ -519,7 +519,7 @@ export default function AdminUsersPage() {
                                       {statusInfo.label}
                                     </span>
                                   </div>
-                                  <div style={{ fontSize: 13, color: "rgba(240,240,245,0.5)", direction: "ltr", textAlign: "right" }}>
+                                  <div style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", direction: "ltr", textAlign: "right" }}>
                                     {user.email}
                                     {user.phone && <span style={{ marginLeft: 16 }}>{user.phone}</span>}
                                   </div>
@@ -539,7 +539,7 @@ export default function AdminUsersPage() {
                                     border: "1px solid rgba(255,255,255,0.05)",
                                     borderRadius: 4, padding: 14,
                                   }}>
-                                    <div style={{ fontSize: 11, color: "rgba(240,240,245,0.4)", marginBottom: 4 }}>{s.label}</div>
+                                    <div style={{ fontSize: 11, color: "rgba(240,240,245,0.7)", marginBottom: 4 }}>{s.label}</div>
                                     <div style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>{s.value}</div>
                                   </div>
                                 ))}
@@ -551,7 +551,7 @@ export default function AdminUsersPage() {
                                   היסטוריית תשלומים ({user.payments.length})
                                 </div>
                                 {user.payments.length === 0 ? (
-                                  <div style={{ color: "rgba(240,240,245,0.3)", fontSize: 13 }}>
+                                  <div style={{ color: "rgba(240,240,245,0.7)", fontSize: 13 }}>
                                     אין תשלומים רשומים
                                   </div>
                                 ) : (
@@ -566,13 +566,13 @@ export default function AdminUsersPage() {
                                           <span style={{ color: "#f0f0f5", fontWeight: 600, fontSize: 13 }}>
                                             {formatCurrency(p.amount)}
                                           </span>
-                                          <span style={{ color: "rgba(240,240,245,0.4)", fontSize: 12 }}>
+                                          <span style={{ color: "rgba(240,240,245,0.7)", fontSize: 12 }}>
                                             {formatDate(p.date)}
                                           </span>
                                         </div>
                                         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                                           {p.transactionId && (
-                                            <span style={{ color: "rgba(240,240,245,0.3)", fontSize: 11, fontFamily: "monospace", direction: "ltr" }}>
+                                            <span style={{ color: "rgba(240,240,245,0.7)", fontSize: 11, fontFamily: "monospace", direction: "ltr" }}>
                                               #{p.transactionId}
                                             </span>
                                           )}
@@ -593,7 +593,7 @@ export default function AdminUsersPage() {
                               {/* Change Status */}
                               {user.role !== "tourist" && (
                                 <div style={{ display: "flex", gap: 10, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.05)", alignItems: "center" }}>
-                                  <div style={{ fontSize: 12, color: "rgba(240,240,245,0.4)", marginLeft: 8 }}>
+                                  <div style={{ fontSize: 12, color: "rgba(240,240,245,0.7)", marginLeft: 8 }}>
                                     שינוי סטטוס:
                                   </div>
                                   {STATUS_OPTIONS.map((opt) => (
@@ -654,7 +654,7 @@ export default function AdminUsersPage() {
                 { label: "טלפון", value: newPhone, onChange: setNewPhone, placeholder: "050-000-0000", type: "tel", dir: "ltr" },
               ].map((f) => (
                 <div key={f.label}>
-                  <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>{f.label}</label>
+                  <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>{f.label}</label>
                   <input
                     style={{ ...INPUT, direction: f.dir as "rtl" | "ltr" }}
                     type={f.type}
@@ -666,7 +666,7 @@ export default function AdminUsersPage() {
               ))}
 
               <div>
-                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
+                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>
                   תשלום חודשי (₪)
                 </label>
                 <input
@@ -679,7 +679,7 @@ export default function AdminUsersPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
+                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>
                   סטטוס
                 </label>
                 <select

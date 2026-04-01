@@ -78,7 +78,7 @@ const selectS: React.CSSProperties = {
 const labelS: React.CSSProperties = {
   display: "block",
   fontSize: 13,
-  color: "rgba(240,240,245,0.6)",
+  color: "rgba(240,240,245,0.7)",
   marginBottom: 8,
   fontWeight: 500,
 };
@@ -100,7 +100,7 @@ const btnSec: React.CSSProperties = {
   borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.04)",
-  color: "rgba(240,240,245,0.6)",
+  color: "rgba(240,240,245,0.7)",
   fontSize: 14,
   fontWeight: 500,
   cursor: "pointer",
@@ -113,7 +113,7 @@ const btnSmall: React.CSSProperties = {
   borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.08)",
   background: "rgba(255,255,255,0.03)",
-  color: "rgba(240,240,245,0.5)",
+  color: "rgba(240,240,245,0.7)",
   fontSize: 12,
   cursor: "pointer",
   fontFamily: "inherit",
@@ -169,7 +169,7 @@ const iconBtnS: React.CSSProperties = {
   borderRadius: 6,
   border: "1px solid rgba(255,255,255,0.06)",
   background: "transparent",
-  color: "rgba(240,240,245,0.35)",
+  color: "rgba(240,240,245,0.7)",
   fontSize: 11,
   cursor: "pointer",
   display: "inline-flex",
@@ -724,12 +724,12 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
     const [val, setVal] = useState("");
     return (
       <tr style={{ background: "transparent" }}>
-        <td style={{ padding: "4px 8px", fontSize: 11, color: "rgba(240,240,245,0.15)", textAlign: "center" }}>
+        <td style={{ padding: "4px 8px", fontSize: 11, color: "rgba(240,240,245,0.7)", textAlign: "center" }}>
           {chNumber}.{lessonCount + 1}
         </td>
         <td style={{ padding: "4px 0" }}>
           <input
-            style={{ ...cellInputS, fontSize: 12, color: "rgba(240,240,245,0.3)" }}
+            style={{ ...cellInputS, fontSize: 12, color: "rgba(240,240,245,0.7)" }}
             placeholder="הקלד שם שיעור ולחץ Enter..."
             value={val}
             onChange={(e) => setVal(e.target.value)}
@@ -756,12 +756,12 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
       <div style={{ marginBottom: 32 }}>
         <Link
           href="/admin/courses"
-          style={{ fontSize: 13, color: "rgba(240,240,245,0.35)", textDecoration: "none" }}
+          style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", textDecoration: "none" }}
         >
           קורסים
         </Link>
-        <span style={{ color: "rgba(240,240,245,0.2)", margin: "0 8px" }}>/</span>
-        <span style={{ fontSize: 13, color: "rgba(240,240,245,0.6)" }}>
+        <span style={{ color: "rgba(240,240,245,0.7)", margin: "0 8px" }}>/</span>
+        <span style={{ fontSize: 13, color: "rgba(240,240,245,0.7)" }}>
           {courseId ? "עריכת קורס" : "קורס חדש"}
         </span>
         <h1 style={{ fontSize: 28, fontWeight: 700, color: "#fff", marginTop: 8 }}>
@@ -810,7 +810,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 4, background: featured ? "rgba(0,0,255,0.06)" : "rgba(255,255,255,0.02)", border: `1px solid ${featured ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.04)"}` }}>
             <div>
               <p style={{ fontSize: 14, color: "#f0f0f5", marginBottom: 2 }}>קורס מומלץ (Hero)</p>
-              <p style={{ fontSize: 12, color: "rgba(240,240,245,0.35)" }}>יופיע בראש הדשבורד כקורס ראשי</p>
+              <p style={{ fontSize: 12, color: "rgba(240,240,245,0.7)" }}>יופיע בראש הדשבורד כקורס ראשי</p>
             </div>
             <button
               onClick={() => setFeatured(!featured)}
@@ -894,7 +894,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                       animation: "spin 0.8s linear infinite",
                     }}
                   />
-                  <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 13 }}>
+                  <p style={{ color: "rgba(240,240,245,0.7)", fontSize: 13 }}>
                     יוצר תמונה ממוזערת...
                   </p>
                   <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -913,7 +913,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
               ) : (
                 !generatingThumb && (
                   <div style={{ textAlign: "center", padding: "24px 0" }}>
-                    <p style={{ color: "rgba(240,240,245,0.25)", fontSize: 13 }}>
+                    <p style={{ color: "rgba(240,240,245,0.7)", fontSize: 13 }}>
                       הזן כותרת ולחץ על צור כדי ליצור תמונה ממוזערת
                     </p>
                   </div>
@@ -1010,14 +1010,14 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                       <h3 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f5", margin: 0 }}>בחר תמונה מהספרייה</h3>
                       <button
                         onClick={() => setShowMediaPicker(false)}
-                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(240,240,245,0.5)" }}
+                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(240,240,245,0.7)" }}
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
                     </div>
                     <div style={{ flex: 1, overflowY: "auto", padding: 24 }}>
                       {mediaItems.length === 0 ? (
-                        <p style={{ textAlign: "center", color: "rgba(240,240,245,0.3)", fontSize: 14, padding: "40px 0" }}>אין תמונות בספרייה</p>
+                        <p style={{ textAlign: "center", color: "rgba(240,240,245,0.7)", fontSize: 14, padding: "40px 0" }}>אין תמונות בספרייה</p>
                       ) : (
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
                           {mediaItems.map((item) => (
@@ -1035,7 +1035,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={item.src} alt={item.label} style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", display: "block" }} />
-                              <div style={{ padding: "6px 8px", fontSize: 11, color: "rgba(240,240,245,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</div>
+                              <div style={{ padding: "6px 8px", fontSize: 11, color: "rgba(240,240,245,0.7)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</div>
                             </div>
                           ))}
                         </div>
@@ -1167,7 +1167,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                       padding: "6px 8px",
                       fontSize: 10,
                       fontWeight: 500,
-                      color: "rgba(240,240,245,0.25)",
+                      color: "rgba(240,240,245,0.7)",
                       textAlign: "center",
                     }}
                   >
@@ -1178,7 +1178,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                       padding: "6px 8px",
                       fontSize: 10,
                       fontWeight: 500,
-                      color: "rgba(240,240,245,0.25)",
+                      color: "rgba(240,240,245,0.7)",
                       textAlign: "right",
                     }}
                   >
@@ -1190,7 +1190,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                       padding: "6px 8px",
                       fontSize: 10,
                       fontWeight: 500,
-                      color: "rgba(240,240,245,0.25)",
+                      color: "rgba(240,240,245,0.7)",
                       textAlign: "right",
                     }}
                   >
@@ -1202,7 +1202,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                       padding: "6px 8px",
                       fontSize: 10,
                       fontWeight: 500,
-                      color: "rgba(240,240,245,0.25)",
+                      color: "rgba(240,240,245,0.7)",
                       textAlign: "right",
                     }}
                   >
@@ -1214,7 +1214,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                       padding: "6px 8px",
                       fontSize: 10,
                       fontWeight: 500,
-                      color: "rgba(240,240,245,0.25)",
+                      color: "rgba(240,240,245,0.7)",
                       textAlign: "center",
                     }}
                   >
@@ -1247,7 +1247,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                       style={{
                         padding: "4px 8px",
                         fontSize: 11,
-                        color: "rgba(240,240,245,0.3)",
+                        color: "rgba(240,240,245,0.7)",
                         textAlign: "center",
                         fontWeight: 600,
                       }}
@@ -1286,7 +1286,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                           <span
                             style={{
                               fontSize: 10,
-                              color: "rgba(240,240,245,0.3)",
+                              color: "rgba(240,240,245,0.7)",
                               whiteSpace: "nowrap",
                               paddingLeft: 4,
                               fontFamily: "var(--font-heading-en)",
@@ -1388,12 +1388,12 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
           ].map((s) => (
             <div key={s.label} style={{ textAlign: "center" }}>
               <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>{s.value}</div>
-              <div style={{ fontSize: 10, color: "rgba(240,240,245,0.35)" }}>{s.label}</div>
+              <div style={{ fontSize: 10, color: "rgba(240,240,245,0.7)" }}>{s.label}</div>
             </div>
           ))}
           {lastSaved && (
             <span
-              style={{ fontSize: 11, color: "rgba(240,240,245,0.25)", marginLeft: 8 }}
+              style={{ fontSize: 11, color: "rgba(240,240,245,0.7)", marginLeft: 8 }}
             >
               נשמר לאחרונה: {lastSaved}
             </span>

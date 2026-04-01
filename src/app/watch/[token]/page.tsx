@@ -165,7 +165,7 @@ export default function WatchPage() {
       }}>
         <div style={{ fontSize: "48px" }}>🔒</div>
         <h1 style={{ fontSize: "24px", fontWeight: 700 }}>קישור לא תקין</h1>
-        <p style={{ color: "rgba(240,240,245,0.5)", textAlign: "center" }}>
+        <p style={{ color: "rgba(240,240,245,0.7)", textAlign: "center" }}>
           הקישור שקיבלת אינו פעיל, פג תוקפו, או שהוא לא קיים.
           <br />פנה למי ששלח לך את הקישור.
         </p>
@@ -209,7 +209,7 @@ export default function WatchPage() {
 
       {/* Content */}
       <div style={{ maxWidth: "960px", margin: "0 auto", padding: "32px 24px" }}>
-        <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)", marginBottom: "6px", letterSpacing: "0.5px" }}>
+        <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", marginBottom: "6px", letterSpacing: "0.5px" }}>
           {typeLabel}
         </p>
         <h1 style={{ fontSize: "22px", fontWeight: 700, marginBottom: "20px", color: "#f0f0f5" }}>
@@ -293,7 +293,7 @@ export default function WatchPage() {
             animation: "popupIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
             direction: "rtl",
           }}>
-            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)", marginBottom: "6px" }}>
+            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "6px" }}>
               🎬 קבלו גישה בחינם ל{typeLabel}
             </p>
             <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "24px", lineHeight: 1.3 }}>
@@ -307,7 +307,7 @@ export default function WatchPage() {
                 { label: "טלפון *", value: formPhone, onChange: setFormPhone, placeholder: "050-0000000", type: "tel" },
               ].map(field => (
                 <div key={field.label}>
-                  <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.6)", marginBottom: "6px" }}>
+                  <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "6px" }}>
                     {field.label}
                   </label>
                   <input
@@ -332,7 +332,7 @@ export default function WatchPage() {
                   onChange={e => setFormChecked(e.target.checked)}
                   style={{ marginTop: "2px", flexShrink: 0, width: "16px", height: "16px", accentColor: "#0000FF", cursor: "pointer" }}
                 />
-                <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", lineHeight: 1.5 }}>
+                <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", lineHeight: 1.5 }}>
                   אני מסכים/ה ל
                   <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "#5555ff", textDecoration: "underline" }}>
                     תנאי השימוש ומדיניות הפרטיות

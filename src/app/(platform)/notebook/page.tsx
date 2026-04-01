@@ -67,7 +67,7 @@ export default function NotebookPage() {
   return (
     <div style={{ padding: "32px", maxWidth: "900px", margin: "0 auto" }}>
       <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px" }}>המחברת שלי</h1>
-      <p style={{ color: "rgba(240,240,245,0.6)", marginBottom: "24px", fontSize: "14px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "24px", fontSize: "14px" }}>
         כל ההערות שלך ממקום אחד · {notes.length} הערות
       </p>
 
@@ -97,8 +97,8 @@ export default function NotebookPage() {
       {notes.length === 0 && (
         <div style={{ textAlign: "center", padding: "60px 20px" }}>
           <div style={{ marginBottom: "16px", opacity: 0.3, display: "flex", justifyContent: "center" }}><NotebookIcon size={48} /></div>
-          <h2 style={{ fontSize: "18px", fontWeight: 600, color: "rgba(240,240,245,0.5)", marginBottom: "8px" }}>אין הערות עדיין</h2>
-          <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.3)", marginBottom: "20px" }}>
+          <h2 style={{ fontSize: "18px", fontWeight: 600, color: "rgba(240,240,245,0.7)", marginBottom: "8px" }}>אין הערות עדיין</h2>
+          <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.7)", marginBottom: "20px" }}>
             הוסף הערות מתוך שיעורים ותראה אותן כאן
           </p>
           <Link href="/courses" style={{ color: "#f0f0f5", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
@@ -110,7 +110,7 @@ export default function NotebookPage() {
       {/* Notes grouped by course */}
       {filtered.length > 0 && Object.entries(grouped).map(([courseName, courseNotes]) => (
         <div key={courseName} style={{ marginBottom: "32px" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "rgba(240,240,245,0.5)", marginBottom: "12px" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "rgba(240,240,245,0.7)", marginBottom: "12px" }}>
             {courseName}
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -130,7 +130,7 @@ export default function NotebookPage() {
                           {note.videoTimestamp}
                         </span>
                       )}
-                      <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)" }}>
+                      <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>
                         {formatDate(note.createdAt)}
                       </span>
                     </div>
@@ -153,13 +153,13 @@ export default function NotebookPage() {
                     </Link>
                     <button
                       onClick={() => deleteNote(note.id)}
-                      style={{ background: "none", border: "none", color: "rgba(240,240,245,0.2)", cursor: "pointer", fontSize: "16px", padding: "0 4px" }}
+                      style={{ background: "none", border: "none", color: "rgba(240,240,245,0.7)", cursor: "pointer", fontSize: "16px", padding: "0 4px" }}
                     >
                       ×
                     </button>
                   </div>
                 </div>
-                <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.6)", lineHeight: 1.6 }}>{note.content}</p>
+                <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.7)", lineHeight: 1.6 }}>{note.content}</p>
               </div>
             ))}
           </div>
@@ -168,7 +168,7 @@ export default function NotebookPage() {
 
       {/* No results for search */}
       {notes.length > 0 && filtered.length === 0 && (
-        <div style={{ textAlign: "center", padding: "40px", color: "rgba(240,240,245,0.35)" }}>
+        <div style={{ textAlign: "center", padding: "40px", color: "rgba(240,240,245,0.7)" }}>
           <p>לא נמצאו הערות עבור &ldquo;{search}&rdquo;</p>
         </div>
       )}

@@ -27,7 +27,7 @@ const HEADING_STYLE: React.CSSProperties = {
 
 const LABEL_STYLE: React.CSSProperties = {
   fontSize: "13px",
-  color: "rgba(240,240,245,0.6)",
+  color: "rgba(240,240,245,0.7)",
   marginBottom: "6px",
   display: "block",
 };
@@ -206,7 +206,7 @@ export default function AdminPage() {
       >
         Settings
       </h1>
-      <p style={{ color: "rgba(240,240,245,0.6)", marginBottom: "32px", fontSize: "14px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "32px", fontSize: "14px" }}>
         Manage API keys, brand settings, and thumbnail generation.
       </p>
 

@@ -108,19 +108,19 @@ export default function CourseViewClient({ course }: { course: Course }) {
         )}
 
         <div style={{ position: "relative", zIndex: 1, maxWidth: "600px" }}>
-          <Link href="/dashboard" style={{ fontSize: "13px", color: "rgba(240,240,245,0.35)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px", marginBottom: "16px" }}>
+          <Link href="/dashboard" style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px", marginBottom: "16px" }}>
             <ArrowLeftIcon size={14} /> חזרה לדשבורד
           </Link>
           <h1 style={{ fontSize: "36px", fontWeight: 900, color: "#f0f0f5", lineHeight: 1.1, marginBottom: "8px" }}>{course.title}</h1>
           {course.description && (
-            <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.6)", marginBottom: "20px", lineHeight: 1.6 }}>{course.description}</p>
+            <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.7)", marginBottom: "20px", lineHeight: 1.6 }}>{course.description}</p>
           )}
 
           {/* Progress bar */}
           <div style={{ maxWidth: "350px", marginBottom: "20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-              <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.6)" }}>{doneLessons} / {totalLessons} שיעורים</span>
-              <span style={{ fontSize: "12px", color: "#3333FF", fontWeight: 600 }}>{progressPct}%</span>
+              <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>{doneLessons} / {totalLessons} שיעורים</span>
+              <span style={{ fontSize: "12px", color: "#7777FF", fontWeight: 600 }}>{progressPct}%</span>
             </div>
             <div style={{ background: "#12122a", borderRadius: "6px", height: "6px", overflow: "hidden" }}>
               <div style={{ width: `${progressPct}%`, height: "100%", background: "linear-gradient(90deg, #0000FF, #3333FF)", borderRadius: "6px", boxShadow: "0 0 12px rgba(0,0,255,0.4)", transition: "width 0.3s" }} />
@@ -132,7 +132,7 @@ export default function CourseViewClient({ course }: { course: Course }) {
             <div style={{ width: "fit-content", marginRight: "20px" }}>
               <AnimatedTooltip items={MOCK_STUDENTS} />
             </div>
-            <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.4)", display: "block", marginTop: "8px" }}>32 סטודנטים לומדים עכשיו</span>
+            <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", display: "block", marginTop: "8px" }}>32 סטודנטים לומדים עכשיו</span>
           </div>
 
           {/* Buttons */}
@@ -172,7 +172,7 @@ export default function CourseViewClient({ course }: { course: Course }) {
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
                       {lesson.hasAssignment && <span style={{ fontSize: "11px", color: "#FFB300", background: "rgba(255,179,0,0.1)", padding: "2px 6px", borderRadius: "4px" }}>מטלה</span>}
                       {lesson.duration && !/^[—–\-]+$/.test(lesson.duration.trim()) && lesson.duration.trim() !== "" && (
-                        <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)", display: "inline-flex", alignItems: "center", gap: "4px" }}><ClockIcon size={12} /> {lesson.duration}</span>
+                        <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", display: "inline-flex", alignItems: "center", gap: "4px" }}><ClockIcon size={12} /> {lesson.duration}</span>
                       )}
                     </div>
                   </Link>
@@ -201,12 +201,12 @@ export default function CourseViewClient({ course }: { course: Course }) {
                     style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", background: "none", border: "none", cursor: chapter.isLocked ? "default" : "pointer", textAlign: "right" }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <span style={{ color: "rgba(240,240,245,0.35)", display: "flex", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
+                      <span style={{ color: "rgba(240,240,245,0.7)", display: "flex", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
                         {chapter.isLocked ? <LockIcon size={16} /> : <ChevronDownIcon size={16} />}
                       </span>
                       <span style={{ fontSize: "16px", fontWeight: 700, color: "#f0f0f5" }}>{chapter.title || `נושא ${chIdx + 1}`}</span>
                     </div>
-                    <span style={{ background: "#12122a", color: "rgba(240,240,245,0.6)", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: 600 }}>
+                    <span style={{ background: "#12122a", color: "rgba(240,240,245,0.7)", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: 600 }}>
                       {done}/{chLessons.length}
                     </span>
                   </button>

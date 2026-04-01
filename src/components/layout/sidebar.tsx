@@ -215,7 +215,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
           }}
           onMouseLeave={(e) => {
             if (isWA) {
-              e.currentTarget.style.color = "rgba(240,240,245,0.6)";
+              e.currentTarget.style.color = "rgba(240,240,245,0.7)";
               e.currentTarget.style.textShadow = "none";
             }
           }}
@@ -254,7 +254,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         onMouseLeave={(e) => {
           if (!active) {
             e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "rgba(240,240,245,0.6)";
+            e.currentTarget.style.color = "rgba(240,240,245,0.7)";
           }
         }}
         style={{
@@ -363,7 +363,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
             display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start",
             gap: "12px", width: "100%", padding: collapsed ? "10px" : "10px 12px",
             borderRadius: "4px", background: "transparent",
-            border: "none", cursor: "pointer", color: "rgba(240,240,245,0.6)", fontSize: "14px",
+            border: "none", cursor: "pointer", color: "rgba(240,240,245,0.7)", fontSize: "14px",
           }}
         >
           <span style={{ flexShrink: 0, display: "flex", alignItems: "center" }}>
@@ -406,7 +406,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
                 background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: "50%", width: "36px", height: "36px",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", color: "rgba(240,240,245,0.5)",
+                cursor: "pointer", color: "rgba(240,240,245,0.7)",
                 transition: "background 0.2s",
               }}
               onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.12)"}
@@ -421,7 +421,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
               <h2 style={{ fontSize: "26px", fontWeight: 800, color: "#f0f0f5" }}>
                 מה חדש?
               </h2>
-              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.35)", marginTop: "4px" }}>
+              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginTop: "4px" }}>
                 עדכונים אחרונים מהקהילה
               </p>
             </div>
@@ -439,7 +439,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
             display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start",
             gap: "12px", width: "100%", padding: collapsed ? "10px" : "10px 12px",
             borderRadius: "4px", background: showNotifications ? "rgba(0,0,255,0.12)" : "transparent",
-            border: "none", cursor: "pointer", color: "rgba(240,240,245,0.6)", fontSize: "14px",
+            border: "none", cursor: "pointer", color: "rgba(240,240,245,0.7)", fontSize: "14px",
             position: "relative",
           }}
         >
@@ -484,13 +484,13 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
                 <span style={{ fontSize: "15px", fontWeight: 700, color: "#f0f0f5" }}>התראות</span>
                 {unreadCount > 0 && (
-                  <button onClick={markAllRead} style={{ background: "none", border: "none", color: "#3333FF", fontSize: "12px", cursor: "pointer" }}>
+                  <button onClick={markAllRead} style={{ background: "none", border: "none", color: "#7777FF", fontSize: "12px", cursor: "pointer" }}>
                     סמן הכל כנקרא
                   </button>
                 )}
               </div>
               {notifications.length === 0 ? (
-                <div style={{ padding: "32px 16px", textAlign: "center", color: "rgba(240,240,245,0.3)", fontSize: "13px" }}>
+                <div style={{ padding: "32px 16px", textAlign: "center", color: "rgba(240,240,245,0.7)", fontSize: "13px" }}>
                   אין התראות
                 </div>
               ) : (
@@ -524,7 +524,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
                       {!n.read && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#0000FF", flexShrink: 0, marginTop: 5 }} />}
                       <div style={{ flex: 1 }}>
                         <p style={{ fontSize: "13px", color: n.read ? "rgba(240,240,245,0.5)" : "#f0f0f5", lineHeight: 1.4 }}>{n.text}</p>
-                        <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.25)", marginTop: "4px" }}>{n.time}</p>
+                        <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)", marginTop: "4px" }}>{n.time}</p>
                       </div>
                     </div>
                   </div>
@@ -562,7 +562,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         {collapsed && (
           <button onClick={toggleCollapse} style={{
             display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "36px",
-            borderRadius: "4px", background: "none", border: "none", color: "rgba(240,240,245,0.35)", cursor: "pointer", fontSize: "16px",
+            borderRadius: "4px", background: "none", border: "none", color: "rgba(240,240,245,0.7)", cursor: "pointer", fontSize: "16px",
           }}>
             <ChevronLeftIcon size={16} />
           </button>

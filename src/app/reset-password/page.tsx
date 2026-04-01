@@ -80,7 +80,7 @@ export default function ResetPasswordPage() {
         }}>
           הגדרת סיסמה
         </h1>
-        <p style={{ textAlign: "center", color: "rgba(240,240,245,0.5)", marginBottom: 32, fontSize: 14 }}>
+        <p style={{ textAlign: "center", color: "rgba(240,240,245,0.7)", marginBottom: 32, fontSize: 14 }}>
           בחר סיסמה חדשה לחשבון שלך
         </p>
 
@@ -91,7 +91,7 @@ export default function ResetPasswordPage() {
           padding: "32px 28px",
         }}>
           {!ready ? (
-            <div style={{ textAlign: "center", color: "rgba(240,240,245,0.5)", padding: "20px 0" }}>
+            <div style={{ textAlign: "center", color: "rgba(240,240,245,0.7)", padding: "20px 0" }}>
               <div style={{ width: 32, height: 32, border: "3px solid rgba(255,255,255,0.1)", borderTopColor: "#0000FF", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
               מאמת קישור...
@@ -112,7 +112,7 @@ export default function ResetPasswordPage() {
               )}
 
               <div>
-                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
+                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>
                   סיסמה חדשה
                 </label>
                 <input
@@ -127,7 +127,7 @@ export default function ResetPasswordPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, display: "block" }}>
+                <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>
                   אימות סיסמה
                 </label>
                 <input

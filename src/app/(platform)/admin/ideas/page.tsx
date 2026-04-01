@@ -202,12 +202,12 @@ export default function IdeasPage() {
               padding: "2px 8px",
               borderRadius: "6px",
               background: "rgba(255,255,255,0.06)",
-              color: "rgba(240,240,245,0.5)",
+              color: "rgba(240,240,245,0.7)",
             }}
           >
             {idea.id}
           </span>
-          <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)" }}>
+          <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>
             {new Date(idea.createdAt).toLocaleDateString("he-IL")}
           </span>
         </div>
@@ -246,7 +246,7 @@ export default function IdeasPage() {
               <div
                 style={{
                   fontSize: "13px",
-                  color: "rgba(240,240,245,0.5)",
+                  color: "rgba(240,240,245,0.7)",
                   lineHeight: 1.5,
                   display: "-webkit-box",
                   WebkitLineClamp: 2,
@@ -289,7 +289,7 @@ export default function IdeasPage() {
       <h1 style={{ fontSize: "32px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
         רעיונות לפיתוח
       </h1>
-      <p style={{ color: "rgba(240,240,245,0.6)", marginBottom: "28px", fontSize: "14px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "28px", fontSize: "14px" }}>
         ניהול רעיונות ודרישות פיתוח
       </p>
 
@@ -326,7 +326,7 @@ export default function IdeasPage() {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "rgba(240,240,245,0.3)",
+                  color: "rgba(240,240,245,0.7)",
                   cursor: "pointer",
                   fontSize: "18px",
                   padding: "0 4px",
@@ -346,7 +346,7 @@ export default function IdeasPage() {
             marginTop: "12px",
           }}
         >
-          <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)" }}>
+          <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>
             Enter = שורה חדשה | Cmd+Enter = שלח הכל
           </span>
           <button
@@ -401,7 +401,7 @@ export default function IdeasPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {backlog.map(renderCard)}
             {backlog.length === 0 && (
-              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.3)", textAlign: "center", padding: "32px 0" }}>
+              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", textAlign: "center", padding: "32px 0" }}>
                 אין רעיונות בהמתנה
               </p>
             )}
@@ -434,7 +434,7 @@ export default function IdeasPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {done.map(renderCard)}
             {done.length === 0 && (
-              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.3)", textAlign: "center", padding: "32px 0" }}>
+              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", textAlign: "center", padding: "32px 0" }}>
                 אין רעיונות שהושלמו
               </p>
             )}

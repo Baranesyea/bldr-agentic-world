@@ -64,7 +64,7 @@ export default function DeletedAccountsPage() {
           </button>
         )}
       </div>
-      <p style={{ color: "rgba(240,240,245,0.6)", fontSize: "14px", marginBottom: "28px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", marginBottom: "28px" }}>
         דו&quot;ח של חשבונות שנמחקו ידנית על ידי המשתמשים
       </p>
 
@@ -77,7 +77,7 @@ export default function DeletedAccountsPage() {
         ].map(stat => (
           <div key={stat.label} style={{ ...cardStyle, padding: "16px 20px" }}>
             <p style={{ fontSize: "24px", fontWeight: 800, color: stat.color }}>{stat.value}</p>
-            <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.4)", marginTop: "4px" }}>{stat.label}</p>
+            <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", marginTop: "4px" }}>{stat.label}</p>
           </div>
         ))}
       </div>
@@ -103,7 +103,7 @@ export default function DeletedAccountsPage() {
 
       <div style={cardStyle}>
         {filtered.length === 0 ? (
-          <p style={{ color: "rgba(240,240,245,0.35)", fontSize: "14px", textAlign: "center", padding: "40px 0" }}>
+          <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", textAlign: "center", padding: "40px 0" }}>
             אין חשבונות מחוקים{filter !== "all" ? " בקטגוריה זו" : ""} עדיין.
           </p>
         ) : (
@@ -112,7 +112,7 @@ export default function DeletedAccountsPage() {
               <thead>
                 <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
                   {["תאריך", "שעה", "סוג משתמש", "שם", "אימייל"].map(h => (
-                    <th key={h} style={{ padding: "10px 12px", textAlign: "right", color: "rgba(240,240,245,0.35)", fontWeight: 500, whiteSpace: "nowrap" }}>
+                    <th key={h} style={{ padding: "10px 12px", textAlign: "right", color: "rgba(240,240,245,0.7)", fontWeight: 500, whiteSpace: "nowrap" }}>
                       {h}
                     </th>
                   ))}
@@ -121,8 +121,8 @@ export default function DeletedAccountsPage() {
               <tbody>
                 {filtered.map(account => (
                   <tr key={account.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.6)" }}>{account.date}</td>
-                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.6)" }}>{account.time}</td>
+                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.7)" }}>{account.date}</td>
+                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.7)" }}>{account.time}</td>
                     <td style={{ padding: "12px" }}>
                       <span style={{
                         padding: "3px 10px", borderRadius: "6px",
@@ -134,7 +134,7 @@ export default function DeletedAccountsPage() {
                       </span>
                     </td>
                     <td style={{ padding: "12px", color: "#fff" }}>{account.name}</td>
-                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.6)" }}>{account.email}</td>
+                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.7)" }}>{account.email}</td>
                   </tr>
                 ))}
               </tbody>

@@ -99,7 +99,7 @@ export default function AdminFeedbackPage() {
       <h1 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8 }}>
         פידבקים
       </h1>
-      <p style={{ color: "rgba(240,240,245,0.6)", marginBottom: 28, fontSize: 14 }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: 28, fontSize: 14 }}>
         כל הפידבקים שהתקבלו מהמשתמשים.
       </p>
 
@@ -112,7 +112,7 @@ export default function AdminFeedbackPage() {
           padding: "14px 20px",
         }}>
           <div style={{ fontSize: 24, fontWeight: 700, color: "#fff" }}>{items.length}</div>
-          <div style={{ fontSize: 12, color: "rgba(240,240,245,0.5)" }}>סה״כ</div>
+          <div style={{ fontSize: 12, color: "rgba(240,240,245,0.7)" }}>סה״כ</div>
         </div>
         <div style={{
           background: "rgba(41,121,255,0.08)",
@@ -121,7 +121,7 @@ export default function AdminFeedbackPage() {
           padding: "14px 20px",
         }}>
           <div style={{ fontSize: 24, fontWeight: 700, color: "#2979FF" }}>{totalNew}</div>
-          <div style={{ fontSize: 12, color: "rgba(240,240,245,0.5)" }}>חדשים</div>
+          <div style={{ fontSize: 12, color: "rgba(240,240,245,0.7)" }}>חדשים</div>
         </div>
         {Object.entries(byCat).map(([cat, count]) => (
           <div key={cat} style={{
@@ -131,7 +131,7 @@ export default function AdminFeedbackPage() {
             padding: "14px 20px",
           }}>
             <div style={{ fontSize: 24, fontWeight: 700, color: categoryColors[cat] || "#fff" }}>{count}</div>
-            <div style={{ fontSize: 12, color: "rgba(240,240,245,0.5)" }}>{cat}</div>
+            <div style={{ fontSize: 12, color: "rgba(240,240,245,0.7)" }}>{cat}</div>
           </div>
         ))}
       </div>
@@ -153,7 +153,7 @@ export default function AdminFeedbackPage() {
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div style={{ textAlign: "center", padding: 48, color: "rgba(240,240,245,0.4)", fontSize: 14 }}>
+        <div style={{ textAlign: "center", padding: 48, color: "rgba(240,240,245,0.7)", fontSize: 14 }}>
           אין פידבקים להצגה
         </div>
       ) : (
@@ -206,7 +206,7 @@ export default function AdminFeedbackPage() {
                   )}
                   {/* User info */}
                   {item.userName && (
-                    <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: 12, color: "rgba(240,240,245,0.6)", fontWeight: 500 }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: 12, color: "rgba(240,240,245,0.7)", fontWeight: 500 }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                       {item.userName}
                     </span>
@@ -216,7 +216,7 @@ export default function AdminFeedbackPage() {
                       {item.userEmail}
                     </a>
                   )}
-                  <span style={{ marginRight: "auto", fontSize: 12, color: "rgba(240,240,245,0.35)" }}>
+                  <span style={{ marginRight: "auto", fontSize: 12, color: "rgba(240,240,245,0.7)" }}>
                     {new Date(item.createdAt).toLocaleDateString("he-IL")} {new Date(item.createdAt).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
@@ -238,9 +238,9 @@ export default function AdminFeedbackPage() {
                   <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                       {item.userName && (
-                        <span style={{ fontSize: 12, color: "rgba(240,240,245,0.6)" }}>משתמש: {item.userName}{item.userEmail ? ` (${item.userEmail})` : ""}</span>
+                        <span style={{ fontSize: 12, color: "rgba(240,240,245,0.7)" }}>משתמש: {item.userName}{item.userEmail ? ` (${item.userEmail})` : ""}</span>
                       )}
-                      <span style={{ fontSize: 12, color: "rgba(240,240,245,0.4)" }}>עמוד: {item.page}</span>
+                      <span style={{ fontSize: 12, color: "rgba(240,240,245,0.7)" }}>עמוד: {item.page}</span>
                       <select
                         value={item.status}
                         onChange={(e) => {

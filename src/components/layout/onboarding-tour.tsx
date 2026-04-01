@@ -629,7 +629,7 @@ export function OnboardingTour() {
 
               <div style={{ marginBottom: 14 }}>
                 <div style={{
-                  fontSize: 18, fontWeight: 500, color: "rgba(240,240,245,0.55)",
+                  fontSize: 18, fontWeight: 500, color: "rgba(240,240,245,0.7)",
                   marginBottom: 6, letterSpacing: "0.01em",
                 }}>
                   {settings.welcomeTitle.replace("Agentic World", "").trim()}
@@ -648,7 +648,7 @@ export function OnboardingTour() {
               </div>
 
               <p style={{
-                fontSize: 15, color: "rgba(240,240,245,0.45)",
+                fontSize: 15, color: "rgba(240,240,245,0.7)",
                 marginBottom: 40, lineHeight: 1.7,
                 maxWidth: 300, margin: "0 auto 40px",
               }}>
@@ -689,7 +689,7 @@ export function OnboardingTour() {
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
                   marginBottom: 20,
                 }}>
-                  <span style={{ fontSize: 13, color: "rgba(240,240,245,0.4)" }}>סיור עם סאונד</span>
+                  <span style={{ fontSize: 13, color: "rgba(240,240,245,0.7)" }}>סיור עם סאונד</span>
                   <ToggleSwitch checked={soundEnabled} onChange={setSoundEnabled} size="sm" />
                 </div>
               )}
@@ -963,7 +963,7 @@ export function OnboardingTour() {
             <p style={{ color: "#f0f0f5", fontSize: 24, fontWeight: 700, margin: 0 }}>
               איזה כיף, סיימת את הסיור!
             </p>
-            <p style={{ color: "rgba(240,240,245,0.45)", fontSize: 14, margin: 0, lineHeight: 1.7, maxWidth: 320, textAlign: "center" }}>
+            <p style={{ color: "rgba(240,240,245,0.7)", fontSize: 14, margin: 0, lineHeight: 1.7, maxWidth: 320, textAlign: "center" }}>
               דברים משתנים במערכת כל הזמן,
               <br />
               והסיור זמין לך תמיד מהתפריט.

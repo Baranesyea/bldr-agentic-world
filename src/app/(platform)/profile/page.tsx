@@ -322,7 +322,7 @@ export default function ProfilePage() {
                   border: "1px solid rgba(255,255,255,0.1)",
                   borderRadius: "4px",
                   padding: "6px 12px",
-                  color: "rgba(240,240,245,0.6)",
+                  color: "rgba(240,240,245,0.7)",
                   fontSize: "11px",
                   cursor: "pointer",
                 }}
@@ -407,7 +407,7 @@ export default function ProfilePage() {
                   borderRadius: "50%",
                   animation: "spin 1s linear infinite",
                 }} />
-                <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)" }}>יוצר אווטאר...</span>
+                <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>יוצר אווטאר...</span>
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
               </div>
             )}
@@ -420,7 +420,7 @@ export default function ProfilePage() {
             )}
 
             {!profile.avatarUrl && !generating && !showGenderPicker && (
-              <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.25)", textAlign: "center", maxWidth: "140px" }}>
+              <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)", textAlign: "center", maxWidth: "140px" }}>
                 העלה תמונה או צור אווטאר
               </p>
             )}
@@ -430,7 +430,7 @@ export default function ProfilePage() {
           <div style={{ flex: 1, minWidth: "200px" }}>
             {editing ? (
               <div style={{ marginBottom: "16px" }}>
-                <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", display: "block", marginBottom: "6px" }}>שם</label>
+                <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", display: "block", marginBottom: "6px" }}>שם</label>
                 <div style={{ display: "flex", gap: "8px" }}>
                   <input
                     value={editName}
@@ -451,14 +451,14 @@ export default function ProfilePage() {
                   style={{
                     background: "none",
                     border: "none",
-                    color: "rgba(240,240,245,0.35)",
+                    color: "rgba(240,240,245,0.7)",
                     cursor: "pointer",
                     fontSize: "13px",
                     padding: "4px 8px",
                     borderRadius: "6px",
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.color = "#3333FF"}
-                  onMouseLeave={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.35)"}
+                  onMouseLeave={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.7)"}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                 </button>
@@ -467,13 +467,13 @@ export default function ProfilePage() {
 
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,245,0.35)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              <span style={{ fontSize: "14px", color: "rgba(240,240,245,0.5)" }}>{profile.email}</span>
-              <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.2)" }}>(לא ניתן לשינוי)</span>
+              <span style={{ fontSize: "14px", color: "rgba(240,240,245,0.7)" }}>{profile.email}</span>
+              <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)" }}>(לא ניתן לשינוי)</span>
             </div>
 
             <span style={{
               fontSize: "12px",
-              color: "#3333FF",
+              color: "#7777FF",
               background: "rgba(0,0,255,0.15)",
               padding: "2px 10px",
               borderRadius: "4px",
@@ -495,7 +495,7 @@ export default function ProfilePage() {
         <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#f0f0f5", marginBottom: "16px" }}>פרטים נוספים</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           <div>
-            <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", display: "block", marginBottom: "6px" }}>מה אתם עושים בחיים המקצועיים?</label>
+            <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", display: "block", marginBottom: "6px" }}>מה אתם עושים בחיים המקצועיים?</label>
             <textarea
               rows={2}
               value={editProfession}
@@ -504,7 +504,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", display: "block", marginBottom: "6px" }}>איך הלמידה כאן עוזרת לכם?</label>
+            <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", display: "block", marginBottom: "6px" }}>איך הלמידה כאן עוזרת לכם?</label>
             <textarea
               rows={2}
               value={editLearningGoal}
@@ -514,7 +514,7 @@ export default function ProfilePage() {
           </div>
           <div style={{ display: "flex", gap: "14px" }}>
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", display: "block", marginBottom: "6px" }}>מאיפה אתם?</label>
+              <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", display: "block", marginBottom: "6px" }}>מאיפה אתם?</label>
               <input
                 type="text"
                 value={editCity}
@@ -523,7 +523,7 @@ export default function ProfilePage() {
               />
             </div>
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", display: "block", marginBottom: "6px" }}>גיל</label>
+              <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", display: "block", marginBottom: "6px" }}>גיל</label>
               <input
                 type="number"
                 value={editAge}
@@ -556,9 +556,9 @@ export default function ProfilePage() {
           { label: "הערות", value: "12" },
         ].map((s) => (
           <div key={s.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "16px", textAlign: "center" }}>
-            <div style={{ marginBottom: "4px", color: "rgba(240,240,245,0.6)", display: "flex", justifyContent: "center" }}>{statIcons[s.label]}</div>
+            <div style={{ marginBottom: "4px", color: "rgba(240,240,245,0.7)", display: "flex", justifyContent: "center" }}>{statIcons[s.label]}</div>
             <div style={{ fontSize: "24px", fontWeight: 700, color: "#f0f0f5" }}>{s.value}</div>
-            <div style={{ fontSize: "11px", color: "rgba(240,240,245,0.35)" }}>{s.label}</div>
+            <div style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)" }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -573,7 +573,7 @@ export default function ProfilePage() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0" }}>
           <div>
             <p style={{ fontSize: "14px", color: "#f0f0f5", marginBottom: "2px" }}>מעבר אוטומטי לשיעור הבא</p>
-            <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)" }}>לאחר סיום שיעור, עבור אוטומטית לשיעור הבא</p>
+            <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>לאחר סיום שיעור, עבור אוטומטית לשיעור הבא</p>
           </div>
           <button
             onClick={() => {
@@ -615,7 +615,7 @@ export default function ProfilePage() {
         borderRadius: "4px", padding: "24px", marginTop: "24px",
       }}>
         <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#ef4444", marginBottom: "8px" }}>אזור מסוכן</h2>
-        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)", marginBottom: "16px" }}>
+        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px" }}>
           מחיקת החשבון היא פעולה בלתי הפיכה.
         </p>
         <button
@@ -656,7 +656,7 @@ export default function ProfilePage() {
             <h2 style={{ fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "14px", textAlign: "center" }}>
               האם אתה בטוח שאתה רוצה למחוק את החשבון?
             </h2>
-            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.6)", lineHeight: 1.7, textAlign: "center", marginBottom: "28px" }}>
+            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.7)", lineHeight: 1.7, textAlign: "center", marginBottom: "28px" }}>
               אם תמחק את החשבון לא יהיה לך גישה לתכנים שפתוחים לך עכשיו,
               ולא תקבל התראות על תכנים חדשים שעולים למערכת.
             </p>

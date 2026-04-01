@@ -77,7 +77,7 @@ export default function SocialPage() {
       <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px" }}>
         תכנים נוספים
       </h1>
-      <p style={{ color: "rgba(240,240,245,0.6)", marginBottom: "28px", fontSize: "14px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "28px", fontSize: "14px" }}>
         תכנים שאני מעלה ברשתות החברתיות — טיפים, הדרכות ועדכונים
       </p>
 
@@ -134,7 +134,7 @@ export default function SocialPage() {
               </div>
               <div>
                 <h2 style={{ fontSize: "14px", fontWeight: 700, color: "#f0f0f5", fontFamily: "var(--font-heading-en)" }}>Eran Brownstain</h2>
-                <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.4)" }}>YouTube</p>
+                <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)" }}>YouTube</p>
               </div>
             </div>
             <a
@@ -164,7 +164,7 @@ export default function SocialPage() {
             )}
 
             {error && (
-              <div style={{ textAlign: "center", padding: "40px 20px", color: "rgba(240,240,245,0.5)" }}>
+              <div style={{ textAlign: "center", padding: "40px 20px", color: "rgba(240,240,245,0.7)" }}>
                 <p style={{ marginBottom: "12px" }}>לא הצלחנו לטעון את הסרטונים</p>
                 <a
                   href="https://www.youtube.com/@eranbrownstain"
@@ -193,7 +193,7 @@ export default function SocialPage() {
                     {video.title}
                   </p>
                   {video.published && (
-                    <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.4)", marginTop: "4px" }}>
+                    <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)", marginTop: "4px" }}>
                       {new Date(video.published).toLocaleDateString("he-IL", {
                         year: "numeric", month: "long", day: "numeric",
                       })}
@@ -246,7 +246,7 @@ export default function SocialPage() {
               </div>
               <div>
                 <h2 style={{ fontSize: "14px", fontWeight: 700, color: "#f0f0f5", fontFamily: "var(--font-heading-en)" }}>@eran_brownstain</h2>
-                <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.4)" }}>Instagram</p>
+                <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)" }}>Instagram</p>
               </div>
             </div>
             <a

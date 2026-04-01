@@ -208,19 +208,19 @@ export default function AdminCaseStudiesPage() {
       </h3>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <div>
-          <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, fontWeight: 500 }}>כותרת</label>
+          <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, fontWeight: 500 }}>כותרת</label>
           <input style={inputS} value={formTitle} onChange={(e) => setFormTitle(e.target.value)} placeholder="כותרת מקרה הבוחן" />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, fontWeight: 500 }}>תיאור</label>
+          <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, fontWeight: 500 }}>תיאור</label>
           <textarea style={{ ...inputS, minHeight: 80, resize: "vertical" }} value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="תיאור קצר של מקרה הבוחן" />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, fontWeight: 500 }}>כתובת וידאו</label>
+          <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, fontWeight: 500 }}>כתובת וידאו</label>
           <input style={inputS} value={formVideo} onChange={(e) => setFormVideo(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.6)", marginBottom: 6, fontWeight: 500 }}>תגיות</label>
+          <label style={{ display: "block", fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, fontWeight: 500 }}>תגיות</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: formTags.length > 0 ? 8 : 0 }}>
             {formTags.map((tag) => (
               <span key={tag} style={tagPill}>
@@ -273,11 +273,11 @@ export default function AdminCaseStudiesPage() {
     <div style={{ padding: "32px 40px", maxWidth: 1100, margin: "0 auto" }}>
       {/* Breadcrumb */}
       <div style={{ marginBottom: 32 }}>
-        <Link href="/admin" style={{ fontSize: 13, color: "rgba(240,240,245,0.35)", textDecoration: "none" }}>
+        <Link href="/admin" style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", textDecoration: "none" }}>
           ניהול
         </Link>
-        <span style={{ color: "rgba(240,240,245,0.2)", margin: "0 8px" }}>/</span>
-        <span style={{ fontSize: 13, color: "rgba(240,240,245,0.6)" }}>מקרי בוחן</span>
+        <span style={{ color: "rgba(240,240,245,0.7)", margin: "0 8px" }}>/</span>
+        <span style={{ fontSize: 13, color: "rgba(240,240,245,0.7)" }}>מקרי בוחן</span>
       </div>
 
       {/* Section A: Manage Case Studies */}
@@ -310,7 +310,7 @@ export default function AdminCaseStudiesPage() {
           <div style={{ ...cardS, padding: "60px 32px", textAlign: "center" }}>
             <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>📂</div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 8 }}>אין מקרי בוחן</h2>
-            <p style={{ fontSize: 14, color: "rgba(240,240,245,0.4)" }}>הוסף את מקרה הבוחן הראשון</p>
+            <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)" }}>הוסף את מקרה הבוחן הראשון</p>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -339,7 +339,7 @@ export default function AdminCaseStudiesPage() {
                   <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{cs.title}</h3>
                   <p style={{
                     fontSize: 13,
-                    color: "rgba(240,240,245,0.5)",
+                    color: "rgba(240,240,245,0.7)",
                     lineHeight: 1.5,
                     marginBottom: 8,
                     overflow: "hidden",
@@ -353,7 +353,7 @@ export default function AdminCaseStudiesPage() {
                       <span key={tag} style={tagPill}>{tag}</span>
                     ))}
                   </div>
-                  <div style={{ display: "flex", gap: 16, fontSize: 11, color: "rgba(240,240,245,0.25)" }}>
+                  <div style={{ display: "flex", gap: 16, fontSize: 11, color: "rgba(240,240,245,0.7)" }}>
                     <span>{cs.videoUrl}</span>
                     <span>{new Date(cs.createdAt).toLocaleDateString("he-IL")}</span>
                   </div>
@@ -386,7 +386,7 @@ export default function AdminCaseStudiesPage() {
       {/* Section B: Requests */}
       <div>
         <h2 style={{ fontSize: 24, fontWeight: 700, color: "#fff", marginBottom: 8 }}>בקשות למקרי בוחן</h2>
-        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)", marginBottom: 20 }}>
+        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)", marginBottom: 20 }}>
           בקשות שהתקבלו מהטופס בעמוד מקרי הבוחן
         </p>
 
@@ -394,7 +394,7 @@ export default function AdminCaseStudiesPage() {
           <div style={{ ...cardS, padding: "60px 32px", textAlign: "center" }}>
             <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>📋</div>
             <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 8 }}>אין בקשות עדיין</h3>
-            <p style={{ fontSize: 14, color: "rgba(240,240,245,0.4)" }}>
+            <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)" }}>
               בקשות חדשות יופיעו כאן כשמשתמשים ישלחו דרך טופס מקרי הבוחן
             </p>
           </div>
@@ -419,9 +419,9 @@ export default function AdminCaseStudiesPage() {
                         {st.label}
                       </span>
                     </div>
-                    <p style={{ fontSize: 13, color: "rgba(240,240,245,0.4)", marginBottom: 4 }}>{req.email}</p>
-                    <p style={{ fontSize: 14, color: "rgba(240,240,245,0.6)", lineHeight: 1.6, marginBottom: 8 }}>{req.description}</p>
-                    <span style={{ fontSize: 11, color: "rgba(240,240,245,0.25)" }}>
+                    <p style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 4 }}>{req.email}</p>
+                    <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)", lineHeight: 1.6, marginBottom: 8 }}>{req.description}</p>
+                    <span style={{ fontSize: 11, color: "rgba(240,240,245,0.7)" }}>
                       {new Date(req.createdAt).toLocaleDateString("he-IL")} {new Date(req.createdAt).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>

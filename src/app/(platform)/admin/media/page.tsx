@@ -59,7 +59,7 @@ function MediaThumbnail({ item, onDelete }: { item: MediaItem; onDelete: (id: st
           <div style={{ fontSize: 13, fontWeight: 600, color: "#f0f0f5", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
             {item.label}
           </div>
-          <div style={{ fontSize: 11, color: "rgba(240,240,245,0.35)", marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: "rgba(240,240,245,0.7)", marginTop: 2 }}>
             {item.width && item.height ? `${item.width}x${item.height}` : "—"} · {new Date(item.createdAt).toLocaleDateString("he-IL")}
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function MediaLibraryPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
         <div>
           <h1 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 6 }}>ספריית מדיה</h1>
-          <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)" }}>
+          <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)" }}>
             ניהול תמונות ממוזערות — העלאה, צפייה ומחיקה
           </p>
         </div>
@@ -191,7 +191,7 @@ export default function MediaLibraryPage() {
         <div style={{
           textAlign: "center",
           padding: "80px 0",
-          color: "rgba(240,240,245,0.3)",
+          color: "rgba(240,240,245,0.7)",
           fontSize: 15,
         }}>
           אין תמונות בספרייה. לחץ על &quot;העלה תמונות&quot; כדי להתחיל.

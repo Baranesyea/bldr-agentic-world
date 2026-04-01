@@ -83,7 +83,7 @@ const btnSecondary: React.CSSProperties = {
   borderRadius: 4,
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.04)",
-  color: "rgba(240,240,245,0.6)",
+  color: "rgba(240,240,245,0.7)",
   fontSize: 14,
   fontWeight: 500,
   cursor: "pointer",
@@ -94,7 +94,7 @@ const btnSecondary: React.CSSProperties = {
 };
 
 const statusColors: Record<string, { bg: string; color: string; border: string; label: string }> = {
-  draft: { bg: "rgba(255,255,255,0.06)", color: "rgba(240,240,245,0.6)", border: "rgba(255,255,255,0.1)", label: "טיוטה" },
+  draft: { bg: "rgba(255,255,255,0.06)", color: "rgba(240,240,245,0.7)", border: "rgba(255,255,255,0.1)", label: "טיוטה" },
   active: { bg: "rgba(0,200,100,0.12)", color: "rgba(100,255,180,1)", border: "rgba(0,200,100,0.2)", label: "פעיל" },
   coming_soon: { bg: "rgba(255,179,0,0.12)", color: "#FFB300", border: "rgba(255,179,0,0.2)", label: "בקרוב" },
 };
@@ -213,15 +213,15 @@ export default function AdminCoursesClient({ initialCourses }: { initialCourses:
     <div style={{ padding: "32px 40px", maxWidth: 1100, margin: "0 auto" }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <Link href="/admin" style={{ fontSize: 13, color: "rgba(240,240,245,0.35)", textDecoration: "none" }}>
+        <Link href="/admin" style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", textDecoration: "none" }}>
           ניהול
         </Link>
-        <span style={{ color: "rgba(240,240,245,0.2)", margin: "0 8px" }}>/</span>
-        <span style={{ fontSize: 13, color: "rgba(240,240,245,0.6)" }}>קורסים</span>
+        <span style={{ color: "rgba(240,240,245,0.7)", margin: "0 8px" }}>/</span>
+        <span style={{ fontSize: 13, color: "rgba(240,240,245,0.7)" }}>קורסים</span>
         <h1 style={{ fontSize: 28, fontWeight: 700, color: "#fff", marginTop: 8 }}>
           ניהול קורסים
         </h1>
-        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.5)", marginTop: 4 }}>
+        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)", marginTop: 4 }}>
           צור, ערוך ונהל את הקורסים שלך
         </p>
       </div>
@@ -275,7 +275,7 @@ export default function AdminCoursesClient({ initialCourses }: { initialCourses:
           <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 8 }}>
             אין קורסים עדיין
           </h2>
-          <p style={{ fontSize: 14, color: "rgba(240,240,245,0.4)", marginBottom: 24 }}>
+          <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)", marginBottom: 24 }}>
             צור את הקורס הראשון שלך או ייבא אחד מגיליון אלקטרוני
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
@@ -314,7 +314,7 @@ export default function AdminCoursesClient({ initialCourses }: { initialCourses:
                   {course.thumbnailUrl ? (
                     <ResolvedImg src={course.thumbnailUrl} alt={course.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : (
-                    <span style={{ fontSize: 16, fontWeight: 700, color: "rgba(240,240,245,0.15)" }}>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: "rgba(240,240,245,0.7)" }}>
                       {course.title}
                     </span>
                   )}
@@ -339,11 +339,11 @@ export default function AdminCoursesClient({ initialCourses }: { initialCourses:
                   <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 8 }}>
                     {course.title}
                   </h3>
-                  <div style={{ display: "flex", gap: 16, fontSize: 12, color: "rgba(240,240,245,0.4)", marginBottom: 12 }}>
+                  <div style={{ display: "flex", gap: 16, fontSize: 12, color: "rgba(240,240,245,0.7)", marginBottom: 12 }}>
                     <span>{course.chapters.length} פרקים</span>
                     <span>{lessons} שיעורים</span>
                   </div>
-                  <div style={{ fontSize: 11, color: "rgba(240,240,245,0.25)", marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, color: "rgba(240,240,245,0.7)", marginBottom: 16 }}>
                     נוצר {new Date(course.createdAt).toLocaleDateString()}
                   </div>
 
@@ -355,7 +355,7 @@ export default function AdminCoursesClient({ initialCourses }: { initialCourses:
                         flex: 1, padding: "8px 0", borderRadius: 4,
                         border: "1px solid rgba(255,255,255,0.1)",
                         background: "rgba(255,255,255,0.04)",
-                        color: "rgba(240,240,245,0.6)", fontSize: 12, fontWeight: 500,
+                        color: "rgba(240,240,245,0.7)", fontSize: 12, fontWeight: 500,
                         cursor: "pointer", textDecoration: "none", textAlign: "center", display: "block",
                       }}
                     >
@@ -367,7 +367,7 @@ export default function AdminCoursesClient({ initialCourses }: { initialCourses:
                         flex: 1, padding: "8px 0", borderRadius: 4,
                         border: "1px solid rgba(255,255,255,0.1)",
                         background: "rgba(255,255,255,0.04)",
-                        color: "rgba(240,240,245,0.6)", fontSize: 12, fontWeight: 500, cursor: "pointer",
+                        color: "rgba(240,240,245,0.7)", fontSize: 12, fontWeight: 500, cursor: "pointer",
                       }}
                     >
                       שכפול
@@ -403,7 +403,7 @@ export default function AdminCoursesClient({ initialCourses }: { initialCourses:
           <div style={{
             background: "rgba(0,0,255,0.06)", border: "1px solid rgba(0,0,255,0.15)",
             borderRadius: 4, padding: "12px 16px", marginBottom: 20,
-            fontSize: 13, color: "rgba(240,240,245,0.5)", lineHeight: 1.6,
+            fontSize: 13, color: "rgba(240,240,245,0.7)", lineHeight: 1.6,
           }}>
             גרור את הקורסים כדי לשנות את סדר ההצגה בדשבורד. הקורס המומלץ (Hero) נקבע בעריכת הקורס ולא מושפע מהסדר.
           </div>
@@ -449,12 +449,12 @@ export default function AdminCoursesClient({ initialCourses }: { initialCourses:
                       style={{
                         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                         width: 24, minWidth: 24, height: 36,
-                        color: "rgba(240,240,245,0.2)", fontSize: 16, letterSpacing: 2,
+                        color: "rgba(240,240,245,0.7)", fontSize: 16, letterSpacing: 2,
                         cursor: "grab", userSelect: "none",
                         transition: "color 0.2s",
                       }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "rgba(240,240,245,0.5)"; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "rgba(240,240,245,0.2)"; }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "rgba(240,240,245,0.7)"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "rgba(240,240,245,0.7)"; }}
                     >
                       <span style={{ lineHeight: 0.7 }}>⋮⋮</span>
                     </div>
@@ -497,7 +497,7 @@ export default function AdminCoursesClient({ initialCourses }: { initialCourses:
                     </span>
 
                     {/* Lesson count */}
-                    <span style={{ fontSize: 12, color: "rgba(240,240,245,0.35)", whiteSpace: "nowrap", flexShrink: 0 }}>
+                    <span style={{ fontSize: 12, color: "rgba(240,240,245,0.7)", whiteSpace: "nowrap", flexShrink: 0 }}>
                       {lessons} שיעורים
                     </span>
                   </div>

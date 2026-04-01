@@ -68,7 +68,7 @@ function Avatar({ src, name, size = 24 }: { src: string; name: string; size?: nu
         justifyContent: "center",
         fontSize: size * 0.45,
         fontWeight: 700,
-        color: "#3333FF",
+        color: "#7777FF",
         flexShrink: 0,
       }}
     >
@@ -147,7 +147,7 @@ function AnswerItem({
             <span
               style={{
                 background: "rgba(0,0,255,0.15)",
-                color: "#3333FF",
+                color: "#7777FF",
                 padding: "0px 6px",
                 borderRadius: 4,
                 fontSize: 9,
@@ -187,7 +187,7 @@ function AnswerItem({
             style={{
               background: "none",
               border: "none",
-              color: "rgba(240,240,245,0.35)",
+              color: "rgba(240,240,245,0.7)",
               fontSize: 10,
               cursor: "pointer",
               padding: "4px 0 0",
@@ -428,7 +428,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
   const btnSecondary: React.CSSProperties = {
     padding: "7px 14px",
     background: "transparent",
-    color: "rgba(240,240,245,0.6)",
+    color: "rgba(240,240,245,0.7)",
     border: "1px solid rgba(255,255,255,0.1)",
     borderRadius: 4,
     fontWeight: 600,
@@ -476,7 +476,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
           <span
             style={{
               background: "rgba(0,0,255,0.15)",
-              color: "#3333FF",
+              color: "#7777FF",
               padding: "1px 7px",
               borderRadius: 4,
               fontSize: 10,
@@ -512,7 +512,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
                 }}
               />
             </div>
-            <span style={{ color: "rgba(240,240,245,0.5)", fontSize: 12 }}>מחפש תשובה בבסיס הידע...</span>
+            <span style={{ color: "rgba(240,240,245,0.7)", fontSize: 12 }}>מחפש תשובה בבסיס הידע...</span>
           </div>
         )}
 
@@ -527,7 +527,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
               marginBottom: 12,
             }}
           >
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#3333FF", marginBottom: 6 }}>נמצאה תשובה בבסיס הידע</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#7777FF", marginBottom: 6 }}>נמצאה תשובה בבסיס הידע</div>
             <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, lineHeight: 1.5, marginBottom: 10, whiteSpace: "pre-wrap" }}>
               {kbAnswer}
             </div>
@@ -566,7 +566,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
               width: "100%",
               padding: "8px 0",
               background: "rgba(0,0,255,0.1)",
-              color: "#3333FF",
+              color: "#7777FF",
               border: "1px solid rgba(0,0,255,0.2)",
               borderRadius: 4,
               fontWeight: 700,
@@ -594,7 +594,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
 
             {step === 1 && (
               <>
-                <label style={{ fontSize: 11, color: "rgba(240,240,245,0.5)", marginBottom: 6, display: "block" }}>
+                <label style={{ fontSize: 11, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>
                   כותרת השאלה
                 </label>
                 <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="למשל: איך עושים..." style={inputStyle} />
@@ -611,7 +611,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
 
             {step === 2 && (
               <>
-                <label style={{ fontSize: 11, color: "rgba(240,240,245,0.5)", marginBottom: 6, display: "block" }}>
+                <label style={{ fontSize: 11, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>
                   תאר את השאלה שלך
                 </label>
                 <textarea
@@ -634,7 +634,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
 
             {step === 3 && (
               <>
-                <label style={{ fontSize: 11, color: "rgba(240,240,245,0.5)", marginBottom: 6, display: "block" }}>
+                <label style={{ fontSize: 11, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>
                   קישור לתמונה או וידאו (אופציונלי)
                 </label>
                 <input value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} placeholder="https://..." style={inputStyle} />
@@ -747,14 +747,14 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
                           marginBottom: 8,
                         }}
                       >
-                        <label style={{ fontSize: 10, color: "rgba(240,240,245,0.5)", marginBottom: 4, display: "block" }}>שאלה</label>
+                        <label style={{ fontSize: 10, color: "rgba(240,240,245,0.7)", marginBottom: 4, display: "block" }}>שאלה</label>
                         <textarea
                           value={kbEditQuestion}
                           onChange={(e) => setKbEditQuestion(e.target.value)}
                           rows={2}
                           style={{ ...inputStyle, resize: "vertical", minHeight: 40, marginBottom: 6 }}
                         />
-                        <label style={{ fontSize: 10, color: "rgba(240,240,245,0.5)", marginBottom: 4, display: "block" }}>תשובה</label>
+                        <label style={{ fontSize: 10, color: "rgba(240,240,245,0.7)", marginBottom: 4, display: "block" }}>תשובה</label>
                         <textarea
                           value={kbEditAnswer}
                           onChange={(e) => setKbEditAnswer(e.target.value)}
@@ -824,7 +824,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
         </div>
 
         {questions.length === 0 && !showForm && phase === "idle" && (
-          <p style={{ fontSize: 11, color: "rgba(240,240,245,0.25)", textAlign: "center", marginTop: 8 }}>
+          <p style={{ fontSize: 11, color: "rgba(240,240,245,0.7)", textAlign: "center", marginTop: 8 }}>
             אין שאלות עדיין לשיעור הזה
           </p>
         )}

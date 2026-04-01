@@ -8,11 +8,11 @@ export default function PrivacyPage() {
         <h1 style={{ fontSize: "32px", fontWeight: 800, marginBottom: "8px" }}>
           מדיניות פרטיות
         </h1>
-        <p style={{ color: "rgba(240,240,245,0.4)", fontSize: "13px", marginBottom: "48px" }}>
+        <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "13px", marginBottom: "48px" }}>
           תאריך עדכון אחרון: 17.10.2025
         </p>
 
-        <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.65)", lineHeight: 1.8, marginBottom: "36px" }}>
+        <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.7)", lineHeight: 1.8, marginBottom: "36px" }}>
           ברוכים הבאים לפלטפורמת <strong style={{ color: "#fff" }}>BLDR</strong> (להלן: "הפלטפורמה"). אנו מחויבים לשמירה על פרטיות המידע האישי של המשתמשים ופועלים בהתאם לחוק הגנת הפרטיות, התשמ"א–1981, ולתיקון 13 לחוק, החל מיום 14 באוגוסט 2025.
         </p>
 
@@ -115,7 +115,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>
         {title}
       </h2>
-      <div style={{ fontSize: "15px", color: "rgba(240,240,245,0.65)", lineHeight: 1.8 }}>
+      <div style={{ fontSize: "15px", color: "rgba(240,240,245,0.7)", lineHeight: 1.8 }}>
         {children}
       </div>
     </div>

@@ -140,7 +140,7 @@ export default function WebhooksPage() {
           וובהוקים
         </h1>
       </div>
-      <p style={{ color: "rgba(240,240,245,0.5)", marginBottom: "24px", fontSize: "14px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "24px", fontSize: "14px" }}>
         ניהול וובהוקים ומעקב אחרי שליחות.
       </p>
 
@@ -171,7 +171,7 @@ export default function WebhooksPage() {
                   <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "4px" }}>
                     {wh.name}
                   </h3>
-                  <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)", fontFamily: "var(--font-heading-en)" }}>
+                  <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", fontFamily: "var(--font-heading-en)" }}>
                     {wh.event}
                   </span>
                 </div>
@@ -180,7 +180,7 @@ export default function WebhooksPage() {
               </div>
 
               {/* URL */}
-              <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.5)", marginBottom: "6px" }}>
+              <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "6px" }}>
                 Webhook URL
               </label>
               <input
@@ -205,7 +205,7 @@ export default function WebhooksPage() {
               />
 
               {/* Template */}
-              <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.5)", marginBottom: "6px" }}>
+              <label style={{ display: "block", fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "6px" }}>
                 תבנית הודעה
               </label>
               <textarea
@@ -322,7 +322,7 @@ export default function WebhooksPage() {
           </div>
 
           {filteredLogs.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "48px 0", color: "rgba(240,240,245,0.35)", fontSize: "14px" }}>
+            <div style={{ textAlign: "center", padding: "48px 0", color: "rgba(240,240,245,0.7)", fontSize: "14px" }}>
               אין רשומות לוג
             </div>
           ) : (
@@ -335,7 +335,7 @@ export default function WebhooksPage() {
                   gap: "12px",
                   padding: "8px 16px",
                   fontSize: "12px",
-                  color: "rgba(240,240,245,0.35)",
+                  color: "rgba(240,240,245,0.7)",
                   fontWeight: 600,
                 }}
               >
@@ -365,7 +365,7 @@ export default function WebhooksPage() {
                       alignItems: "center",
                     }}
                   >
-                    <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.5)", fontFamily: "var(--font-heading-en)", direction: "ltr", textAlign: "left" }}>
+                    <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", fontFamily: "var(--font-heading-en)", direction: "ltr", textAlign: "left" }}>
                       {new Date(log.timestamp).toLocaleString("he-IL")}
                     </span>
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -385,10 +385,10 @@ export default function WebhooksPage() {
                     >
                       {log.status === "success" ? "success" : "fail"}
                     </span>
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "rgba(240,240,245,0.5)", fontSize: "12px" }}>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "rgba(240,240,245,0.7)", fontSize: "12px" }}>
                       {log.messageSent.substring(0, 60)}...
                     </span>
-                    <span style={{ fontFamily: "var(--font-heading-en)", fontSize: "12px", color: "rgba(240,240,245,0.5)" }}>
+                    <span style={{ fontFamily: "var(--font-heading-en)", fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>
                       {log.statusCode ?? "—"}
                     </span>
                     <ChevronDownIcon
@@ -409,7 +409,7 @@ export default function WebhooksPage() {
                       }}
                     >
                       <div style={{ marginBottom: "12px" }}>
-                        <span style={{ color: "rgba(240,240,245,0.35)", fontSize: "12px" }}>הודעה מלאה:</span>
+                        <span style={{ color: "rgba(240,240,245,0.7)", fontSize: "12px" }}>הודעה מלאה:</span>
                         <pre
                           style={{
                             background: "#0a0a1a",
@@ -427,7 +427,7 @@ export default function WebhooksPage() {
                         </pre>
                       </div>
                       <div style={{ marginBottom: "12px" }}>
-                        <span style={{ color: "rgba(240,240,245,0.35)", fontSize: "12px" }}>משתנים:</span>
+                        <span style={{ color: "rgba(240,240,245,0.7)", fontSize: "12px" }}>משתנים:</span>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" }}>
                           {Object.entries(log.variables).map(([k, v]) => (
                             <span
@@ -449,13 +449,13 @@ export default function WebhooksPage() {
                       </div>
                       {log.response && (
                         <div>
-                          <span style={{ color: "rgba(240,240,245,0.35)", fontSize: "12px" }}>תגובה:</span>
+                          <span style={{ color: "rgba(240,240,245,0.7)", fontSize: "12px" }}>תגובה:</span>
                           <pre
                             style={{
                               background: "#0a0a1a",
                               borderRadius: 4,
                               padding: "12px",
-                              color: "rgba(240,240,245,0.5)",
+                              color: "rgba(240,240,245,0.7)",
                               fontSize: "12px",
                               whiteSpace: "pre-wrap",
                               wordBreak: "break-word",

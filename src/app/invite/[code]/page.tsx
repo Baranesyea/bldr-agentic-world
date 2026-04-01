@@ -87,7 +87,7 @@ export default function InvitePage() {
             <h1 style={{ fontFamily: "var(--font-heading-en)", fontSize: "24px", color: "#fff", marginBottom: "12px" }}>
               הקישור לא נמצא
             </h1>
-            <p style={{ color: "rgba(240,240,245,0.5)", fontSize: "14px" }}>{error}</p>
+            <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px" }}>{error}</p>
           </>
         ) : promoLink && (
           <>
@@ -98,7 +98,7 @@ export default function InvitePage() {
             }}>
               {"הוזמנת ל-BLDR!"}
             </h1>
-            <p style={{ color: "rgba(240,240,245,0.6)", fontSize: "16px", marginBottom: "32px" }}>
+            <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "16px", marginBottom: "32px" }}>
               קיבלת <span style={{ color: "#fff", fontWeight: 700 }}>{promoLink.trialDays} ימים</span> של גישה חינמית!
             </p>
             <button
@@ -121,7 +121,7 @@ export default function InvitePage() {
             >
               התחל תקופת ניסיון
             </button>
-            <p style={{ color: "rgba(240,240,245,0.3)", fontSize: "12px", marginTop: "20px" }}>
+            <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "12px", marginTop: "20px" }}>
               ללא צורך בכרטיס אשראי
             </p>
           </>
