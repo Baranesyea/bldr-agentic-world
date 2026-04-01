@@ -237,6 +237,7 @@ export default function LoginPage() {
             maxWidth: 420,
             width: "100%",
             animation: "fade-up 0.6s ease-out",
+            fontFamily: "var(--font-merriweather), 'Merriweather', serif",
           }}>
             {/* Title */}
             <div style={{ marginBottom: 32, textAlign: "center" }}>
@@ -312,16 +313,6 @@ export default function LoginPage() {
               {/* Forgot Password Form */}
               {mode === "forgot" && (
                 <form onSubmit={handleForgot} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  {error && (
-                    <div style={{ background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.3)", borderRadius: 4, padding: "10px 14px", fontSize: 13, color: "#ff6b6b" }}>
-                      {error}
-                    </div>
-                  )}
-                  {success && (
-                    <div style={{ background: "rgba(0,200,83,0.1)", border: "1px solid rgba(0,200,83,0.3)", borderRadius: 4, padding: "10px 14px", fontSize: 13, color: "#00C853" }}>
-                      {success}
-                    </div>
-                  )}
                   <input
                     type="email"
                     placeholder="כתובת אימייל"
