@@ -677,12 +677,12 @@ export function OnboardingTour() {
                 onClick={skipTour}
                 style={{
                   background: "none", border: "none",
-                  color: "rgba(240,240,245,0.25)", fontSize: 13,
+                  color: "rgba(240,240,245,0.7)", fontSize: 13,
                   cursor: "pointer",
                   transition: "color 0.2s",
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.5)"}
-                onMouseLeave={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.25)"}
+                onMouseEnter={(e) => e.currentTarget.style.color = "#f0f0f5"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.7)"}
               >
                 דלג
               </button>
@@ -871,12 +871,12 @@ export function OnboardingTour() {
                     onClick={skipTour}
                     style={{
                       background: "none", border: "none",
-                      color: "rgba(240,240,245,0.2)", fontSize: 11,
+                      color: "rgba(240,240,245,0.7)", fontSize: 11,
                       cursor: "pointer",
                       transition: "color 0.2s",
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.4)"}
-                    onMouseLeave={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.2)"}
+                    onMouseEnter={(e) => e.currentTarget.style.color = "#f0f0f5"}
+                    onMouseLeave={(e) => e.currentTarget.style.color = "rgba(240,240,245,0.7)"}
                   >
                     דלג על הסיור
                   </button>

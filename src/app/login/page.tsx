@@ -167,11 +167,13 @@ export default function LoginPage() {
     const checkGoogleAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user?.email) {
+        setShowSpinner(true);
         const isActive = await checkMemberAccess(session.user.email);
         if (isActive) {
           router.push("/dashboard");
           router.refresh();
         } else {
+          setShowSpinner(false);
           setError("אין לך גישה למערכת. פנה למנהל.");
           await supabase.auth.signOut();
         }
@@ -193,6 +195,10 @@ export default function LoginPage() {
     boxShadow: focusedInput === name ? "0 0 20px rgba(0,0,255,0.15)" : "none",
     boxSizing: "border-box" as const,
   });
+
+  if (showSpinner) {
+    return <LoadingSpinner text="מתחבר..." />;
+  }
 
   return (
     <>
