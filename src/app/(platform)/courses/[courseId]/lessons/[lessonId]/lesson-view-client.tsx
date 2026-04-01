@@ -126,6 +126,12 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   const [autoPlayNext, setAutoPlayNext] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const [notesCollapsed, setNotesCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("bldr_notes_collapsed") === "true";
+    }
+    return false;
+  });
 
   // Open current chapter when it's known
   useEffect(() => {
@@ -778,19 +784,52 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
 
         {/* ── LEFT SIDEBAR: Notes + Discussion ── */}
         <div style={{
-          width: "300px",
-          minWidth: "300px",
+          width: notesCollapsed ? "40px" : "300px",
+          minWidth: notesCollapsed ? "40px" : "300px",
           borderRight: "1px solid rgba(255,255,255,0.06)",
           background: "#0a0a1a",
           position: "sticky",
           top: 0,
           height: "100vh",
-          overflowY: "auto",
+          overflowY: notesCollapsed ? "hidden" : "auto",
           display: "flex",
           flexDirection: "column",
+          transition: "width 0.3s, min-width 0.3s",
         }}>
+          {/* Collapse/Expand toggle */}
+          <button
+            onClick={() => {
+              const next = !notesCollapsed;
+              setNotesCollapsed(next);
+              localStorage.setItem("bldr_notes_collapsed", String(next));
+            }}
+            title={notesCollapsed ? "הצג הערות" : "הסתר הערות"}
+            style={{
+              position: "absolute",
+              top: 12,
+              left: notesCollapsed ? "50%" : 12,
+              transform: notesCollapsed ? "translateX(-50%)" : "none",
+              background: "rgba(255,255,255,0.06)",
+              border: "none",
+              borderRadius: "4px",
+              width: 24,
+              height: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: "#f0f0f5",
+              fontSize: 14,
+              zIndex: 2,
+              transition: "left 0.3s",
+            }}
+          >
+            {notesCollapsed ? "◀" : "▶"}
+          </button>
+          {!notesCollapsed && (
+          <>
           {/* Header */}
-          <div style={{ padding: "16px 16px 0", display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ padding: "16px 16px 0 40px", display: "flex", alignItems: "center", gap: "8px" }}>
             <NotebookIcon size={16} color="rgba(240,240,245,0.6)" />
             <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#f0f0f5" }}>הערות</h3>
             <span style={{
@@ -934,6 +973,8 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                 courseName={course.title}
               />
             </div>
+          )}
+          </>
           )}
 
         </div>
