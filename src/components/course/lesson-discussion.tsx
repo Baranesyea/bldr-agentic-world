@@ -336,6 +336,17 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
     };
     addQuestion(q);
     addForumNotification(q.title, lessonTitle);
+    // Track question_asked analytics event
+    fetch("/api/analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventType: "question_asked",
+        eventData: { lessonId, courseId },
+        sessionId: typeof sessionStorage !== "undefined" ? sessionStorage.getItem("bldr_analytics_session") : null,
+        pageUrl: typeof window !== "undefined" ? window.location.pathname : "",
+      }),
+    }).catch(() => {});
     setPhase("success");
     refresh();
     setTimeout(() => resetForm(), 2500);

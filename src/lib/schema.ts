@@ -383,6 +383,21 @@ export const mediaRegistry = pgTable("media_registry", {
 });
 
 // ============================================
+// Analytics
+// ============================================
+export const analyticsEvents = pgTable("analytics_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userEmail: varchar("user_email", { length: 255 }),
+  eventType: varchar("event_type", { length: 50 }).notNull(),
+  eventData: jsonb("event_data").default({}),
+  deviceType: varchar("device_type", { length: 20 }),
+  userAgent: text("user_agent"),
+  sessionId: varchar("session_id", { length: 100 }),
+  pageUrl: text("page_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ============================================
 // Theme Settings
 // ============================================
 export const themeSettings = pgTable("theme_settings", {

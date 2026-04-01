@@ -10,10 +10,17 @@ import { WhatsAppCTA } from "@/components/layout/whatsapp-cta";
 import { OnboardingTour } from "@/components/layout/onboarding-tour";
 import { ProfileQuestionnaire } from "@/components/layout/profile-questionnaire";
 import { TouristGuard } from "@/components/ui/tourist-guard";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { trackPageView } = useAnalytics();
+
+  // Track page views on route change
+  useEffect(() => {
+    if (pathname) trackPageView(pathname);
+  }, [pathname, trackPageView]);
   const isAdmin = pathname?.startsWith("/admin");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Start expanded
   const collapseTimerRef = useRef<NodeJS.Timeout | null>(null);

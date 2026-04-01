@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/icons";
 import VideoPlayer from "@/components/ui/video-player";
 import { ShareButton } from "@/components/ui/share-button";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 // ── Types ──
 interface CourseLesson {
@@ -92,6 +93,9 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   const router = useRouter();
   const searchParams = useSearchParams();
   const courseId = course.id;
+  const { trackEvent, trackVideoProgress } = useAnalytics();
+  const videoProgressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hasTrackedPlayRef = useRef(false);
 
   // Flatten all lessons for navigation
   const allLessons = useMemo(() => {
@@ -176,6 +180,36 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
     const t = setTimeout(() => setFadeIn(false), 600);
     return () => clearTimeout(t);
   }, [currentLesson?.id]);
+
+  // Track video_play when playback starts
+  useEffect(() => {
+    if (isPlaying && currentLesson && !hasTrackedPlayRef.current) {
+      hasTrackedPlayRef.current = true;
+      trackEvent("video_play", { lessonId: currentLesson.id, courseId, lessonTitle: currentLesson.title });
+    }
+  }, [isPlaying, currentLesson, courseId, trackEvent]);
+
+  // Reset play tracking when lesson changes
+  useEffect(() => {
+    hasTrackedPlayRef.current = false;
+  }, [currentLesson?.id]);
+
+  // Track video_progress every 30 seconds while playing
+  useEffect(() => {
+    if (!isPlaying || !currentLesson) {
+      if (videoProgressIntervalRef.current) {
+        clearInterval(videoProgressIntervalRef.current);
+        videoProgressIntervalRef.current = null;
+      }
+      return;
+    }
+    videoProgressIntervalRef.current = setInterval(() => {
+      trackVideoProgress(currentLesson.id, courseId, videoTimer, 0);
+    }, 30000);
+    return () => {
+      if (videoProgressIntervalRef.current) clearInterval(videoProgressIntervalRef.current);
+    };
+  }, [isPlaying, currentLesson?.id, courseId, videoTimer, trackVideoProgress]);
 
   // Video timestamp — poll real position from Vimeo/YouTube iframe
   useEffect(() => {
@@ -347,6 +381,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
     localStorage.setItem("bldr_notes", JSON.stringify(all));
     setSavedNotes((prev) => [note, ...prev]);
     setNoteText("");
+    trackEvent("note_created", { lessonId: currentLesson.id, courseId });
   };
 
   const deleteNote = (noteId: string) => {

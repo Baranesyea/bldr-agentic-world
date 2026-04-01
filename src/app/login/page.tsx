@@ -152,6 +152,18 @@ export default function LoginPage() {
     const count = parseInt(localStorage.getItem("bldr_login_count") || "0");
     localStorage.setItem("bldr_login_count", String(count + 1));
 
+    // Track login event
+    fetch("/api/analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventType: "login",
+        eventData: { method: "email" },
+        userEmail: email.toLowerCase().trim(),
+        pageUrl: "/login",
+      }),
+    }).catch(() => {});
+
     router.push("/dashboard");
     router.refresh();
   };

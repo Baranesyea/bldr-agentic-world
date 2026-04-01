@@ -62,6 +62,7 @@ const adminNav = [
   { label: "רעיונות לפיתוח", href: "/admin/ideas", icon: LightbulbIcon },
   { label: "משימות", href: "/admin/tasks", icon: LightbulbIcon },
   { label: "סטודנטים", href: "/admin/members", icon: UsersIcon },
+  { label: "אנליטיקס", href: "/admin/analytics", icon: DashboardIcon },
 ];
 
 interface SidebarProps {
