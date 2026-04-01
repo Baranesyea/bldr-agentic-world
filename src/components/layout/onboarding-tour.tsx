@@ -294,15 +294,22 @@ export function OnboardingTour() {
       const el = document.querySelector(step.targetSelector);
       if (el) {
         const rect = el.getBoundingClientRect();
-        setSpotlightRect(rect);
-      } else if (attempts < 5) {
-        // Element might not be visible yet (e.g. sidebar expanding), retry
-        setTimeout(() => tryFind(attempts + 1), 200);
+        // Check if element is actually visible (not off-screen or zero-size)
+        if (rect.width > 0 && rect.height > 0 && rect.right > 0) {
+          setSpotlightRect(rect);
+        } else if (attempts < 10) {
+          setTimeout(() => tryFind(attempts + 1), 300);
+        } else {
+          setSpotlightRect(rect);
+        }
+      } else if (attempts < 10) {
+        setTimeout(() => tryFind(attempts + 1), 300);
       } else {
         setSpotlightRect(null);
       }
     };
-    tryFind();
+    // Give sidebar time to expand before first check
+    setTimeout(() => tryFind(), 500);
   }, [steps]);
 
   // Update spotlight on step change and window resize/scroll
@@ -391,11 +398,7 @@ export function OnboardingTour() {
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
-      setTransitioning(true);
-      setTimeout(() => {
-        setCurrentStep((p) => p + 1);
-        setTransitioning(false);
-      }, 250);
+      setCurrentStep((p) => p + 1);
     } else {
       // Tour complete
       setActive(false);
@@ -410,11 +413,7 @@ export function OnboardingTour() {
 
   const prevStep = () => {
     if (currentStep > 0) {
-      setTransitioning(true);
-      setTimeout(() => {
-        setCurrentStep((p) => p - 1);
-        setTransitioning(false);
-      }, 250);
+      setCurrentStep((p) => p - 1);
     }
   };
 
@@ -565,7 +564,7 @@ export function OnboardingTour() {
             style={{
               maxWidth: 460,
               width: "92%",
-              animation: "siriAppear 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both, siriBreathe 4s ease-in-out 1s infinite",
+              animation: "siriAppear 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both",
             }}
           >
             <div style={{ padding: "52px 44px 44px", textAlign: "center" }}>
@@ -726,17 +725,16 @@ export function OnboardingTour() {
             pointerEvents: "auto",
             zIndex: 99990,
           }}>
-            {spotlightRect && (
-              <>
-                <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: Math.max(0, spotlightRect.top - 8) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", transition: "height 0.4s ease" }} />
-                <div style={{ position: "fixed", top: Math.max(0, spotlightRect.top - 8) + "px", left: 0, width: Math.max(0, spotlightRect.left - 8) + "px", height: (spotlightRect.height + 16) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", transition: "top 0.4s ease, width 0.4s ease, height 0.4s ease" }} />
-                <div style={{ position: "fixed", top: Math.max(0, spotlightRect.top - 8) + "px", left: (spotlightRect.right + 8) + "px", right: 0, height: (spotlightRect.height + 16) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", transition: "top 0.4s ease, left 0.4s ease, height 0.4s ease" }} />
-                <div style={{ position: "fixed", top: (spotlightRect.bottom + 8) + "px", left: 0, right: 0, bottom: 0, background: "rgba(3,3,12,0.88)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", transition: "top 0.4s ease" }} />
-              </>
-            )}
-            {!spotlightRect && (
-              <div style={{ position: "fixed", inset: 0, background: "rgba(3,3,12,0.88)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" }} />
-            )}
+            <div style={{
+              position: "fixed", inset: 0,
+              background: "rgba(3,3,12,0.88)",
+              backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
+              clipPath: spotlightRect
+                ? `polygon(0% 0%, 0% 100%, ${spotlightRect.left - 8}px 100%, ${spotlightRect.left - 8}px ${spotlightRect.top - 8}px, ${spotlightRect.right + 8}px ${spotlightRect.top - 8}px, ${spotlightRect.right + 8}px ${spotlightRect.bottom + 8}px, ${spotlightRect.left - 8}px ${spotlightRect.bottom + 8}px, ${spotlightRect.left - 8}px 100%, 100% 100%, 100% 0%)`
+                : undefined,
+              transition: "clip-path 0.4s ease",
+            }} />
           </div>
 
           {/* Spotlight border — matching the card glow colors */}
