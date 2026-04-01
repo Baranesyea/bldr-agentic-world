@@ -154,9 +154,31 @@ export default function LoginPage() {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
       },
     });
   };
+
+  // Check if user just returned from Google OAuth
+  useEffect(() => {
+    const checkGoogleAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email) {
+        const isActive = await checkMemberAccess(session.user.email);
+        if (isActive) {
+          router.push("/dashboard");
+          router.refresh();
+        } else {
+          setError("אין לך גישה למערכת. פנה למנהל.");
+          await supabase.auth.signOut();
+        }
+      }
+    };
+    checkGoogleAuth();
+  }, []);
 
   const inputStyle = (name: string): React.CSSProperties => ({
     width: "100%",
