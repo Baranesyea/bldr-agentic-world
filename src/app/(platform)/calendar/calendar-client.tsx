@@ -251,13 +251,12 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/events?id=${id}`, { method: "DELETE" });
-    if (res.ok) {
-      setEvents(events.filter(e => e.id !== id));
-    }
-    setModalOpen(false);
     setDetailEvent(null);
+    setModalOpen(false);
     setEditingEvent(null);
+    setEvents(events.filter(e => e.id !== id));
+    // Fire-and-forget API call
+    fetch(`/api/events?id=${id}`, { method: "DELETE" });
   };
 
   return (
@@ -305,13 +304,13 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
       </div>
 
       {/* Main layout: sidebar + calendar */}
-      <div style={{ display: "flex", gap: "20px", direction: "rtl" }}>
+      <div style={{ display: "flex", gap: "20px", direction: "rtl", alignItems: "flex-start" }}>
         {/* Sidebar - upcoming events */}
         <div style={{ width: "240px", flexShrink: 0 }}>
-          <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#f0f0f5", marginBottom: "12px", marginTop: 0 }}>אירועים קרובים</h3>
+          <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#f0f0f5", marginBottom: "12px", marginTop: 0, padding: "10px 0", lineHeight: "1", boxSizing: "border-box" }}>אירועים קרובים</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {upcomingEvents.length === 0 && (
-              <div style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)" }}>אין אירועים קרובים</div>
+              <div style={{ fontSize: "13px", color: "rgba(240,240,245,0.85)" }}>אין אירועים קרובים</div>
             )}
             {upcomingEvents.map(evt => (
               <div
@@ -333,7 +332,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.03)"; }}
               >
                 <div style={{ fontSize: "13px", fontWeight: 600, color: "#f0f0f5", marginBottom: "4px", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{evt.title}</div>
-                <div style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>
+                <div style={{ fontSize: "12px", color: "rgba(240,240,245,0.85)" }}>
                   {evt.date} · {evt.startTime}
                 </div>
               </div>
@@ -348,7 +347,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
             <>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1px", marginBottom: "1px" }}>
                 {HEBREW_DAY_NAMES.map(name => (
-                  <div key={name} style={{ padding: "10px 4px", textAlign: "center", fontSize: "13px", fontWeight: 600, color: "rgba(240,240,245,0.7)" }}>
+                  <div key={name} style={{ padding: "10px 4px", textAlign: "center", fontSize: "13px", fontWeight: 600, color: "rgba(240,240,245,0.9)" }}>
                     {name}
                   </div>
                 ))}
@@ -376,7 +375,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                         <span style={{
                           width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center",
                           borderRadius: "50%", fontSize: "13px", fontWeight: isToday ? 700 : 400,
-                          color: cell.currentMonth ? (isToday ? "#fff" : "rgba(240,240,245,0.9)") : "rgba(240,240,245,0.7)",
+                          color: cell.currentMonth ? (isToday ? "#fff" : "rgba(240,240,245,0.9)") : "rgba(240,240,245,0.5)",
                           background: isToday ? "#0000FF" : "transparent",
                         }}>
                           {cell.day}
@@ -401,7 +400,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                           </div>
                         ))}
                         {dayEvents.length > 3 && (
-                          <div style={{ fontSize: "10px", color: "rgba(240,240,245,0.7)", textAlign: "center" }}>+{dayEvents.length - 3}</div>
+                          <div style={{ fontSize: "10px", color: "rgba(240,240,245,0.85)", textAlign: "center" }}>+{dayEvents.length - 3}</div>
                         )}
                       </div>
                     </div>
@@ -423,7 +422,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                     const isToday = wd.dateStr === today;
                     return (
                       <div key={i} style={{ padding: "10px 4px", textAlign: "center" }}>
-                        <div style={{ fontSize: "12px", fontWeight: 600, color: "rgba(240,240,245,0.7)" }}>{HEBREW_DAY_NAMES[i]}</div>
+                        <div style={{ fontSize: "12px", fontWeight: 600, color: "rgba(240,240,245,0.9)" }}>{HEBREW_DAY_NAMES[i]}</div>
                         <div style={{
                           fontSize: "18px", fontWeight: isToday ? 700 : 400,
                           color: isToday ? "#fff" : "rgba(240,240,245,0.9)",
@@ -441,7 +440,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                 <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden", maxHeight: "600px", overflowY: "auto" }}>
                   {HOURS.map(hour => (
                     <div key={hour} style={{ display: "grid", gridTemplateColumns: "60px repeat(7, 1fr)", gap: "1px", minHeight: "48px" }}>
-                      <div style={{ padding: "4px 8px", fontSize: "12px", color: "rgba(240,240,245,0.7)", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                      <div style={{ padding: "4px 8px", fontSize: "12px", color: "rgba(240,240,245,0.85)", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                         {String(hour).padStart(2, "0")}:00
                       </div>
                       {weekDays.map((wd, di) => {
@@ -492,7 +491,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
             return (
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <div style={{ padding: "10px 4px", textAlign: "center", marginBottom: "8px" }}>
-                  <div style={{ fontSize: "14px", fontWeight: 600, color: "rgba(240,240,245,0.7)" }}>{HEBREW_DAY_NAMES[dayOfWeek]}</div>
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: "rgba(240,240,245,0.9)" }}>{HEBREW_DAY_NAMES[dayOfWeek]}</div>
                 </div>
                 <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden", maxHeight: "600px", overflowY: "auto" }}>
                   {HOURS.map(hour => {
@@ -502,7 +501,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                     });
                     return (
                       <div key={hour} style={{ display: "grid", gridTemplateColumns: "60px 1fr", gap: "1px", minHeight: "48px" }}>
-                        <div style={{ padding: "4px 8px", fontSize: "12px", color: "rgba(240,240,245,0.7)", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        <div style={{ padding: "4px 8px", fontSize: "12px", color: "rgba(240,240,245,0.85)", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
                           {String(hour).padStart(2, "0")}:00
                         </div>
                         <div
@@ -588,14 +587,14 @@ function DetailPanel({ event, onClose, onEdit, onDelete }: {
           <span style={{ fontSize: "12px", color: color, fontWeight: 600 }}>{EVENT_TYPE_LABELS[event.type]}</span>
         </div>
         <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#f0f0f5", margin: "0 0 12px" }}>{event.title}</h2>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "rgba(240,240,245,0.7)", fontSize: "14px", marginBottom: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "rgba(240,240,245,0.85)", fontSize: "14px", marginBottom: "8px" }}>
           <CalendarIcon size={14} /> {event.date}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "rgba(240,240,245,0.7)", fontSize: "14px", marginBottom: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "rgba(240,240,245,0.85)", fontSize: "14px", marginBottom: "16px" }}>
           <ClockIcon size={14} /> {event.startTime}{event.endTime && event.endTime !== event.startTime ? ` - ${event.endTime}` : ""}
         </div>
         {event.description && (
-          <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", marginBottom: "16px", lineHeight: 1.5 }}>{event.description}</p>
+          <p style={{ color: "rgba(240,240,245,0.85)", fontSize: "14px", marginBottom: "16px", lineHeight: 1.5 }}>{event.description}</p>
         )}
         <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
           <button onClick={onEdit} style={btnPrimary}>עריכה</button>
@@ -724,7 +723,7 @@ const labelStyle: React.CSSProperties = {
   display: "block",
   fontSize: "13px",
   fontWeight: 600,
-  color: "rgba(240,240,245,0.7)",
+  color: "rgba(240,240,245,0.85)",
   marginBottom: "6px",
   marginTop: "12px",
 };
