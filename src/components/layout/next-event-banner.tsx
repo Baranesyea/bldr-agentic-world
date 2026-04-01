@@ -153,7 +153,7 @@ export function NextEventBanner({ event }: NextEventBannerProps) {
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 50,
-          cursor: "pointer",
+          cursor: "default",
           transition: "all 0.5s cubic-bezier(0.175, 0.885, 0.32, 2.2)",
         }}
       >
