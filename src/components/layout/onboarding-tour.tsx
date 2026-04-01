@@ -210,6 +210,7 @@ function SiriGlowCard({
 }
 
 export function OnboardingTour() {
+  const [fontReady, setFontReady] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [welcomeAudioPlayed, setWelcomeAudioPlayed] = useState(false);
   const [active, setActive] = useState(false);
@@ -224,6 +225,17 @@ export function OnboardingTour() {
   const [showDone, setShowDone] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+
+  // Preload Robot Heroes font
+  useEffect(() => {
+    if (typeof document !== "undefined" && document.fonts) {
+      document.fonts.load("1em 'Robot Heroes'").then(() => setFontReady(true)).catch(() => setFontReady(true));
+      // Fallback timeout
+      setTimeout(() => setFontReady(true), 2000);
+    } else {
+      setFontReady(true);
+    }
+  }, []);
 
   // Check for first visit or trigger
   useEffect(() => {
@@ -523,7 +535,7 @@ export function OnboardingTour() {
       {/* ═══════════════════════════════════════
           Welcome Screen — Siri Glow Edition
           ═══════════════════════════════════════ */}
-      {showWelcome && createPortal(
+      {showWelcome && fontReady && createPortal(
         <div
           onClick={() => {
             // First user interaction — unlock audio autoplay and play welcome audio
