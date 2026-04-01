@@ -448,7 +448,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           flexDirection: "column",
           transition: "width 0.3s, min-width 0.3s",
         }}>
-          {/* Collapse toggle */}
+          {/* Collapse toggle — bottom */}
           <button
             onClick={() => {
               const next = !lessonsCollapsed;
@@ -458,25 +458,24 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
             title={lessonsCollapsed ? "הצג שיעורים" : "הסתר שיעורים"}
             style={{
               position: "absolute",
-              top: 12,
-              right: lessonsCollapsed ? "50%" : 12,
-              transform: lessonsCollapsed ? "translateX(50%)" : "none",
+              bottom: 12,
+              left: "50%",
+              transform: "translateX(-50%)",
               background: "rgba(255,255,255,0.06)",
               border: "none",
               borderRadius: "4px",
-              width: 24,
-              height: 24,
+              width: lessonsCollapsed ? 32 : "calc(100% - 24px)",
+              height: 32,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
               color: "#f0f0f5",
-              fontSize: 14,
               zIndex: 2,
-              transition: "right 0.3s",
+              transition: "width 0.3s",
             }}
           >
-            {lessonsCollapsed ? "▶" : "◀"}
+            <ChevronDownIcon size={14} style={{ transform: lessonsCollapsed ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.2s" }} />
           </button>
 
           {lessonsCollapsed ? (
@@ -918,7 +917,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           flexDirection: "column",
           transition: "width 0.3s, min-width 0.3s",
         }}>
-          {/* Collapse/Expand toggle */}
+          {/* Collapse/Expand toggle — bottom */}
           <button
             onClick={() => {
               const next = !notesCollapsed;
@@ -928,25 +927,24 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
             title={notesCollapsed ? "הצג הערות" : "הסתר הערות"}
             style={{
               position: "absolute",
-              top: 12,
-              left: notesCollapsed ? "50%" : 12,
-              transform: notesCollapsed ? "translateX(-50%)" : "none",
+              bottom: 12,
+              left: "50%",
+              transform: "translateX(-50%)",
               background: "rgba(255,255,255,0.06)",
               border: "none",
               borderRadius: "4px",
-              width: 24,
-              height: 24,
+              width: notesCollapsed ? 32 : "calc(100% - 24px)",
+              height: 32,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
               color: "#f0f0f5",
-              fontSize: 14,
               zIndex: 2,
-              transition: "left 0.3s",
+              transition: "width 0.3s",
             }}
           >
-            {notesCollapsed ? "◀" : "▶"}
+            <ChevronDownIcon size={14} style={{ transform: notesCollapsed ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.2s" }} />
           </button>
           {!notesCollapsed && (
           <>
