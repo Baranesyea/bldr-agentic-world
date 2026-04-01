@@ -12,7 +12,6 @@ import {
   DownloadIcon,
   ChevronDownIcon,
   ClockIcon,
-  PlayIcon,
 } from "@/components/ui/icons";
 import VideoPlayer from "@/components/ui/video-player";
 import { ShareButton } from "@/components/ui/share-button";
@@ -102,6 +101,11 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   // Find current lesson
   const currentLesson = useMemo(() => allLessons.find((l) => l.id === lessonId) || null, [allLessons, lessonId]);
   const currentIndex = useMemo(() => (currentLesson ? allLessons.findIndex((l) => l.id === currentLesson.id) : -1), [allLessons, currentLesson]);
+  const lessonNumberMap = useMemo(() => {
+    const map = new Map<string, number>();
+    allLessons.forEach((l, i) => map.set(l.id, i + 1));
+    return map;
+  }, [allLessons]);
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex >= 0 && currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
@@ -129,6 +133,12 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   const [notesCollapsed, setNotesCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("bldr_notes_collapsed") === "true";
+    }
+    return false;
+  });
+  const [lessonsCollapsed, setLessonsCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("bldr_lessons_collapsed") === "true";
     }
     return false;
   });
@@ -351,7 +361,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 60px)", gap: "16px" }}>
         <p style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5" }}>לא נמצא</p>
-        <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.5)" }}>הקורס או השיעור שביקשת לא נמצאו.</p>
+        <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.7)" }}>הקורס או השיעור שביקשת לא נמצאו.</p>
         <Link href="/dashboard" style={{ background: "#0000FF", color: "white", padding: "10px 24px", borderRadius: "4px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
           חזרה לדאשבורד
         </Link>
@@ -391,19 +401,94 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
       }}>
         {/* ── RIGHT SIDEBAR: Course Nav ── */}
         <div style={{
-          width: "280px",
-          minWidth: "280px",
+          width: lessonsCollapsed ? "50px" : "280px",
+          minWidth: lessonsCollapsed ? "50px" : "280px",
           borderLeft: "1px solid rgba(255,255,255,0.06)",
           background: "#0a0a1a",
           position: "sticky",
           top: 0,
           height: "100vh",
-          overflowY: "auto",
+          overflow: "hidden",
           display: "flex",
           flexDirection: "column",
+          transition: "width 0.3s, min-width 0.3s",
         }}>
+          {/* Collapse toggle */}
+          <button
+            onClick={() => {
+              const next = !lessonsCollapsed;
+              setLessonsCollapsed(next);
+              localStorage.setItem("bldr_lessons_collapsed", String(next));
+            }}
+            title={lessonsCollapsed ? "הצג שיעורים" : "הסתר שיעורים"}
+            style={{
+              position: "absolute",
+              top: 12,
+              right: lessonsCollapsed ? "50%" : 12,
+              transform: lessonsCollapsed ? "translateX(50%)" : "none",
+              background: "rgba(255,255,255,0.06)",
+              border: "none",
+              borderRadius: "4px",
+              width: 24,
+              height: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: "#f0f0f5",
+              fontSize: 14,
+              zIndex: 2,
+              transition: "right 0.3s",
+            }}
+          >
+            {lessonsCollapsed ? "▶" : "◀"}
+          </button>
+
+          {lessonsCollapsed ? (
+            /* Collapsed view: just lesson number circles */
+            <div style={{ paddingTop: "44px", overflowY: "auto", flex: 1 }}>
+              {allLessons.map((lesson) => {
+                const isCurrent = lesson.id === currentLesson.id;
+                const isDone = completedLessons.includes(lesson.id);
+                const num = lessonNumberMap.get(lesson.id) || 0;
+                return (
+                  <Link
+                    key={lesson.id}
+                    href={`/courses/${courseId}/lessons/${lesson.id}`}
+                    title={lesson.title}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "6px 0",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <div style={{
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: isDone ? "rgba(0,200,83,0.15)" : isCurrent ? "rgba(0,0,255,0.2)" : "rgba(255,255,255,0.04)",
+                      border: isCurrent ? "2px solid #0000FF" : "2px solid transparent",
+                      flexShrink: 0,
+                    }}>
+                      {isDone ? (
+                        <CheckIcon size={12} color="#00C853" />
+                      ) : (
+                        <span style={{ fontSize: "11px", fontWeight: 600, color: isCurrent ? "#0000FF" : "rgba(240,240,245,0.7)" }}>{num}</span>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+          <>
           {/* Progress header */}
-          <div style={{ padding: "16px 16px 12px" }}>
+          <div style={{ padding: "16px 16px 12px 16px" }}>
             <Link href={`/courses/${courseId}`} style={{ textDecoration: "none" }}>
               <h3 style={{
                 fontSize: "14px",
@@ -416,7 +501,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
               </h3>
             </Link>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-              <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.5)" }}>{doneLessons} / {totalLessons} שיעורים</span>
+              <span style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)" }}>{doneLessons} / {totalLessons} שיעורים</span>
               <span style={{ fontSize: "11px", color: "#3333FF", fontWeight: 600 }}>{progressPct}%</span>
             </div>
             <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "4px", height: "4px", overflow: "hidden" }}>
@@ -425,7 +510,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           </div>
 
           {/* Chapters */}
-          <div style={{ flex: 1, padding: "0 8px 16px" }}>
+          <div style={{ flex: 1, overflowY: "auto", padding: "0 8px 16px" }}>
             {((): React.ReactNode => {
               const singleChapter = course.chapters.length === 1;
 
@@ -434,6 +519,8 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                         const isCurrent = lesson.id === currentLesson.id;
                         const isNavigating = navigatingTo === lesson.id;
                         const isDone = completedLessons.includes(lesson.id);
+                        const num = lessonNumberMap.get(lesson.id) || 0;
+                        const hasDuration = lesson.duration && !/^[—–\-]+$/.test(lesson.duration.trim()) && lesson.duration.trim() !== "";
                         return (
                           <Link
                             key={lesson.id}
@@ -452,39 +539,37 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                               transition: "all 0.15s",
                             }}
                           >
-                            <div style={{
-                              width: "20px",
-                              height: "20px",
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              background: isDone ? "rgba(0,200,83,0.15)" : isCurrent ? "rgba(0,0,255,0.2)" : "rgba(255,255,255,0.04)",
-                              flexShrink: 0,
-                            }}>
-                              {isDone ? (
-                                <CheckIcon size={10} color="#00C853" />
-                              ) : isCurrent ? (
-                                <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#0000FF" }} />
-                              ) : (
-                                <PlayIcon size={8} color="rgba(240,240,245,0.3)" />
-                              )}
-                            </div>
+                            {hasDuration && (
+                              <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.7)", flexShrink: 0, minWidth: "32px" }}>{lesson.duration}</span>
+                            )}
 
                             <div style={{ flex: 1, overflow: "hidden" }}>
                               <p style={{
                                 fontSize: "12px",
                                 fontWeight: isCurrent || isNavigating ? 600 : 400,
-                                color: isNavigating ? "#f0f0f5" : isCurrent ? "#f0f0f5" : isDone ? "rgba(240,240,245,0.4)" : "rgba(240,240,245,0.7)",
+                                color: isNavigating ? "#f0f0f5" : isCurrent ? "#f0f0f5" : isDone ? "rgba(240,240,245,0.7)" : "rgba(240,240,245,0.7)",
                                 whiteSpace: "nowrap",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                               }}>{lesson.title}{isNavigating ? " ..." : ""}</p>
                             </div>
 
-                            {lesson.duration && !/^[—–\-]+$/.test(lesson.duration.trim()) && lesson.duration.trim() !== "" && (
-                              <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.3)", flexShrink: 0 }}>{lesson.duration}</span>
-                            )}
+                            <div style={{
+                              width: "22px",
+                              height: "22px",
+                              borderRadius: "50%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              background: isDone ? "rgba(0,200,83,0.15)" : isCurrent ? "rgba(0,0,255,0.2)" : "rgba(255,255,255,0.06)",
+                              flexShrink: 0,
+                            }}>
+                              {isDone ? (
+                                <CheckIcon size={10} color="#00C853" />
+                              ) : (
+                                <span style={{ fontSize: "10px", fontWeight: 600, color: isCurrent ? "#0000FF" : "rgba(240,240,245,0.7)" }}>{num}</span>
+                              )}
+                            </div>
                           </Link>
                         );
                       });
@@ -519,12 +604,12 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ color: "rgba(240,240,245,0.35)", display: "flex", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
+                        <span style={{ color: "rgba(240,240,245,0.7)", display: "flex", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
                           <ChevronDownIcon size={13} />
                         </span>
                         <span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(240,240,245,0.8)" }}>{chapter.title}</span>
                       </div>
-                      <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.35)" }}>{chDone}/{chapter.lessons.length}</span>
+                      <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.7)" }}>{chDone}/{chapter.lessons.length}</span>
                     </button>
 
                     {isOpen && (
@@ -537,6 +622,8 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
               });
             })()}
           </div>
+          </>
+          )}
         </div>
 
         {/* ── CENTER: Video + Info ── */}
@@ -561,7 +648,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                   allowFullScreen
                 />
               ) : (
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(240,240,245,0.3)", fontSize: "14px" }}>
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(240,240,245,0.7)", fontSize: "14px" }}>
                   לא הוגדר סרטון לשיעור הזה
                 </div>
               )}
@@ -602,7 +689,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                   <p style={{ fontSize: "15px", color: "rgba(240,240,245,0.8)" }}>
                     השיעור הבא מתחיל בעוד {countdown} שניות...
                   </p>
-                  <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.5)" }}>{nextLesson.title}</p>
+                  <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)" }}>{nextLesson.title}</p>
                   <button
                     onClick={() => { setShowCountdown(false); setAutoCompleted(false); }}
                     style={{
@@ -663,7 +750,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                 {isCurrentCompleted ? <><CheckIcon size={14} /> הושלם</> : "סמן כהושלם"}
               </button>
             </div>
-            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.6)", lineHeight: 1.6 }}>{currentLesson.description}</p>
+            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.7)", lineHeight: 1.6 }}>{currentLesson.description}</p>
           </div>
 
           {/* Assignment */}
@@ -680,7 +767,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                 <AssignmentIcon size={16} />
                 <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#f0f0f5" }}>מטלה</h3>
               </div>
-              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.6)", marginBottom: "16px", lineHeight: 1.6 }}>
+              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px", lineHeight: 1.6 }}>
                 {currentLesson.assignmentText}
               </p>
               <input
@@ -747,7 +834,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                   alignItems: "center",
                   gap: "6px",
                   background: "#12122a",
-                  color: "rgba(240,240,245,0.6)",
+                  color: "rgba(240,240,245,0.7)",
                   padding: "8px 16px",
                   borderRadius: "4px",
                   fontSize: "13px",
@@ -834,7 +921,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
             <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#f0f0f5" }}>הערות</h3>
             <span style={{
               fontSize: "11px",
-              color: "rgba(240,240,245,0.35)",
+              color: "rgba(240,240,245,0.7)",
               background: "rgba(255,255,255,0.06)",
               padding: "2px 8px",
               borderRadius: "4px",
@@ -904,7 +991,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           {/* Notes list */}
           <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: "8px" }}>
             {savedNotes.length === 0 && (
-              <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.25)", textAlign: "center", marginTop: "24px" }}>
+              <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", textAlign: "center", marginTop: "24px" }}>
                 אין הערות עדיין לשיעור הזה
               </p>
             )}
@@ -946,7 +1033,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                     style={{
                       background: "none",
                       border: "none",
-                      color: "rgba(240,240,245,0.2)",
+                      color: "rgba(240,240,245,0.7)",
                       cursor: "pointer",
                       fontSize: "14px",
                       padding: "0 4px",
@@ -956,7 +1043,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                   </button>
                 </div>
                 <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", lineHeight: 1.5 }}>{note.content}</p>
-                <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.2)", marginTop: "4px", display: "block" }}>
+                <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.7)", marginTop: "4px", display: "block" }}>
                   {new Date(note.createdAt).toLocaleDateString("he-IL")}
                 </span>
               </div>

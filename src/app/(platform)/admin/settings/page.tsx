@@ -111,6 +111,14 @@ export default function SettingsPage() {
   const [avatar, setAvatar] = useState<AvatarSettings>(DEFAULT_AVATAR);
   const [avatarSaved, setAvatarSaved] = useState(false);
 
+  interface WhatsAppSettings {
+    url: string;
+    enabled: boolean;
+  }
+  const [whatsapp, setWhatsapp] = useState<WhatsAppSettings>({ url: "", enabled: true });
+  const [whatsappSaved, setWhatsappSaved] = useState(false);
+  const [whatsappSaving, setWhatsappSaving] = useState(false);
+
   interface PaymentSettings {
     monthlyPrice: number;
     growWebhookSecret: string;
@@ -133,7 +141,7 @@ export default function SettingsPage() {
   });
   const [thumbDefaultsSaved, setThumbDefaultsSaved] = useState(false);
 
-  // Load from localStorage
+  // Load from localStorage + DB
   useEffect(() => {
     try {
       const storedKeys = localStorage.getItem("bldr_api_keys");
@@ -149,6 +157,29 @@ export default function SettingsPage() {
     } catch {
       // ignore
     }
+
+    // Load WhatsApp settings from DB, fall back to localStorage
+    fetch("/api/admin-settings?key=whatsapp_cta")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.value) {
+          setWhatsapp(data.value as WhatsAppSettings);
+          // Sync to localStorage for the CTA component
+          localStorage.setItem("bldr_whatsapp_settings", JSON.stringify(data.value));
+        } else {
+          // Fall back to localStorage
+          try {
+            const stored = localStorage.getItem("bldr_whatsapp_settings");
+            if (stored) setWhatsapp(JSON.parse(stored));
+          } catch {}
+        }
+      })
+      .catch(() => {
+        try {
+          const stored = localStorage.getItem("bldr_whatsapp_settings");
+          if (stored) setWhatsapp(JSON.parse(stored));
+        } catch {}
+      });
   }, []);
 
   const saveApiKey = (index: number) => {
@@ -681,19 +712,37 @@ export default function SettingsPage() {
             <label style={LABEL_STYLE}>קישור לקבוצה</label>
             <input
               style={INPUT_STYLE}
-              value={(() => { try { return JSON.parse(localStorage.getItem("bldr_whatsapp_settings") || "{}").url || ""; } catch { return ""; } })()}
-              onChange={(e) => {
-                try {
-                  const current = JSON.parse(localStorage.getItem("bldr_whatsapp_settings") || '{"url":"","enabled":true}');
-                  current.url = e.target.value;
-                  localStorage.setItem("bldr_whatsapp_settings", JSON.stringify(current));
-                } catch {}
-              }}
+              value={whatsapp.url}
+              onChange={(e) => setWhatsapp((p) => ({ ...p, url: e.target.value }))}
               placeholder="https://chat.whatsapp.com/..."
               dir="ltr"
             />
           </div>
         </div>
+        <button
+          style={{ ...BTN_STYLE, marginTop: "16px", opacity: whatsappSaving ? 0.6 : 1 }}
+          disabled={whatsappSaving}
+          onClick={async () => {
+            setWhatsappSaving(true);
+            try {
+              await fetch("/api/admin-settings", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ key: "whatsapp_cta", value: whatsapp }),
+              });
+              // Also sync to localStorage for the CTA component
+              localStorage.setItem("bldr_whatsapp_settings", JSON.stringify(whatsapp));
+              setWhatsappSaved(true);
+              setTimeout(() => setWhatsappSaved(false), 1500);
+            } catch (err) {
+              console.error("Failed to save WhatsApp settings:", err);
+            } finally {
+              setWhatsappSaving(false);
+            }
+          }}
+        >
+          {whatsappSaved ? "נשמר!" : "שמור הגדרות וואטסאפ"}
+        </button>
       </div>
     </div>
   );
