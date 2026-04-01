@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { CalendarIcon, PlusIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon } from "@/components/ui/icons";
 import { PricingPopup } from "@/components/ui/pricing-popup";
 import { getTouristData } from "@/hooks/useUser";
@@ -85,11 +85,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
   const [showPricing, setShowPricing] = useState(false);
   const isTourist = typeof window !== "undefined" ? !!getTouristData() : false;
 
-  const persist = useCallback((evts: CalendarEvent[]) => {
-    setEvents(evts);
-    // Still persist to localStorage for local add/edit/delete (until we add server actions)
-    localStorage.setItem("bldr_calendar_events", JSON.stringify(evts));
-  }, []);
+  // No-op placeholder removed — CRUD now goes through API calls below
 
   // Navigation
   const prevMonth = () => {
@@ -146,18 +142,37 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
     setDetailEvent(null);
   };
 
-  const handleSave = (evt: CalendarEvent) => {
+  const handleSave = async (evt: CalendarEvent) => {
     if (editingEvent) {
-      persist(events.map(e => e.id === evt.id ? evt : e));
+      const res = await fetch("/api/events", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(evt),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setEvents(events.map(e => e.id === updated.id ? updated : e));
+      }
     } else {
-      persist([...events, { ...evt, id: genId() }]);
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(evt),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setEvents([...events, created]);
+      }
     }
     setModalOpen(false);
     setEditingEvent(null);
   };
 
-  const handleDelete = (id: string) => {
-    persist(events.filter(e => e.id !== id));
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`/api/events?id=${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setEvents(events.filter(e => e.id !== id));
+    }
     setModalOpen(false);
     setDetailEvent(null);
     setEditingEvent(null);

@@ -1,40 +1,85 @@
+import { db } from "@/lib/db";
+import { calendarEvents } from "@/lib/schema";
+import { eq, asc } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
-const mockEvents = [
-  {
-    id: "e1",
-    title: "Office Hours",
-    description: "שעת קבלה פתוחה — שאלות, hot seat, ודיון פתוח",
-    type: "office_hours",
-    startTime: "2026-03-18T19:00:00+02:00",
-    endTime: "2026-03-18T20:30:00+02:00",
-    recordingUrl: null,
-  },
-  {
-    id: "e2",
-    title: "שיעור לייב: בניית סוכנים",
-    description: "שיעור מעשי על בניית סוכני AI עם Claude Agent SDK",
-    type: "live",
-    startTime: "2026-03-25T19:00:00+02:00",
-    endTime: "2026-03-25T21:00:00+02:00",
-    recordingUrl: null,
-  },
-];
-
-export async function GET() {
-  return NextResponse.json({ events: mockEvents });
+function clientTypeToDb(type: string): "live" | "office_hours" | "brainstorm" {
+  if (type === "live_lesson") return "live";
+  if (type === "office_hours") return "office_hours";
+  if (type === "community") return "brainstorm";
+  return "live";
 }
 
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const newEvent = {
-    id: crypto.randomUUID(),
-    title: body.title,
-    description: body.description || "",
-    type: body.type || "live",
-    startTime: body.startTime,
-    endTime: body.endTime,
-    recordingUrl: null,
+function buildTimestamp(date: string, time: string): Date {
+  return new Date(`${date}T${time}:00`);
+}
+
+function dbEventToClient(ev: typeof calendarEvents.$inferSelect) {
+  const start = new Date(ev.startTime);
+  const end = new Date(ev.endTime);
+  let clientType: string = "other";
+  if (ev.type === "live") clientType = "live_lesson";
+  else if (ev.type === "office_hours") clientType = "office_hours";
+  else if (ev.type === "brainstorm") clientType = "community";
+
+  return {
+    id: ev.id,
+    title: ev.title,
+    date: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`,
+    startTime: `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`,
+    endTime: `${String(end.getHours()).padStart(2, "0")}:${String(end.getMinutes()).padStart(2, "0")}`,
+    type: clientType,
+    description: ev.description || undefined,
   };
-  return NextResponse.json({ event: newEvent }, { status: 201 });
+}
+
+export async function GET() {
+  const events = await db.select().from(calendarEvents).orderBy(asc(calendarEvents.startTime));
+  return NextResponse.json(events.map(dbEventToClient));
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const { title, date, startTime, endTime, type, description } = body;
+
+  const [created] = await db.insert(calendarEvents).values({
+    title,
+    description: description || null,
+    type: clientTypeToDb(type),
+    startTime: buildTimestamp(date, startTime),
+    endTime: buildTimestamp(date, endTime),
+  }).returning();
+
+  revalidatePath("/calendar");
+  return NextResponse.json(dbEventToClient(created));
+}
+
+export async function PUT(req: NextRequest) {
+  const body = await req.json();
+  const { id, title, date, startTime, endTime, type, description } = body;
+
+  const [updated] = await db.update(calendarEvents)
+    .set({
+      title,
+      description: description || null,
+      type: clientTypeToDb(type),
+      startTime: buildTimestamp(date, startTime),
+      endTime: buildTimestamp(date, endTime),
+    })
+    .where(eq(calendarEvents.id, id))
+    .returning();
+
+  revalidatePath("/calendar");
+  return NextResponse.json(dbEventToClient(updated));
+}
+
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+
+  await db.delete(calendarEvents).where(eq(calendarEvents.id, id));
+  revalidatePath("/calendar");
+  return NextResponse.json({ success: true });
 }

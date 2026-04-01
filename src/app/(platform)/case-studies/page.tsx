@@ -1,5 +1,5 @@
 import { getCaseStudies } from "@/lib/data/case-studies";
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 import CaseStudiesClient from "./case-studies-client";
 
 export default async function CaseStudiesPage() {

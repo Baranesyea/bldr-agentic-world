@@ -1,5 +1,5 @@
 import { getForumQuestions } from "@/lib/data/forum";
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 import { getCourses } from "@/lib/data/courses";
 import QAPageClient from "./qa-client";
 
