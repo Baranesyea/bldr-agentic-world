@@ -21,7 +21,7 @@ export default function LoginPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [fullName, setFullName] = useState("");
-  const [showSpinner, setShowSpinner] = useState(false);
+  const [showSpinner, setShowSpinner] = useState(true);
 
   const supabase = createClient();
 
@@ -162,24 +162,24 @@ export default function LoginPage() {
     });
   };
 
-  // Check if user just returned from Google OAuth
+  // Check if user already has a session (e.g. returned from Google OAuth)
   useEffect(() => {
-    const checkGoogleAuth = async () => {
+    const checkExistingSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user?.email) {
-        setShowSpinner(true);
         const isActive = await checkMemberAccess(session.user.email);
         if (isActive) {
           router.push("/dashboard");
           router.refresh();
+          return;
         } else {
-          setShowSpinner(false);
           setError("אין לך גישה למערכת. פנה למנהל.");
           await supabase.auth.signOut();
         }
       }
+      setShowSpinner(false);
     };
-    checkGoogleAuth();
+    checkExistingSession();
   }, []);
 
   const inputStyle = (name: string): React.CSSProperties => ({
