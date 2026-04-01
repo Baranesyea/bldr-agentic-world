@@ -77,6 +77,8 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -96,7 +98,87 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
     if (month === 11) { setYear(y => y + 1); setMonth(0); }
     else setMonth(m => m + 1);
   };
-  const goToday = () => { setYear(now.getFullYear()); setMonth(now.getMonth()); };
+  const goToday = () => {
+    const t = new Date();
+    setYear(t.getFullYear());
+    setMonth(t.getMonth());
+    setSelectedDate(t);
+  };
+
+  const navigatePrev = () => {
+    if (viewMode === "month") {
+      prevMonth();
+    } else if (viewMode === "week") {
+      const d = new Date(selectedDate);
+      d.setDate(d.getDate() - 7);
+      setSelectedDate(d);
+      setYear(d.getFullYear());
+      setMonth(d.getMonth());
+    } else {
+      const d = new Date(selectedDate);
+      d.setDate(d.getDate() - 1);
+      setSelectedDate(d);
+      setYear(d.getFullYear());
+      setMonth(d.getMonth());
+    }
+  };
+
+  const navigateNext = () => {
+    if (viewMode === "month") {
+      nextMonth();
+    } else if (viewMode === "week") {
+      const d = new Date(selectedDate);
+      d.setDate(d.getDate() + 7);
+      setSelectedDate(d);
+      setYear(d.getFullYear());
+      setMonth(d.getMonth());
+    } else {
+      const d = new Date(selectedDate);
+      d.setDate(d.getDate() + 1);
+      setSelectedDate(d);
+      setYear(d.getFullYear());
+      setMonth(d.getMonth());
+    }
+  };
+
+  const navigateToDate = (dateStr: string) => {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    setYear(y);
+    setMonth(m - 1);
+    setSelectedDate(new Date(y, m - 1, d));
+  };
+
+  // Upcoming events (next 10 from today)
+  const upcomingEvents = [...events]
+    .filter(e => {
+      const eventDate = e.date + "T" + e.startTime;
+      const nowStr = formatDate(now.getFullYear(), now.getMonth(), now.getDate()) + "T" + String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+      return eventDate >= nowStr;
+    })
+    .sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime))
+    .slice(0, 10);
+
+  // Week view helpers
+  const getWeekDays = (): { day: number; month: number; year: number; dateStr: string }[] => {
+    const d = new Date(selectedDate);
+    const dayOfWeek = d.getDay();
+    const sunday = new Date(d);
+    sunday.setDate(d.getDate() - dayOfWeek);
+    const days: { day: number; month: number; year: number; dateStr: string }[] = [];
+    for (let i = 0; i < 7; i++) {
+      const current = new Date(sunday);
+      current.setDate(sunday.getDate() + i);
+      days.push({
+        day: current.getDate(),
+        month: current.getMonth(),
+        year: current.getFullYear(),
+        dateStr: formatDate(current.getFullYear(), current.getMonth(), current.getDate()),
+      });
+    }
+    return days;
+  };
+
+  const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
   // Build grid
   const daysInMonth = getDaysInMonth(year, month);
@@ -179,7 +261,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
   };
 
   return (
-    <div style={{ padding: "32px", maxWidth: "1100px", margin: "0 auto" }}>
+    <div style={{ padding: "32px", maxWidth: "1400px", margin: "0 auto" }}>
       {showPricing && <PricingPopup onClose={() => setShowPricing(false)} />}
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px", flexWrap: "wrap", gap: "12px" }}>
@@ -197,97 +279,264 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
       {/* Month Nav */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <button onClick={nextMonth} style={navBtn}><ChevronRightIcon size={18} /></button>
-          <span style={{ fontSize: "20px", fontWeight: 600, color: "#f0f0f5", minWidth: "140px", textAlign: "center" }}>
-            {HEBREW_MONTH_NAMES[month]} {year}
+          <button onClick={navigateNext} style={navBtn}><ChevronRightIcon size={18} /></button>
+          <span style={{ fontSize: "20px", fontWeight: 600, color: "#f0f0f5", minWidth: "180px", textAlign: "center" }}>
+            {viewMode === "day"
+              ? `${selectedDate.getDate()} ${HEBREW_MONTH_NAMES[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`
+              : `${HEBREW_MONTH_NAMES[month]} ${year}`}
           </span>
-          <button onClick={prevMonth} style={navBtn}><ChevronLeftIcon size={18} /></button>
+          <button onClick={navigatePrev} style={navBtn}><ChevronLeftIcon size={18} /></button>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
           <button onClick={goToday} style={btnSecondary}>היום</button>
-          <button style={{ ...btnSecondary, background: "rgba(0,0,255,0.15)", color: "#5555FF", borderColor: "rgba(0,0,255,0.3)" }}>חודש</button>
-          <button style={btnSecondary} disabled>שבוע</button>
+          {(["month", "week", "day"] as const).map(mode => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              style={viewMode === mode
+                ? { ...btnSecondary, background: "rgba(0,0,255,0.15)", color: "#5555FF", borderColor: "rgba(0,0,255,0.3)" }
+                : btnSecondary
+              }
+            >
+              {mode === "month" ? "חודש" : mode === "week" ? "שבוע" : "יום"}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Day names */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1px", marginBottom: "1px" }}>
-        {HEBREW_DAY_NAMES.map(name => (
-          <div key={name} style={{ padding: "10px 4px", textAlign: "center", fontSize: "13px", fontWeight: 600, color: "rgba(240,240,245,0.5)" }}>
-            {name}
-          </div>
-        ))}
-      </div>
-
-      {/* Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1px", background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden" }}>
-        {cells.map((cell, i) => {
-          const isToday = cell.dateStr === today;
-          const dayEvents = eventsForDate(cell.dateStr);
-          return (
-            <div
-              key={i}
-              onClick={() => openAddModal(cell.dateStr)}
-              style={{
-                minHeight: "100px",
-                background: "rgba(255,255,255,0.03)",
-                padding: "6px",
-                cursor: "pointer",
-                transition: "background 0.15s",
-                position: "relative",
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.06)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.03)"; }}
-            >
-              {/* Day number */}
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: "4px" }}>
-                <span style={{
-                  width: "28px",
-                  height: "28px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: "50%",
-                  fontSize: "13px",
-                  fontWeight: isToday ? 700 : 400,
-                  color: cell.currentMonth ? (isToday ? "#fff" : "rgba(240,240,245,0.9)") : "rgba(240,240,245,0.25)",
-                  background: isToday ? "#0000FF" : "transparent",
-                }}>
-                  {cell.day}
-                </span>
+      {/* Main layout: sidebar + calendar */}
+      <div style={{ display: "flex", gap: "20px", direction: "rtl" }}>
+        {/* Sidebar - upcoming events */}
+        <div style={{ width: "240px", flexShrink: 0 }}>
+          <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#f0f0f5", marginBottom: "12px", marginTop: 0 }}>אירועים קרובים</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {upcomingEvents.length === 0 && (
+              <div style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)" }}>אין אירועים קרובים</div>
+            )}
+            {upcomingEvents.map(evt => (
+              <div
+                key={evt.id}
+                onClick={() => {
+                  navigateToDate(evt.date);
+                  if (!isTourist) setDetailEvent(evt);
+                }}
+                style={{
+                  padding: "10px 12px",
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "4px",
+                  borderRight: `3px solid ${EVENT_TYPE_COLORS[evt.type]}`,
+                  cursor: "pointer",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.06)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.03)"; }}
+              >
+                <div style={{ fontSize: "13px", fontWeight: 600, color: "#f0f0f5", marginBottom: "4px", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{evt.title}</div>
+                <div style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)" }}>
+                  {evt.date} · {evt.startTime}
+                </div>
               </div>
-              {/* Events */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                {dayEvents.slice(0, 3).map(evt => (
-                  <div
-                    key={evt.id}
-                    onClick={e => { e.stopPropagation(); if (isTourist) { setShowPricing(true); } else { setDetailEvent(evt); } }}
-                    style={{
-                      fontSize: "11px",
-                      padding: "2px 6px",
-                      borderRadius: "4px",
-                      background: EVENT_TYPE_COLORS[evt.type] + "22",
-                      borderRight: `3px solid ${EVENT_TYPE_COLORS[evt.type]}`,
-                      color: "rgba(240,240,245,0.85)",
-                      overflow: "hidden",
-                      whiteSpace: "nowrap",
-                      textOverflow: "ellipsis",
-                      cursor: "pointer",
-                      transition: "background 0.15s",
-                    }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = EVENT_TYPE_COLORS[evt.type] + "44"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = EVENT_TYPE_COLORS[evt.type] + "22"; }}
-                  >
-                    {evt.title}
+            ))}
+          </div>
+        </div>
+
+        {/* Calendar area */}
+        <div style={{ flex: 1, minWidth: 0, direction: "ltr" }}>
+          {/* MONTH VIEW */}
+          {viewMode === "month" && (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1px", marginBottom: "1px" }}>
+                {HEBREW_DAY_NAMES.map(name => (
+                  <div key={name} style={{ padding: "10px 4px", textAlign: "center", fontSize: "13px", fontWeight: 600, color: "rgba(240,240,245,0.7)" }}>
+                    {name}
                   </div>
                 ))}
-                {dayEvents.length > 3 && (
-                  <div style={{ fontSize: "10px", color: "rgba(240,240,245,0.4)", textAlign: "center" }}>+{dayEvents.length - 3}</div>
-                )}
               </div>
-            </div>
-          );
-        })}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1px", background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden" }}>
+                {cells.map((cell, i) => {
+                  const isToday = cell.dateStr === today;
+                  const dayEvents = eventsForDate(cell.dateStr);
+                  return (
+                    <div
+                      key={i}
+                      onClick={() => openAddModal(cell.dateStr)}
+                      style={{
+                        minHeight: "100px",
+                        background: "rgba(255,255,255,0.03)",
+                        padding: "6px",
+                        cursor: "pointer",
+                        transition: "background 0.15s",
+                        position: "relative",
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.06)"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.03)"; }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "center", marginBottom: "4px" }}>
+                        <span style={{
+                          width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center",
+                          borderRadius: "50%", fontSize: "13px", fontWeight: isToday ? 700 : 400,
+                          color: cell.currentMonth ? (isToday ? "#fff" : "rgba(240,240,245,0.9)") : "rgba(240,240,245,0.7)",
+                          background: isToday ? "#0000FF" : "transparent",
+                        }}>
+                          {cell.day}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                        {dayEvents.slice(0, 3).map(evt => (
+                          <div
+                            key={evt.id}
+                            onClick={e => { e.stopPropagation(); if (isTourist) { setShowPricing(true); } else { setDetailEvent(evt); } }}
+                            style={{
+                              fontSize: "11px", padding: "2px 6px", borderRadius: "4px",
+                              background: EVENT_TYPE_COLORS[evt.type] + "22",
+                              borderRight: `3px solid ${EVENT_TYPE_COLORS[evt.type]}`,
+                              color: "rgba(240,240,245,0.85)", overflow: "hidden", whiteSpace: "nowrap",
+                              textOverflow: "ellipsis", cursor: "pointer", transition: "background 0.15s",
+                            }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = EVENT_TYPE_COLORS[evt.type] + "44"; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = EVENT_TYPE_COLORS[evt.type] + "22"; }}
+                          >
+                            {evt.title}
+                          </div>
+                        ))}
+                        {dayEvents.length > 3 && (
+                          <div style={{ fontSize: "10px", color: "rgba(240,240,245,0.7)", textAlign: "center" }}>+{dayEvents.length - 3}</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* WEEK VIEW */}
+          {viewMode === "week" && (() => {
+            const weekDays = getWeekDays();
+            return (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {/* Day headers */}
+                <div style={{ display: "grid", gridTemplateColumns: "60px repeat(7, 1fr)", gap: "1px", marginBottom: "1px" }}>
+                  <div />
+                  {weekDays.map((wd, i) => {
+                    const isToday = wd.dateStr === today;
+                    return (
+                      <div key={i} style={{ padding: "10px 4px", textAlign: "center" }}>
+                        <div style={{ fontSize: "12px", fontWeight: 600, color: "rgba(240,240,245,0.7)" }}>{HEBREW_DAY_NAMES[i]}</div>
+                        <div style={{
+                          fontSize: "18px", fontWeight: isToday ? 700 : 400,
+                          color: isToday ? "#fff" : "rgba(240,240,245,0.9)",
+                          width: "32px", height: "32px", borderRadius: "50%",
+                          background: isToday ? "#0000FF" : "transparent",
+                          display: "inline-flex", alignItems: "center", justifyContent: "center", marginTop: "4px",
+                        }}>
+                          {wd.day}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Hour rows */}
+                <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden", maxHeight: "600px", overflowY: "auto" }}>
+                  {HOURS.map(hour => (
+                    <div key={hour} style={{ display: "grid", gridTemplateColumns: "60px repeat(7, 1fr)", gap: "1px", minHeight: "48px" }}>
+                      <div style={{ padding: "4px 8px", fontSize: "12px", color: "rgba(240,240,245,0.7)", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        {String(hour).padStart(2, "0")}:00
+                      </div>
+                      {weekDays.map((wd, di) => {
+                        const hourEvents = eventsForDate(wd.dateStr).filter(evt => {
+                          const h = parseInt(evt.startTime.split(":")[0], 10);
+                          return h === hour;
+                        });
+                        return (
+                          <div
+                            key={di}
+                            onClick={() => openAddModal(wd.dateStr)}
+                            style={{
+                              background: "rgba(255,255,255,0.03)", padding: "2px 4px", cursor: "pointer",
+                              borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s",
+                            }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.06)"; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.03)"; }}
+                          >
+                            {hourEvents.map(evt => (
+                              <div
+                                key={evt.id}
+                                onClick={e => { e.stopPropagation(); if (isTourist) { setShowPricing(true); } else { setDetailEvent(evt); } }}
+                                style={{
+                                  fontSize: "11px", padding: "2px 6px", borderRadius: "4px", marginBottom: "2px",
+                                  background: EVENT_TYPE_COLORS[evt.type] + "22",
+                                  borderRight: `3px solid ${EVENT_TYPE_COLORS[evt.type]}`,
+                                  color: "rgba(240,240,245,0.85)", overflow: "hidden", whiteSpace: "nowrap",
+                                  textOverflow: "ellipsis", cursor: "pointer",
+                                }}
+                              >
+                                {evt.startTime} {evt.title}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* DAY VIEW */}
+          {viewMode === "day" && (() => {
+            const dayStr = formatDate(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+            const dayOfWeek = selectedDate.getDay();
+            return (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <div style={{ padding: "10px 4px", textAlign: "center", marginBottom: "8px" }}>
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: "rgba(240,240,245,0.7)" }}>{HEBREW_DAY_NAMES[dayOfWeek]}</div>
+                </div>
+                <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden", maxHeight: "600px", overflowY: "auto" }}>
+                  {HOURS.map(hour => {
+                    const hourEvents = eventsForDate(dayStr).filter(evt => {
+                      const h = parseInt(evt.startTime.split(":")[0], 10);
+                      return h === hour;
+                    });
+                    return (
+                      <div key={hour} style={{ display: "grid", gridTemplateColumns: "60px 1fr", gap: "1px", minHeight: "48px" }}>
+                        <div style={{ padding: "4px 8px", fontSize: "12px", color: "rgba(240,240,245,0.7)", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                          {String(hour).padStart(2, "0")}:00
+                        </div>
+                        <div
+                          onClick={() => openAddModal(dayStr)}
+                          style={{
+                            background: "rgba(255,255,255,0.03)", padding: "2px 4px", cursor: "pointer",
+                            borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s",
+                          }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.06)"; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.03)"; }}
+                        >
+                          {hourEvents.map(evt => (
+                            <div
+                              key={evt.id}
+                              onClick={e => { e.stopPropagation(); if (isTourist) { setShowPricing(true); } else { setDetailEvent(evt); } }}
+                              style={{
+                                fontSize: "13px", padding: "4px 8px", borderRadius: "4px", marginBottom: "2px",
+                                background: EVENT_TYPE_COLORS[evt.type] + "22",
+                                borderRight: `3px solid ${EVENT_TYPE_COLORS[evt.type]}`,
+                                color: "rgba(240,240,245,0.85)", cursor: "pointer",
+                              }}
+                            >
+                              <span style={{ fontWeight: 600 }}>{evt.startTime} - {evt.endTime}</span> {evt.title}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
       </div>
 
       {/* Detail Panel */}
@@ -339,14 +588,14 @@ function DetailPanel({ event, onClose, onEdit, onDelete }: {
           <span style={{ fontSize: "12px", color: color, fontWeight: 600 }}>{EVENT_TYPE_LABELS[event.type]}</span>
         </div>
         <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#f0f0f5", margin: "0 0 12px" }}>{event.title}</h2>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "rgba(240,240,245,0.6)", fontSize: "14px", marginBottom: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "rgba(240,240,245,0.7)", fontSize: "14px", marginBottom: "8px" }}>
           <CalendarIcon size={14} /> {event.date}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "rgba(240,240,245,0.6)", fontSize: "14px", marginBottom: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "rgba(240,240,245,0.7)", fontSize: "14px", marginBottom: "16px" }}>
           <ClockIcon size={14} /> {event.startTime}{event.endTime && event.endTime !== event.startTime ? ` - ${event.endTime}` : ""}
         </div>
         {event.description && (
-          <p style={{ color: "rgba(240,240,245,0.5)", fontSize: "14px", marginBottom: "16px", lineHeight: 1.5 }}>{event.description}</p>
+          <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", marginBottom: "16px", lineHeight: 1.5 }}>{event.description}</p>
         )}
         <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
           <button onClick={onEdit} style={btnPrimary}>עריכה</button>
@@ -475,7 +724,7 @@ const labelStyle: React.CSSProperties = {
   display: "block",
   fontSize: "13px",
   fontWeight: 600,
-  color: "rgba(240,240,245,0.6)",
+  color: "rgba(240,240,245,0.7)",
   marginBottom: "6px",
   marginTop: "12px",
 };

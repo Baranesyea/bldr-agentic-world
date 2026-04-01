@@ -46,6 +46,7 @@ const mainNav = [
   { label: "מקרי בוחן", href: "/case-studies", icon: BeakerIcon },
   { label: "שאלות", href: "/qa", icon: QuestionIcon },
   { label: "פרופיל", href: "/profile", icon: ProfileIcon },
+  { label: "מפגשי קהילה", href: "/community-meetings", icon: CalendarIcon },
   { label: "סיור", href: "#tour", icon: TourIcon },
   { label: "קהילה", href: "#whatsapp", icon: WhatsAppIcon },
 ];

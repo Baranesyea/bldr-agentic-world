@@ -149,62 +149,78 @@ export default function CourseViewClient({ course }: { course: Course }) {
       {/* Chapters */}
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "32px 48px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {course.chapters?.map((chapter, chIdx) => {
-            const isOpen = openChapters.includes(chapter.id);
-            const chLessons = chapter.lessons || [];
-            const done = chLessons.filter((l) => completedLessons.includes(l.id) || l.completed).length;
+          {(() => {
+            const singleChapter = course.chapters?.length === 1;
 
-            return (
-              <div key={chapter.id} style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden", opacity: chapter.isLocked ? 0.5 : 1 }}>
-                {/* Chapter Header */}
-                <button
-                  onClick={() => !chapter.isLocked && toggle(chapter.id)}
-                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", background: "none", border: "none", cursor: chapter.isLocked ? "default" : "pointer", textAlign: "right" }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <span style={{ color: "rgba(240,240,245,0.35)", display: "flex", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
-                      {chapter.isLocked ? <LockIcon size={16} /> : <ChevronDownIcon size={16} />}
+            const renderLessons = (chLessons: typeof course.chapters[0]["lessons"]) =>
+              chLessons.map((lesson) => {
+                const isDone = completedLessons.includes(lesson.id) || lesson.completed;
+                return (
+                  <Link
+                    key={lesson.id}
+                    href={`/courses/${course.id}/lessons/${lesson.id}`}
+                    style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", borderRadius: "4px", textDecoration: "none", transition: "background 0.15s" }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "rgba(18,18,42,0.5)"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                  >
+                    <div style={{ width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: isDone ? "rgba(0,200,83,0.15)" : "rgba(0,0,255,0.1)", flexShrink: 0 }}>
+                      {isDone ? <CheckIcon size={14} color="#00C853" /> : <PlayIcon size={14} color="#3333FF" />}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: "14px", fontWeight: isDone ? 400 : 600, color: isDone ? "rgba(240,240,245,0.5)" : "#f0f0f5" }}>{lesson.title}</p>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                      {lesson.hasAssignment && <span style={{ fontSize: "11px", color: "#FFB300", background: "rgba(255,179,0,0.1)", padding: "2px 6px", borderRadius: "4px" }}>מטלה</span>}
+                      {lesson.duration && !/^[—–\-]+$/.test(lesson.duration.trim()) && lesson.duration.trim() !== "" && (
+                        <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)", display: "inline-flex", alignItems: "center", gap: "4px" }}><ClockIcon size={12} /> {lesson.duration}</span>
+                      )}
+                    </div>
+                  </Link>
+                );
+              });
+
+            if (singleChapter) {
+              const chapter = course.chapters[0];
+              return (
+                <div style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden", padding: "8px 16px" }}>
+                  {renderLessons(chapter.lessons || [])}
+                </div>
+              );
+            }
+
+            return course.chapters?.map((chapter, chIdx) => {
+              const isOpen = openChapters.includes(chapter.id);
+              const chLessons = chapter.lessons || [];
+              const done = chLessons.filter((l) => completedLessons.includes(l.id) || l.completed).length;
+
+              return (
+                <div key={chapter.id} style={{ background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden", opacity: chapter.isLocked ? 0.5 : 1 }}>
+                  {/* Chapter Header */}
+                  <button
+                    onClick={() => !chapter.isLocked && toggle(chapter.id)}
+                    style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", background: "none", border: "none", cursor: chapter.isLocked ? "default" : "pointer", textAlign: "right" }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <span style={{ color: "rgba(240,240,245,0.35)", display: "flex", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
+                        {chapter.isLocked ? <LockIcon size={16} /> : <ChevronDownIcon size={16} />}
+                      </span>
+                      <span style={{ fontSize: "16px", fontWeight: 700, color: "#f0f0f5" }}>{chapter.title || `נושא ${chIdx + 1}`}</span>
+                    </div>
+                    <span style={{ background: "#12122a", color: "rgba(240,240,245,0.6)", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: 600 }}>
+                      {done}/{chLessons.length}
                     </span>
-                    <span style={{ fontSize: "16px", fontWeight: 700, color: "#f0f0f5" }}>{chapter.title || `נושא ${chIdx + 1}`}</span>
-                  </div>
-                  <span style={{ background: "#12122a", color: "rgba(240,240,245,0.6)", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: 600 }}>
-                    {done}/{chLessons.length}
-                  </span>
-                </button>
+                  </button>
 
-                {/* Lessons */}
-                {isOpen && !chapter.isLocked && (
-                  <div style={{ padding: "0 16px 16px" }}>
-                    {chLessons.map((lesson) => {
-                      const isDone = completedLessons.includes(lesson.id) || lesson.completed;
-                      return (
-                        <Link
-                          key={lesson.id}
-                          href={`/courses/${course.id}/lessons/${lesson.id}`}
-                          style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", borderRadius: "4px", textDecoration: "none", transition: "background 0.15s" }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(18,18,42,0.5)"}
-                          onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                        >
-                          <div style={{ width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: isDone ? "rgba(0,200,83,0.15)" : "rgba(0,0,255,0.1)", flexShrink: 0 }}>
-                            {isDone ? <CheckIcon size={14} color="#00C853" /> : <PlayIcon size={14} color="#3333FF" />}
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: "14px", fontWeight: isDone ? 400 : 600, color: isDone ? "rgba(240,240,245,0.5)" : "#f0f0f5" }}>{lesson.title}</p>
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-                            {lesson.hasAssignment && <span style={{ fontSize: "11px", color: "#FFB300", background: "rgba(255,179,0,0.1)", padding: "2px 6px", borderRadius: "4px" }}>מטלה</span>}
-                            {lesson.duration && !/^[—–\-]+$/.test(lesson.duration.trim()) && lesson.duration.trim() !== "" && (
-                              <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.35)", display: "inline-flex", alignItems: "center", gap: "4px" }}><ClockIcon size={12} /> {lesson.duration}</span>
-                            )}
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                  {/* Lessons */}
+                  {isOpen && !chapter.isLocked && (
+                    <div style={{ padding: "0 16px 16px" }}>
+                      {renderLessons(chLessons)}
+                    </div>
+                  )}
+                </div>
+              );
+            });
+          })()}
         </div>
       </div>
     </div>

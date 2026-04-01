@@ -1,3 +1,5 @@
+export const revalidate = 60;
+
 import { getCourseById } from "@/lib/data/courses";
 import { notFound } from "next/navigation";
 import LessonViewClient from "./lesson-view-client";

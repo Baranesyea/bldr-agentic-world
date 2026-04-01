@@ -420,39 +420,11 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
 
           {/* Chapters */}
           <div style={{ flex: 1, padding: "0 8px 16px" }}>
-            {course.chapters.map((chapter) => {
-              const isOpen = openChapters.includes(chapter.id);
-              const chDone = chapter.lessons.filter((l) => completedLessons.includes(l.id)).length;
+            {((): React.ReactNode => {
+              const singleChapter = course.chapters.length === 1;
 
-              return (
-                <div key={chapter.id} style={{ marginBottom: "4px" }}>
-                  <button
-                    onClick={() => toggleChapter(chapter.id)}
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "10px 8px",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      textAlign: "right",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ color: "rgba(240,240,245,0.35)", display: "flex", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
-                        <ChevronDownIcon size={13} />
-                      </span>
-                      <span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(240,240,245,0.8)" }}>{chapter.title}</span>
-                    </div>
-                    <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.35)" }}>{chDone}/{chapter.lessons.length}</span>
-                  </button>
-
-                  {isOpen && (
-                    <div style={{ padding: "0 4px 4px" }}>
-                      {chapter.lessons.map((lesson) => {
+              const renderLessonItems = (lessons: typeof course.chapters[0]["lessons"]) =>
+                lessons.map((lesson) => {
                         const isCurrent = lesson.id === currentLesson.id;
                         const isNavigating = navigatingTo === lesson.id;
                         const isDone = completedLessons.includes(lesson.id);
@@ -509,12 +481,55 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                             )}
                           </Link>
                         );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                      });
+
+              if (singleChapter) {
+                return (
+                  <div key="single" style={{ padding: "0 4px 4px" }}>
+                    {renderLessonItems(course.chapters[0].lessons)}
+                  </div>
+                );
+              }
+
+              return course.chapters.map((chapter) => {
+                const isOpen = openChapters.includes(chapter.id);
+                const chDone = chapter.lessons.filter((l) => completedLessons.includes(l.id)).length;
+
+                return (
+                  <div key={chapter.id} style={{ marginBottom: "4px" }}>
+                    <button
+                      onClick={() => toggleChapter(chapter.id)}
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "10px 8px",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        textAlign: "right",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ color: "rgba(240,240,245,0.35)", display: "flex", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
+                          <ChevronDownIcon size={13} />
+                        </span>
+                        <span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(240,240,245,0.8)" }}>{chapter.title}</span>
+                      </div>
+                      <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.35)" }}>{chDone}/{chapter.lessons.length}</span>
+                    </button>
+
+                    {isOpen && (
+                      <div style={{ padding: "0 4px 4px" }}>
+                        {renderLessonItems(chapter.lessons)}
+                      </div>
+                    )}
+                  </div>
+                );
+              });
+            })()}
           </div>
         </div>
 
