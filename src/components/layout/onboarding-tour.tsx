@@ -290,13 +290,19 @@ export function OnboardingTour() {
   const updateSpotlight = useCallback((stepIndex: number) => {
     const step = steps[stepIndex];
     if (!step) return;
-    const el = document.querySelector(step.targetSelector);
-    if (el) {
-      const rect = el.getBoundingClientRect();
-      setSpotlightRect(rect);
-    } else {
-      setSpotlightRect(null);
-    }
+    const tryFind = (attempts = 0) => {
+      const el = document.querySelector(step.targetSelector);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        setSpotlightRect(rect);
+      } else if (attempts < 5) {
+        // Element might not be visible yet (e.g. sidebar expanding), retry
+        setTimeout(() => tryFind(attempts + 1), 200);
+      } else {
+        setSpotlightRect(null);
+      }
+    };
+    tryFind();
   }, [steps]);
 
   // Update spotlight on step change and window resize/scroll
@@ -722,14 +728,14 @@ export function OnboardingTour() {
           }}>
             {spotlightRect && (
               <>
-                <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: Math.max(0, spotlightRect.top - 8) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }} />
-                <div style={{ position: "fixed", top: Math.max(0, spotlightRect.top - 8) + "px", left: 0, width: Math.max(0, spotlightRect.left - 8) + "px", height: (spotlightRect.height + 16) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }} />
-                <div style={{ position: "fixed", top: Math.max(0, spotlightRect.top - 8) + "px", left: (spotlightRect.right + 8) + "px", right: 0, height: (spotlightRect.height + 16) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }} />
-                <div style={{ position: "fixed", top: (spotlightRect.bottom + 8) + "px", left: 0, right: 0, bottom: 0, background: "rgba(3,3,12,0.88)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }} />
+                <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: Math.max(0, spotlightRect.top - 8) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", transition: "height 0.4s ease" }} />
+                <div style={{ position: "fixed", top: Math.max(0, spotlightRect.top - 8) + "px", left: 0, width: Math.max(0, spotlightRect.left - 8) + "px", height: (spotlightRect.height + 16) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", transition: "top 0.4s ease, width 0.4s ease, height 0.4s ease" }} />
+                <div style={{ position: "fixed", top: Math.max(0, spotlightRect.top - 8) + "px", left: (spotlightRect.right + 8) + "px", right: 0, height: (spotlightRect.height + 16) + "px", background: "rgba(3,3,12,0.88)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", transition: "top 0.4s ease, left 0.4s ease, height 0.4s ease" }} />
+                <div style={{ position: "fixed", top: (spotlightRect.bottom + 8) + "px", left: 0, right: 0, bottom: 0, background: "rgba(3,3,12,0.88)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", transition: "top 0.4s ease" }} />
               </>
             )}
             {!spotlightRect && (
-              <div style={{ position: "fixed", inset: 0, background: "rgba(3,3,12,0.88)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }} />
+              <div style={{ position: "fixed", inset: 0, background: "rgba(3,3,12,0.88)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" }} />
             )}
           </div>
 
@@ -757,7 +763,7 @@ export function OnboardingTour() {
             <SiriGlowCard
               borderRadius={14}
               borderWidth={2}
-              glowIntensity={0.6}
+              glowIntensity={0.35}
               style={{
                 ...getTooltipPosition(spotlightRect, steps[currentStep].position),
                 position: "fixed" as const,
@@ -785,7 +791,7 @@ export function OnboardingTour() {
                     boxShadow: "0 0 8px rgba(51,51,255,0.5)",
                     animation: "siriInnerPulse 2s ease-in-out infinite",
                   }} />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(240,240,245,0.6)", direction: "ltr" }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#f0f0f5", direction: "ltr" }}>
                     {currentStep + 1} / {steps.length}
                   </span>
                 </div>
@@ -793,7 +799,7 @@ export function OnboardingTour() {
                 <h3 style={{ fontSize: 19, fontWeight: 700, color: "#f0f0f5", marginBottom: 10, letterSpacing: "-0.01em" }}>
                   {steps[currentStep].title}
                 </h3>
-                <p style={{ fontSize: 14, color: "rgba(240,240,245,0.55)", lineHeight: 1.7, marginBottom: 22 }}>
+                <p style={{ fontSize: 14, color: "rgba(240,240,245,0.85)", lineHeight: 1.7, marginBottom: 22 }}>
                   {steps[currentStep].description}
                 </p>
 
@@ -811,7 +817,7 @@ export function OnboardingTour() {
                         }} />
                       ))}
                     </div>
-                    <span style={{ fontSize: 11, color: "rgba(240,240,245,0.3)" }}>מנגן...</span>
+                    <span style={{ fontSize: 11, color: "rgba(240,240,245,0.7)" }}>מנגן...</span>
                   </div>
                 )}
 
@@ -823,7 +829,7 @@ export function OnboardingTour() {
                       style={{
                         background: "rgba(255,255,255,0.04)",
                         border: "1px solid rgba(255,255,255,0.08)",
-                        color: "rgba(240,240,245,0.5)",
+                        color: "#f0f0f5",
                         borderRadius: 4,
                         padding: "10px 16px",
                         fontSize: 14,
