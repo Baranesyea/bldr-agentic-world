@@ -11,12 +11,6 @@ import { OnboardingTour } from "@/components/layout/onboarding-tour";
 import { ProfileQuestionnaire } from "@/components/layout/profile-questionnaire";
 import { TouristGuard } from "@/components/ui/tourist-guard";
 
-const mockEvent = {
-  title: "Office Hours",
-  date: "יום שלישי, 18 מרץ",
-  time: "19:00",
-  hasRsvped: false,
-};
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -98,7 +92,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       </main>
       {!isAdmin && <FeedbackWidget />}
       {!isAdmin && <WhatsAppCTA />}
-      {!isAdmin && <NextEventBanner event={mockEvent} />}
+      {!isAdmin && <NextEventBanner event={null} />}
       <OnboardingTour />
       <ProfileQuestionnaire />
     </div>

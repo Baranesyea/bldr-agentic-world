@@ -290,19 +290,23 @@ export function OnboardingTour() {
   const updateSpotlight = useCallback((stepIndex: number) => {
     const step = steps[stepIndex];
     if (!step) return;
+    const isSidebarItem = step.targetSelector.includes("data-nav");
     const tryFind = (attempts = 0) => {
       const el = document.querySelector(step.targetSelector);
       if (el) {
         const rect = el.getBoundingClientRect();
         // Check if element is actually visible (not off-screen or zero-size)
-        if (rect.width > 0 && rect.height > 0 && rect.right > 0) {
+        const isVisible = rect.width > 0 && rect.height > 0 && rect.right > 0;
+        // For sidebar items in RTL layout, verify element is on the right side of the screen
+        const isInPosition = !isSidebarItem || rect.left > (window.innerWidth * 0.5);
+        if (isVisible && isInPosition) {
           setSpotlightRect(rect);
-        } else if (attempts < 10) {
+        } else if (attempts < 20) {
           setTimeout(() => tryFind(attempts + 1), 300);
         } else {
           setSpotlightRect(rect);
         }
-      } else if (attempts < 10) {
+      } else if (attempts < 20) {
         setTimeout(() => tryFind(attempts + 1), 300);
       } else {
         setSpotlightRect(null);
@@ -385,6 +389,8 @@ export function OnboardingTour() {
     setCurrentStep(0);
     setActive(true);
     window.dispatchEvent(new CustomEvent("bldr:tour-active", { detail: true }));
+    // Give sidebar time to fully expand and render before measuring
+    setTimeout(() => updateSpotlight(0), 1000);
   };
 
   const skipTour = () => {

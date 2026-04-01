@@ -287,14 +287,16 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
           <button onClick={navigatePrev} style={navBtn}><ChevronLeftIcon size={18} /></button>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
-          <button onClick={goToday} style={btnSecondary}>היום</button>
+          {viewMode === "month" && (month !== now.getMonth() || year !== now.getFullYear()) && (
+            <button onClick={goToday} style={btnSecondary}>היום</button>
+          )}
           {(["month", "week", "day"] as const).map(mode => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
               style={viewMode === mode
-                ? { ...btnSecondary, background: "rgba(0,0,255,0.15)", color: "#5555FF", borderColor: "rgba(0,0,255,0.3)" }
-                : btnSecondary
+                ? { ...btnSecondary, background: "#0000FF", color: "white", border: "1px solid #0000FF" }
+                : { ...btnSecondary, background: "rgba(255,255,255,0.04)", color: "#f0f0f5", border: "1px solid rgba(255,255,255,0.08)" }
               }
             >
               {mode === "month" ? "חודש" : mode === "week" ? "שבוע" : "יום"}
@@ -304,10 +306,10 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
       </div>
 
       {/* Main layout: sidebar + calendar */}
-      <div style={{ display: "flex", gap: "20px", direction: "rtl", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", gap: "20px", direction: "rtl", alignItems: "stretch" }}>
         {/* Sidebar - upcoming events */}
-        <div style={{ width: "240px", flexShrink: 0 }}>
-          <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#f0f0f5", marginBottom: "12px", marginTop: 0, padding: "10px 0", lineHeight: "1", boxSizing: "border-box" }}>אירועים קרובים</h3>
+        <div style={{ width: "240px", flexShrink: 0, paddingTop: 0 }}>
+          <h3 style={{ fontSize: "13px", fontWeight: 600, color: "rgba(240,240,245,0.9)", marginBottom: "12px", marginTop: 0, padding: "10px 4px", lineHeight: "1", boxSizing: "border-box", textAlign: "center" }}>אירועים קרובים</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {upcomingEvents.length === 0 && (
               <div style={{ fontSize: "13px", color: "rgba(240,240,245,0.85)" }}>אין אירועים קרובים</div>
@@ -375,7 +377,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                         <span style={{
                           width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center",
                           borderRadius: "50%", fontSize: "13px", fontWeight: isToday ? 700 : 400,
-                          color: cell.currentMonth ? (isToday ? "#fff" : "rgba(240,240,245,0.9)") : "rgba(240,240,245,0.5)",
+                          color: cell.currentMonth ? (isToday ? "#fff" : "rgba(240,240,245,0.9)") : "rgba(240,240,245,0.7)",
                           background: isToday ? "#0000FF" : "transparent",
                         }}>
                           {cell.day}
