@@ -106,6 +106,7 @@ export async function createCourse(data: {
   description?: string;
   status?: "draft" | "active" | "archive" | "coming_soon";
   thumbnail?: string;
+  featured?: boolean;
   displayOrder?: number;
   chapters?: {
     title: string;
@@ -127,6 +128,7 @@ export async function createCourse(data: {
         description: data.description || "",
         status: data.status || "draft",
         thumbnail: data.thumbnail || "",
+        featured: data.featured || false,
         displayOrder: data.displayOrder || 0,
       })
       .returning();
@@ -174,6 +176,7 @@ export async function updateCourse(
     description?: string;
     status?: "draft" | "active" | "archive" | "coming_soon";
     thumbnail?: string;
+    featured?: boolean;
     displayOrder?: number;
     chapters?: {
       id?: string;
@@ -199,6 +202,7 @@ export async function updateCourse(
         ...(data.description !== undefined && { description: data.description }),
         ...(data.status !== undefined && { status: data.status }),
         ...(data.thumbnail !== undefined && { thumbnail: data.thumbnail }),
+        ...(data.featured !== undefined && { featured: data.featured }),
         ...(data.displayOrder !== undefined && { displayOrder: data.displayOrder }),
         updatedAt: new Date(),
       })

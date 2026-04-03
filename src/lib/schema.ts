@@ -61,6 +61,7 @@ export const courses = pgTable("courses", {
   description: text("description"),
   thumbnail: text("thumbnail"),
   status: courseStatusEnum("status").default("draft").notNull(),
+  featured: boolean("featured").default(false),
   dripEnabled: boolean("drip_enabled").default(false),
   dripStartOffset: integer("drip_start_offset"),
   displayOrder: integer("display_order").default(0),

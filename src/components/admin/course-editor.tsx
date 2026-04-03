@@ -391,10 +391,11 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
         const statusMap: Record<string, "draft" | "active" | "coming_soon"> = {
           draft: "draft",
           active: "active",
+          coming_soon: "coming_soon",
           archive: "coming_soon",
         };
         setStatus(statusMap[found.status] || "draft");
-        setFeatured(false);
+        setFeatured(found.featured || false);
         setThumbnailUrl(found.thumbnail || "");
         if (found.chapters && found.chapters.length > 0) {
           setChapters(
@@ -697,6 +698,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
             description,
             status: dbStatus,
             thumbnail: cloudThumbUrl,
+            featured,
             chapters: chaptersPayload,
           }),
         });
@@ -710,6 +712,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
             description,
             status: dbStatus,
             thumbnail: cloudThumbUrl,
+            featured,
             chapters: chaptersPayload,
           }),
         });
