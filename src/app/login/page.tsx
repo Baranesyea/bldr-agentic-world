@@ -213,7 +213,7 @@ export default function LoginPage() {
     transition: "border-color 0.2s, box-shadow 0.2s",
     boxShadow: focusedInput === name ? "0 0 20px rgba(0,0,255,0.15)" : "none",
     boxSizing: "border-box" as const,
-    fontFamily: "'FbAbsoluti', 'Merriweather', serif",
+    fontFamily: "inherit",
   });
 
   if (showSpinner) {
@@ -240,7 +240,6 @@ export default function LoginPage() {
       <div style={{
         minHeight: "100vh",
         background: "#050510",
-        fontFamily: "'FbAbsoluti', sans-serif",
         display: "flex",
         flexDirection: "row-reverse",
       }}>
@@ -258,12 +257,12 @@ export default function LoginPage() {
             maxWidth: 420,
             width: "100%",
             animation: "fade-up 0.6s ease-out",
-            fontFamily: "'FbAbsoluti', 'Merriweather', serif",
+            fontFamily: "inherit",
           }}>
             {/* Title */}
             <div style={{ marginBottom: 32, textAlign: "center" }}>
               <h1 style={{
-                fontFamily: "'FbAbsoluti', 'Merriweather', serif",
+                fontFamily: "inherit",
                 fontSize: 42,
                 fontWeight: 700,
                 color: "#fff",
@@ -378,7 +377,7 @@ export default function LoginPage() {
                   fontSize: 15,
                   fontWeight: 700,
                   color: "#1a1a2e",
-                  fontFamily: "'FbAbsoluti', 'Merriweather', serif",
+                  fontFamily: "inherit",
                   transition: "box-shadow 0.2s, transform 0.15s",
                   boxShadow: hoveredBtn === "google"
                     ? "0 4px 24px rgba(255,255,255,0.15)"
@@ -489,7 +488,7 @@ export default function LoginPage() {
                     fontSize: 16,
                     fontWeight: 700,
                     cursor: loading ? "not-allowed" : "pointer",
-                    fontFamily: "'FbAbsoluti', 'Merriweather', serif",
+                    fontFamily: "inherit",
                     marginTop: 4,
                     transition: "box-shadow 0.2s, background 0.2s, transform 0.15s",
                     boxShadow: hoveredBtn === "login"
