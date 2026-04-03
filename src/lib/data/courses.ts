@@ -104,7 +104,7 @@ export function generateSlug(title: string): string {
 export async function createCourse(data: {
   title: string;
   description?: string;
-  status?: "draft" | "active" | "archive";
+  status?: "draft" | "active" | "archive" | "coming_soon";
   thumbnail?: string;
   displayOrder?: number;
   chapters?: {
@@ -168,7 +168,7 @@ export async function updateCourse(
   data: {
     title?: string;
     description?: string;
-    status?: "draft" | "active" | "archive";
+    status?: "draft" | "active" | "archive" | "coming_soon";
     thumbnail?: string;
     displayOrder?: number;
     chapters?: {

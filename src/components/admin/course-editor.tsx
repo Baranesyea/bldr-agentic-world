@@ -637,10 +637,11 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
   const saveCourse = async (publishStatus?: "active") => {
     // Map editor status to DB status
     const editorStatus = publishStatus || status;
-    const dbStatusMap: Record<string, "draft" | "active" | "archive"> = {
+    const dbStatusMap: Record<string, "draft" | "active" | "archive" | "coming_soon"> = {
       draft: "draft",
       active: "active",
-      coming_soon: "archive",
+      archive: "archive",
+      coming_soon: "coming_soon",
     };
     const dbStatus = dbStatusMap[editorStatus] || "draft";
 

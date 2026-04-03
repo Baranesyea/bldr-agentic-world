@@ -141,7 +141,7 @@ export default function MigratePage() {
           const body = {
             title: course.title || course.name || "קורס ללא שם",
             description: course.description || "",
-            status: (course.status === "active" || course.status === "draft" || course.status === "archive") ? course.status : "draft",
+            status: (course.status === "active" || course.status === "draft" || course.status === "archive" || course.status === "coming_soon") ? course.status : "draft",
             thumbnail: course.thumbnail || "",
             chapters: (course.chapters || []).map((ch: Record<string, unknown>) => ({
               title: (ch.title || ch.name || "פרק") as string,
