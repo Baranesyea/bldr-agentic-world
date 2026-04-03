@@ -119,48 +119,52 @@ export async function createCourse(data: {
     }[];
   }[];
 }) {
-  const [course] = await db
-    .insert(courses)
-    .values({
-      title: data.title,
-      description: data.description || "",
-      status: data.status || "draft",
-      thumbnail: data.thumbnail || "",
-      displayOrder: data.displayOrder || 0,
-    })
-    .returning();
+  const courseId = await db.transaction(async (tx) => {
+    const [course] = await tx
+      .insert(courses)
+      .values({
+        title: data.title,
+        description: data.description || "",
+        status: data.status || "draft",
+        thumbnail: data.thumbnail || "",
+        displayOrder: data.displayOrder || 0,
+      })
+      .returning();
 
-  if (data.chapters) {
-    for (let ci = 0; ci < data.chapters.length; ci++) {
-      const chData = data.chapters[ci];
-      const [chapter] = await db
-        .insert(chapters)
-        .values({
-          courseId: course.id,
-          title: chData.title || `פרק ${ci + 1}`,
-          displayOrder: ci,
-        })
-        .returning();
+    if (data.chapters) {
+      for (let ci = 0; ci < data.chapters.length; ci++) {
+        const chData = data.chapters[ci];
+        const [chapter] = await tx
+          .insert(chapters)
+          .values({
+            courseId: course.id,
+            title: chData.title || `פרק ${ci + 1}`,
+            displayOrder: ci,
+          })
+          .returning();
 
-      if (chData.lessons) {
-        for (let li = 0; li < chData.lessons.length; li++) {
-          const lData = chData.lessons[li];
-          await db.insert(lessons).values({
-            chapterId: chapter.id,
-            title: lData.title || `שיעור ${li + 1}`,
-            description: lData.description || "",
-            videoUrl: lData.videoUrl || "",
-            duration: lData.duration || 0,
-            displayOrder: li,
-            hasAssignment: lData.hasAssignment || false,
-            attachments: lData.attachments || [],
-          });
+        if (chData.lessons) {
+          for (let li = 0; li < chData.lessons.length; li++) {
+            const lData = chData.lessons[li];
+            await tx.insert(lessons).values({
+              chapterId: chapter.id,
+              title: lData.title || `שיעור ${li + 1}`,
+              description: lData.description || "",
+              videoUrl: lData.videoUrl || "",
+              duration: lData.duration || 0,
+              displayOrder: li,
+              hasAssignment: lData.hasAssignment || false,
+              attachments: lData.attachments || [],
+            });
+          }
         }
       }
     }
-  }
 
-  return getCourseById(course.id);
+    return course.id;
+  });
+
+  return getCourseById(courseId);
 }
 
 export async function updateCourse(
@@ -186,52 +190,54 @@ export async function updateCourse(
     }[];
   }
 ) {
-  // Update the course row
-  await db
-    .update(courses)
-    .set({
-      ...(data.title !== undefined && { title: data.title }),
-      ...(data.description !== undefined && { description: data.description }),
-      ...(data.status !== undefined && { status: data.status }),
-      ...(data.thumbnail !== undefined && { thumbnail: data.thumbnail }),
-      ...(data.displayOrder !== undefined && { displayOrder: data.displayOrder }),
-      updatedAt: new Date(),
-    })
-    .where(eq(courses.id, id));
+  await db.transaction(async (tx) => {
+    // Update the course row
+    await tx
+      .update(courses)
+      .set({
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.status !== undefined && { status: data.status }),
+        ...(data.thumbnail !== undefined && { thumbnail: data.thumbnail }),
+        ...(data.displayOrder !== undefined && { displayOrder: data.displayOrder }),
+        updatedAt: new Date(),
+      })
+      .where(eq(courses.id, id));
 
-  // If chapters provided, replace them all
-  if (data.chapters) {
-    // Delete existing chapters (cascades to lessons)
-    await db.delete(chapters).where(eq(chapters.courseId, id));
+    // If chapters provided, replace them all
+    if (data.chapters) {
+      // Delete existing chapters (cascades to lessons)
+      await tx.delete(chapters).where(eq(chapters.courseId, id));
 
-    for (let ci = 0; ci < data.chapters.length; ci++) {
-      const chData = data.chapters[ci];
-      const [chapter] = await db
-        .insert(chapters)
-        .values({
-          courseId: id,
-          title: chData.title || `פרק ${ci + 1}`,
-          displayOrder: ci,
-        })
-        .returning();
+      for (let ci = 0; ci < data.chapters.length; ci++) {
+        const chData = data.chapters[ci];
+        const [chapter] = await tx
+          .insert(chapters)
+          .values({
+            courseId: id,
+            title: chData.title || `פרק ${ci + 1}`,
+            displayOrder: ci,
+          })
+          .returning();
 
-      if (chData.lessons) {
-        for (let li = 0; li < chData.lessons.length; li++) {
-          const lData = chData.lessons[li];
-          await db.insert(lessons).values({
-            chapterId: chapter.id,
-            title: lData.title || `שיעור ${li + 1}`,
-            description: lData.description || "",
-            videoUrl: lData.videoUrl || "",
-            duration: lData.duration || 0,
-            displayOrder: li,
-            hasAssignment: lData.hasAssignment || false,
-            attachments: lData.attachments || [],
-          });
+        if (chData.lessons) {
+          for (let li = 0; li < chData.lessons.length; li++) {
+            const lData = chData.lessons[li];
+            await tx.insert(lessons).values({
+              chapterId: chapter.id,
+              title: lData.title || `שיעור ${li + 1}`,
+              description: lData.description || "",
+              videoUrl: lData.videoUrl || "",
+              duration: lData.duration || 0,
+              displayOrder: li,
+              hasAssignment: lData.hasAssignment || false,
+              attachments: lData.attachments || [],
+            });
+          }
         }
       }
     }
-  }
+  });
 
   return getCourseById(id);
 }
