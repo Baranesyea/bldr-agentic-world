@@ -633,6 +633,27 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
       );
   }, [title, description, thumbStyle]);
 
+  // ── Upload idb:// image to cloud ────────────────────────────
+  const uploadImageToCloud = async (idbUrl: string): Promise<string> => {
+    if (!idbUrl || !idbUrl.startsWith("idb://")) return idbUrl;
+    const key = idbUrl.slice(6);
+    const dataUrl = await getImage(key);
+    if (!dataUrl) return idbUrl;
+
+    try {
+      const res = await fetch("/api/upload-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dataUrl, fileName: key }),
+      });
+      if (res.ok) {
+        const { url } = await res.json();
+        return url;
+      }
+    } catch {}
+    return idbUrl;
+  };
+
   // ── Save ──────────────────────────────────────────────────────
   const saveCourse = async (publishStatus?: "active") => {
     // Map editor status to DB status
@@ -658,6 +679,12 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
     }));
 
     try {
+      // Upload local images to cloud before saving
+      const cloudThumbUrl = await uploadImageToCloud(thumbnailUrl);
+      if (cloudThumbUrl !== thumbnailUrl) {
+        setThumbnailUrl(cloudThumbUrl);
+      }
+
       let res: Response;
       if (existingIdRef.current) {
         // Update existing course
@@ -669,7 +696,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
             title,
             description,
             status: dbStatus,
-            thumbnail: thumbnailUrl,
+            thumbnail: cloudThumbUrl,
             chapters: chaptersPayload,
           }),
         });
@@ -682,7 +709,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
             title,
             description,
             status: dbStatus,
-            thumbnail: thumbnailUrl,
+            thumbnail: cloudThumbUrl,
             chapters: chaptersPayload,
           }),
         });
