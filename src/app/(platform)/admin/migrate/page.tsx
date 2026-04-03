@@ -89,9 +89,17 @@ export default function MigratePage() {
   const [status, setStatus] = useState("");
   const [importing, setImporting] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [syncErrors, setSyncErrors] = useState<string[]>([]);
+  const [localData, setLocalData] = useState<string>("");
+
+  const handleShowLocal = () => {
+    const stored = localStorage.getItem("bldr_courses");
+    setLocalData(stored || "אין מידע מקומי");
+  };
 
   const handleSyncToCloud = async () => {
     setSyncing(true);
+    setSyncErrors([]);
     setStatus("בודק קורסים מקומיים...");
 
     try {
@@ -111,25 +119,39 @@ export default function MigratePage() {
 
       let success = 0;
       let failed = 0;
+      const errors: string[] = [];
 
       for (const course of localCourses) {
-        setStatus(`מעלה לענן: ${course.title || course.name || "קורס"} (${success + failed + 1}/${localCourses.length})...`);
+        const courseName = course.title || course.name || "קורס";
+        setStatus(`מעלה לענן: ${courseName} (${success + failed + 1}/${localCourses.length})...`);
 
         try {
+          // Normalize duration: could be string like "12:30" or number
+          const parseDuration = (d: unknown): number => {
+            if (typeof d === "number") return d;
+            if (typeof d === "string") {
+              const parts = d.split(":");
+              if (parts.length === 2) return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+              const n = parseInt(d);
+              return isNaN(n) ? 0 : n;
+            }
+            return 0;
+          };
+
           const body = {
             title: course.title || course.name || "קורס ללא שם",
             description: course.description || "",
-            status: course.status || "draft",
+            status: (course.status === "active" || course.status === "draft" || course.status === "archive") ? course.status : "draft",
             thumbnail: course.thumbnail || "",
-            chapters: (course.chapters || []).map((ch: { title?: string; name?: string; lessons?: Array<{ title?: string; name?: string; description?: string; videoUrl?: string; duration?: number; hasAssignment?: boolean; attachments?: unknown[] }> }) => ({
-              title: ch.title || ch.name || "פרק",
-              lessons: (ch.lessons || []).map((l: { title?: string; name?: string; description?: string; videoUrl?: string; duration?: number; hasAssignment?: boolean; attachments?: unknown[] }) => ({
-                title: l.title || l.name || "שיעור",
-                description: l.description || "",
-                videoUrl: l.videoUrl || "",
-                duration: l.duration || 0,
-                hasAssignment: l.hasAssignment || false,
-                attachments: l.attachments || [],
+            chapters: (course.chapters || []).map((ch: Record<string, unknown>) => ({
+              title: (ch.title || ch.name || "פרק") as string,
+              lessons: (Array.isArray(ch.lessons) ? ch.lessons : []).map((l: Record<string, unknown>) => ({
+                title: (l.title || l.name || "שיעור") as string,
+                description: (l.description || "") as string,
+                videoUrl: (l.videoUrl || "") as string,
+                duration: parseDuration(l.duration),
+                hasAssignment: Boolean(l.hasAssignment),
+                attachments: Array.isArray(l.attachments) ? l.attachments : [],
               })),
             })),
           };
@@ -143,19 +165,26 @@ export default function MigratePage() {
           if (res.ok) {
             success++;
           } else {
+            const errData = await res.json().catch(() => ({ error: res.statusText }));
             failed++;
+            errors.push(`"${courseName}": ${errData.error || res.statusText}`);
           }
-        } catch {
+        } catch (err) {
           failed++;
+          errors.push(`"${courseName}": ${err instanceof Error ? err.message : "שגיאה"}`);
         }
       }
 
-      // Clear localStorage courses after successful sync
-      if (success > 0) {
-        localStorage.removeItem("bldr_courses");
-      }
+      setSyncErrors(errors);
 
-      setStatus(`סנכרון הושלם! ${success} קורסים הועלו לענן${failed > 0 ? `, ${failed} נכשלו` : ""}. המידע המקומי נמחק.`);
+      if (success > 0 && failed === 0) {
+        localStorage.removeItem("bldr_courses");
+        setStatus(`סנכרון הושלם! ${success} קורסים הועלו לענן. המידע המקומי נמחק.`);
+      } else if (success > 0) {
+        setStatus(`${success} הועלו, ${failed} נכשלו. המידע המקומי לא נמחק — תקן ונסה שוב.`);
+      } else {
+        setStatus(`כל ${failed} הקורסים נכשלו. ראה שגיאות למטה.`);
+      }
     } catch (err) {
       setStatus(`שגיאה: ${err instanceof Error ? err.message : "שגיאה לא ידועה"}`);
     }
@@ -338,14 +367,49 @@ export default function MigratePage() {
           marginTop: 20,
           padding: "12px 16px",
           borderRadius: 4,
-          background: status.includes("שגיאה") ? "rgba(255,59,48,0.1)" : "rgba(0,200,83,0.1)",
-          border: `1px solid ${status.includes("שגיאה") ? "rgba(255,59,48,0.3)" : "rgba(0,200,83,0.3)"}`,
-          color: status.includes("שגיאה") ? "#ff6b6b" : "#00C853",
+          background: (status.includes("שגיאה") || status.includes("נכשלו")) ? "rgba(255,59,48,0.1)" : "rgba(0,200,83,0.1)",
+          border: `1px solid ${(status.includes("שגיאה") || status.includes("נכשלו")) ? "rgba(255,59,48,0.3)" : "rgba(0,200,83,0.3)"}`,
+          color: (status.includes("שגיאה") || status.includes("נכשלו")) ? "#ff6b6b" : "#00C853",
           fontSize: 13,
         }}>
           {status}
         </div>
       )}
+
+      {/* Sync Errors */}
+      {syncErrors.length > 0 && (
+        <div style={{
+          marginTop: 12,
+          padding: "12px 16px",
+          borderRadius: 4,
+          background: "rgba(255,59,48,0.06)",
+          border: "1px solid rgba(255,59,48,0.2)",
+        }}>
+          <p style={{ color: "#ff6b6b", fontSize: 13, fontWeight: 600, marginBottom: 8 }}>שגיאות:</p>
+          {syncErrors.map((err, i) => (
+            <p key={i} style={{ color: "rgba(255,120,120,0.9)", fontSize: 12, marginTop: 4 }}>{err}</p>
+          ))}
+        </div>
+      )}
+
+      {/* Debug: Show local data */}
+      <div style={{ marginTop: 20 }}>
+        <button
+          onClick={handleShowLocal}
+          style={{ ...btn, background: "rgba(255,255,255,0.06)", color: "rgba(240,240,245,0.5)", fontSize: 12, padding: "8px 16px" }}
+        >
+          הצג מידע מקומי (דיבאג)
+        </button>
+        {localData && (
+          <pre style={{
+            marginTop: 8, padding: 12, borderRadius: 4,
+            background: "rgba(0,0,0,0.3)", color: "rgba(240,240,245,0.6)",
+            fontSize: 11, maxHeight: 300, overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all",
+          }}>
+            {localData}
+          </pre>
+        )}
+      </div>
     </div>
   );
 }
