@@ -12,6 +12,7 @@ import {
   DownloadIcon,
   ChevronDownIcon,
   ClockIcon,
+  ChatIcon,
 } from "@/components/ui/icons";
 import VideoPlayer from "@/components/ui/video-player";
 import { ShareButton } from "@/components/ui/share-button";
@@ -475,7 +476,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
               transition: "width 0.3s",
             }}
           >
-            <span style={{ transform: lessonsCollapsed ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.2s", display: "flex" }}><ChevronDownIcon size={14} /></span>
+            <span style={{ transform: lessonsCollapsed ? "rotate(90deg)" : "rotate(-90deg)", transition: "transform 0.2s", display: "flex" }}><ChevronDownIcon size={14} /></span>
           </button>
 
           {lessonsCollapsed ? (
@@ -573,21 +574,6 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                               transition: "all 0.15s",
                             }}
                           >
-                            {hasDuration && (
-                              <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.7)", flexShrink: 0, minWidth: "32px" }}>{lesson.duration}</span>
-                            )}
-
-                            <div style={{ flex: 1, overflow: "hidden" }}>
-                              <p style={{
-                                fontSize: "12px",
-                                fontWeight: isCurrent || isNavigating ? 600 : 400,
-                                color: isNavigating ? "#f0f0f5" : isCurrent ? "#f0f0f5" : isDone ? "rgba(240,240,245,0.7)" : "rgba(240,240,245,0.7)",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}>{lesson.title}{isNavigating ? " ..." : ""}</p>
-                            </div>
-
                             <div style={{
                               width: "22px",
                               height: "22px",
@@ -604,6 +590,21 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                                 <span style={{ fontSize: "10px", fontWeight: 600, color: isCurrent ? "#0000FF" : "rgba(240,240,245,0.7)" }}>{num}</span>
                               )}
                             </div>
+
+                            <div style={{ flex: 1, overflow: "hidden" }}>
+                              <p style={{
+                                fontSize: "12px",
+                                fontWeight: isCurrent || isNavigating ? 600 : 400,
+                                color: isNavigating ? "#f0f0f5" : isCurrent ? "#f0f0f5" : isDone ? "rgba(240,240,245,0.7)" : "rgba(240,240,245,0.7)",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}>{lesson.title}{isNavigating ? " ..." : ""}</p>
+                            </div>
+
+                            {hasDuration && (
+                              <span style={{ fontSize: "10px", color: "rgba(240,240,245,0.7)", flexShrink: 0, minWidth: "32px" }}>{lesson.duration}</span>
+                            )}
                           </Link>
                         );
                       });
@@ -944,8 +945,26 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
               transition: "width 0.3s",
             }}
           >
-            <span style={{ transform: notesCollapsed ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.2s", display: "flex" }}><ChevronDownIcon size={14} /></span>
+            <span style={{ transform: notesCollapsed ? "rotate(-90deg)" : "rotate(90deg)", transition: "transform 0.2s", display: "flex" }}><ChevronDownIcon size={14} /></span>
           </button>
+          {notesCollapsed && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, paddingTop: 16 }}>
+              <button
+                onClick={() => { setNotesCollapsed(false); localStorage.setItem("bldr_notes_collapsed", "false"); }}
+                title="הערות"
+                style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(240,240,245,0.5)", padding: 4 }}
+              >
+                <NotebookIcon size={18} />
+              </button>
+              <button
+                onClick={() => { setNotesCollapsed(false); localStorage.setItem("bldr_notes_collapsed", "false"); }}
+                title="דיון"
+                style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(240,240,245,0.5)", padding: 4 }}
+              >
+                <ChatIcon size={18} />
+              </button>
+            </div>
+          )}
           {!notesCollapsed && (
           <>
           {/* Header */}
