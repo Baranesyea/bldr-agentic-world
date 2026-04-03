@@ -63,9 +63,10 @@ export async function PUT(request: NextRequest) {
     const course = await updateCourse(id, data);
     return NextResponse.json({ course });
   } catch (error) {
-    console.error("Failed to update course:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Failed to update course:", message, error);
     return NextResponse.json(
-      { error: "Failed to update course" },
+      { error: `Failed to update course: ${message}` },
       { status: 500 }
     );
   }
