@@ -65,8 +65,8 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
   const activeCourses = courses.filter((c) => c.status === "active");
   const comingSoonCourses = courses.filter((c) => c.status === "coming_soon" || c.status === "draft");
   const featuredCourse = courses.find((c) => c.featured && c.status === "active") || activeCourses[0];
-  // Don't show featured course in the grid below
-  const nonFeaturedActive = activeCourses.filter((c) => c.id !== featuredCourse?.id);
+  // Show all active courses in the grid (including featured)
+  const nonFeaturedActive = activeCourses;
 
   const totalLessons = courses.reduce((s, c) => s + (c.chapters?.reduce((cs, ch) => cs + ch.lessons.length, 0) || 0), 0);
   const firstLesson = featuredCourse?.chapters?.[0]?.lessons?.[0];
