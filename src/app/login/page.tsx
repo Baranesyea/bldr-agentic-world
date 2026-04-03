@@ -213,7 +213,7 @@ export default function LoginPage() {
     transition: "border-color 0.2s, box-shadow 0.2s",
     boxShadow: focusedInput === name ? "0 0 20px rgba(0,0,255,0.15)" : "none",
     boxSizing: "border-box" as const,
-    fontFamily: "'Merriweather', var(--font-merriweather), serif",
+    fontFamily: "'FbAbsoluti', 'Merriweather', serif",
   });
 
   if (showSpinner) {
@@ -257,12 +257,12 @@ export default function LoginPage() {
             maxWidth: 420,
             width: "100%",
             animation: "fade-up 0.6s ease-out",
-            fontFamily: "'Merriweather', var(--font-merriweather), serif",
+            fontFamily: "'FbAbsoluti', 'Merriweather', serif",
           }}>
             {/* Title */}
             <div style={{ marginBottom: 32, textAlign: "center" }}>
               <h1 style={{
-                fontFamily: "'Merriweather', var(--font-merriweather), serif",
+                fontFamily: "'FbAbsoluti', 'Merriweather', serif",
                 fontSize: 42,
                 fontWeight: 700,
                 color: "#fff",
@@ -346,7 +346,7 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    style={{ width: "100%", padding: "14px 16px", background: "#0000FF", border: "none", borderRadius: 4, color: "#fff", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 0 15px rgba(0,0,255,0.2)", fontFamily: "'Merriweather', var(--font-merriweather), serif" }}
+                    style={{ width: "100%", padding: "14px 16px", background: "#0000FF", border: "none", borderRadius: 4, color: "#fff", fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 0 15px rgba(0,0,255,0.2)", fontFamily: "'FbAbsoluti', 'Merriweather', serif" }}
                   >
                     {loading ? "שולח..." : "שלח קישור לאיפוס"}
                   </button>
@@ -377,7 +377,7 @@ export default function LoginPage() {
                   fontSize: 15,
                   fontWeight: 700,
                   color: "#1a1a2e",
-                  fontFamily: "'Merriweather', var(--font-merriweather), serif",
+                  fontFamily: "'FbAbsoluti', 'Merriweather', serif",
                   transition: "box-shadow 0.2s, transform 0.15s",
                   boxShadow: hoveredBtn === "google"
                     ? "0 4px 24px rgba(255,255,255,0.15)"
@@ -488,7 +488,7 @@ export default function LoginPage() {
                     fontSize: 16,
                     fontWeight: 700,
                     cursor: loading ? "not-allowed" : "pointer",
-                    fontFamily: "'Merriweather', var(--font-merriweather), serif",
+                    fontFamily: "'FbAbsoluti', 'Merriweather', serif",
                     marginTop: 4,
                     transition: "box-shadow 0.2s, background 0.2s, transform 0.15s",
                     boxShadow: hoveredBtn === "login"
