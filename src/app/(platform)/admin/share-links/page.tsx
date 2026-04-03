@@ -45,8 +45,12 @@ export default function ShareLinksPage() {
     const stored = localStorage.getItem("bldr_share_links");
     if (stored) setLinks(JSON.parse(stored));
 
-    const coursesStored = localStorage.getItem("bldr_courses");
-    if (coursesStored) setCourses(JSON.parse(coursesStored));
+    fetch("/api/courses")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.courses) setCourses(data.courses);
+      })
+      .catch(() => {});
   }, []);
 
   const save = (updated: ShareLink[]) => {

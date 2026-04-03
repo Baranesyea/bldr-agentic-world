@@ -56,10 +56,14 @@ export default function AdminQAPage() {
 
   useEffect(() => {
     reload();
-    try {
-      const stored = JSON.parse(localStorage.getItem("bldr_courses") || "[]");
-      setCourses(stored.map((c: { id: string; name?: string; title?: string }) => ({ id: c.id, name: c.name || c.title || c.id })));
-    } catch {}
+    fetch("/api/courses")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.courses) {
+          setCourses(data.courses.map((c: { id: string; title: string }) => ({ id: c.id, name: c.title })));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Auto-expand pending questions

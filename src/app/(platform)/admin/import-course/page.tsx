@@ -158,20 +158,49 @@ export default function ImportCoursePage() {
     });
   };
 
-  const doImport = () => {
+  const [importLoading, setImportLoading] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+
+  const doImport = async () => {
     if (!parseResult?.course) return;
-    const course = {
-      ...parseResult.course,
-      title: courseTitle,
-      description: courseDesc,
-      status: courseStatus,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    const existing = JSON.parse(localStorage.getItem("bldr_courses") || "[]");
-    existing.push(course);
-    localStorage.setItem("bldr_courses", JSON.stringify(existing));
-    setImported(true);
+    setImportLoading(true);
+    setImportError(null);
+
+    try {
+      const body = {
+        title: courseTitle,
+        description: courseDesc,
+        status: courseStatus,
+        chapters: parseResult.course.chapters.map((ch) => ({
+          title: ch.title,
+          lessons: ch.lessons.map((l) => ({
+            title: l.title,
+            description: l.description || "",
+            videoUrl: l.videoUrl || "",
+            duration: l.duration || 0,
+            hasAssignment: l.hasAssignment || false,
+            attachments: l.attachments || [],
+          })),
+        })),
+      };
+
+      const res = await fetch("/api/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to import course");
+      }
+
+      setImported(true);
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : "שגיאה בייבוא הקורס");
+    } finally {
+      setImportLoading(false);
+    }
   };
 
   const canProceedToPreview = courseTitle.trim().length > 0 && parseResult?.course;
@@ -767,12 +796,25 @@ export default function ImportCoursePage() {
             ))}
           </div>
 
+          {importError && (
+            <div style={{
+              marginTop: 20, padding: 12, borderRadius: 4,
+              background: "rgba(255,60,60,0.08)", border: "1px solid rgba(255,60,60,0.2)",
+            }}>
+              <p style={{ color: "#ff6b6b", fontSize: 13 }}>{importError}</p>
+            </div>
+          )}
+
           <div style={{ display: "flex", gap: 12, marginTop: 32 }}>
             <button style={btnSecondary} onClick={() => setStep(3)}>
               חזרה
             </button>
-            <button style={btnPrimary} onClick={doImport}>
-              ייבא קורס
+            <button
+              style={{ ...btnPrimary, opacity: importLoading ? 0.5 : 1 }}
+              onClick={doImport}
+              disabled={importLoading}
+            >
+              {importLoading ? "מייבא..." : "ייבא קורס"}
             </button>
           </div>
         </div>

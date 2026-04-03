@@ -88,6 +88,80 @@ async function importIndexedDB(images: Record<string, string>): Promise<number> 
 export default function MigratePage() {
   const [status, setStatus] = useState("");
   const [importing, setImporting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncToCloud = async () => {
+    setSyncing(true);
+    setStatus("בודק קורסים מקומיים...");
+
+    try {
+      const stored = localStorage.getItem("bldr_courses");
+      if (!stored) {
+        setStatus("אין קורסים מקומיים לסנכרן");
+        setSyncing(false);
+        return;
+      }
+
+      const localCourses = JSON.parse(stored);
+      if (!Array.isArray(localCourses) || localCourses.length === 0) {
+        setStatus("אין קורסים מקומיים לסנכרן");
+        setSyncing(false);
+        return;
+      }
+
+      let success = 0;
+      let failed = 0;
+
+      for (const course of localCourses) {
+        setStatus(`מעלה לענן: ${course.title || course.name || "קורס"} (${success + failed + 1}/${localCourses.length})...`);
+
+        try {
+          const body = {
+            title: course.title || course.name || "קורס ללא שם",
+            description: course.description || "",
+            status: course.status || "draft",
+            thumbnail: course.thumbnail || "",
+            chapters: (course.chapters || []).map((ch: { title?: string; name?: string; lessons?: Array<{ title?: string; name?: string; description?: string; videoUrl?: string; duration?: number; hasAssignment?: boolean; attachments?: unknown[] }> }) => ({
+              title: ch.title || ch.name || "פרק",
+              lessons: (ch.lessons || []).map((l: { title?: string; name?: string; description?: string; videoUrl?: string; duration?: number; hasAssignment?: boolean; attachments?: unknown[] }) => ({
+                title: l.title || l.name || "שיעור",
+                description: l.description || "",
+                videoUrl: l.videoUrl || "",
+                duration: l.duration || 0,
+                hasAssignment: l.hasAssignment || false,
+                attachments: l.attachments || [],
+              })),
+            })),
+          };
+
+          const res = await fetch("/api/courses", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          if (res.ok) {
+            success++;
+          } else {
+            failed++;
+          }
+        } catch {
+          failed++;
+        }
+      }
+
+      // Clear localStorage courses after successful sync
+      if (success > 0) {
+        localStorage.removeItem("bldr_courses");
+      }
+
+      setStatus(`סנכרון הושלם! ${success} קורסים הועלו לענן${failed > 0 ? `, ${failed} נכשלו` : ""}. המידע המקומי נמחק.`);
+    } catch (err) {
+      setStatus(`שגיאה: ${err instanceof Error ? err.message : "שגיאה לא ידועה"}`);
+    }
+
+    setSyncing(false);
+  };
 
   const handleExport = async () => {
     setStatus("מייצא מידע...");
@@ -184,6 +258,28 @@ export default function MigratePage() {
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        {/* Sync to Cloud */}
+        <div style={card}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f5", marginBottom: 8 }}>
+            סנכרון לענן
+          </h2>
+          <p style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 16, lineHeight: 1.6 }}>
+            מעביר קורסים שנשמרו מקומית בדפדפן ישירות לבסיס הנתונים בענן. לאחר ההעלאה, המידע המקומי נמחק.
+          </p>
+          <button
+            onClick={handleSyncToCloud}
+            disabled={syncing}
+            style={{ ...btn, background: "#00C853", color: "#fff", opacity: syncing ? 0.5 : 1 }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              {syncing ? "מסנכרן..." : "העלה קורסים מקומיים לענן"}
+            </span>
+          </button>
+        </div>
+
         {/* Export */}
         <div style={card}>
           <h2 style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f5", marginBottom: 8 }}>
