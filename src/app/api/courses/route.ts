@@ -44,9 +44,10 @@ export async function POST(request: NextRequest) {
     const course = await createCourse(body);
     return NextResponse.json({ course }, { status: 201 });
   } catch (error) {
-    console.error("Failed to create course:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Failed to create course:", message, error);
     return NextResponse.json(
-      { error: "Failed to create course" },
+      { error: `Failed to create course: ${message}` },
       { status: 500 }
     );
   }
