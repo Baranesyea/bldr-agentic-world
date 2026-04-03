@@ -240,6 +240,7 @@ export default function LoginPage() {
       <div style={{
         minHeight: "100vh",
         background: "#050510",
+        fontFamily: "'FbAbsoluti', sans-serif",
         display: "flex",
         flexDirection: "row-reverse",
       }}>
