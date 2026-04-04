@@ -364,6 +364,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
   const [generatingThumb, setGeneratingThumb] = useState(false);
   const [customThumbUrl, setCustomThumbUrl] = useState("");
   const [saveFlash, setSaveFlash] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [displayThumbUrl, setDisplayThumbUrl] = useState("");
   const existingIdRef = useRef<string | null>(null);
   const createdAtRef = useRef<string>(new Date().toISOString());
@@ -657,6 +658,10 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
 
   // ── Save ──────────────────────────────────────────────────────
   const saveCourse = async (publishStatus?: "active") => {
+    if (saving) return;
+    setSaving(true);
+    // Yield to browser so the "שומר..." text renders immediately
+    await new Promise((r) => setTimeout(r, 0));
     // Map editor status to DB status
     const editorStatus = publishStatus || status;
     const dbStatusMap: Record<string, "draft" | "active" | "archive" | "coming_soon"> = {
@@ -740,6 +745,8 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
     } catch (e) {
       console.error("Failed to save course:", e);
       setThumbError("שגיאת רשת. נסה שוב.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -1447,16 +1454,16 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
               transition: "all 0.3s",
             }}
             onClick={() => saveCourse()}
-            disabled={!title.trim()}
+            disabled={!title.trim() || saving}
           >
-            {saveFlash ? "✓ נשמר" : "שמור קורס"}
+            {saving ? "שומר..." : saveFlash ? "✓ נשמר" : "שמור קורס"}
           </button>
           <button
             style={{ ...btnP, padding: "10px 20px", opacity: title.trim() ? 1 : 0.4 }}
             onClick={() => saveCourse(status === "draft" ? "active" : undefined)}
-            disabled={!title.trim()}
+            disabled={!title.trim() || saving}
           >
-            שמור ופרסם
+            {saving ? "שומר..." : "שמור ופרסם"}
           </button>
         </div>
       </div>
