@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllMembers, createMember, updateMember } from "@/lib/data/members";
+import { getAllMembers, createMember, updateMember, getMemberByEmail } from "@/lib/data/members";
 
 export async function GET() {
   try {
@@ -17,6 +17,25 @@ export async function POST(req: NextRequest) {
     const { email, fullName, type, pricePaid, notes } = body;
     if (!email || !fullName) {
       return NextResponse.json({ error: "email and fullName are required" }, { status: 400 });
+    }
+    // If member already exists (e.g. was deleted), reactivate instead of creating
+    const existing = await getMemberByEmail(email);
+    if (existing) {
+      const reactivated = await updateMember(existing.id, {
+        fullName,
+        status: "active",
+        type: type || existing.type,
+        pricePaid: pricePaid ?? existing.pricePaid,
+        notes: notes || existing.notes || "",
+      });
+      // Also restore profiles table
+      try {
+        const postgres = (await import("postgres")).default;
+        const sql = postgres(process.env.DATABASE_URL!);
+        await sql`UPDATE profiles SET full_name = ${fullName}, bio = NULL WHERE email = ${email.toLowerCase().trim()}`;
+        await sql.end();
+      } catch {}
+      return NextResponse.json(reactivated);
     }
     const member = await createMember({
       email,

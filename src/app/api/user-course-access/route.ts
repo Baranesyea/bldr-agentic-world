@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserCourseAccessList, bulkSetUserCourseAccess } from "@/lib/data/user-course-access";
+import { db } from "@/lib/db";
+import { users } from "@/lib/schema";
+import { eq } from "drizzle-orm";
+
+async function resolveUserId(idOrEmail: string): Promise<string | null> {
+  // If it looks like a UUID, use as-is
+  if (/^[0-9a-f]{8}-/.test(idOrEmail)) return idOrEmail;
+  // Otherwise treat as email and look up
+  const [user] = await db.select({ id: users.id }).from(users).where(eq(users.email, idOrEmail.toLowerCase().trim()));
+  return user?.id || null;
+}
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = req.nextUrl.searchParams.get("userId");
+    const userIdParam = req.nextUrl.searchParams.get("userId");
     const schoolId = req.nextUrl.searchParams.get("schoolId");
-    if (!userId) {
+    if (!userIdParam) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
+    }
+    const userId = await resolveUserId(userIdParam);
+    if (!userId) {
+      return NextResponse.json([]);
     }
     const list = await getUserCourseAccessList(userId, schoolId);
     return NextResponse.json(list);
@@ -19,13 +34,18 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, courses, schoolId } = body;
+    const { userId, email, courses, schoolId } = body;
     // courses: { courseId, isAvailable }[]
-    if (!userId || !Array.isArray(courses)) {
-      return NextResponse.json({ error: "userId and courses[] are required" }, { status: 400 });
+    const idOrEmail = userId || email;
+    if (!idOrEmail || !Array.isArray(courses)) {
+      return NextResponse.json({ error: "userId/email and courses[] are required" }, { status: 400 });
     }
-    await bulkSetUserCourseAccess(userId, courses, schoolId);
-    const updated = await getUserCourseAccessList(userId, schoolId);
+    const resolvedId = await resolveUserId(idOrEmail);
+    if (!resolvedId) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    await bulkSetUserCourseAccess(resolvedId, courses, schoolId);
+    const updated = await getUserCourseAccessList(resolvedId, schoolId);
     return NextResponse.json(updated);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

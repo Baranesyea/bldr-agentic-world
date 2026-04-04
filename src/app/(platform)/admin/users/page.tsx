@@ -671,8 +671,16 @@ export default function AdminUsersPage() {
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setDetailUser(user);
-                                      setUserSchools([]); // Will be loaded in the modal
+                                      // Load current access settings
+                                      setUserSchools([]);
                                       setUserBlockedCourses([]);
+                                      fetch(`/api/user-course-access?userId=${encodeURIComponent(user.email)}&byEmail=true`)
+                                        .then(r => r.json())
+                                        .then(data => {
+                                          if (Array.isArray(data)) {
+                                            setUserBlockedCourses(data.filter((d: { isAvailable: boolean }) => !d.isAvailable).map((d: { courseId: string }) => d.courseId));
+                                          }
+                                        }).catch(() => {});
                                     }}
                                     style={{
                                       padding: "6px 14px", borderRadius: 6, marginRight: "auto",
@@ -847,7 +855,7 @@ export default function AdminUsersPage() {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
-                        userId: detailUser.id,
+                        email: detailUser.email,
                         courses,
                         schoolId: userSchools[0] || null,
                       }),
