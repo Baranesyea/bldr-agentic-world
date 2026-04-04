@@ -77,26 +77,35 @@ export default function ProfilePage() {
 
   useEffect(() => {
     try {
+      const cached = JSON.parse(localStorage.getItem("bldr_profile_cache") || "{}");
+      const currentEmail = cached.email || "";
       const stored = localStorage.getItem("bldr_user_profile");
+
       if (stored) {
         const parsed = JSON.parse(stored);
-        setProfile(parsed);
-        setEditName(parsed.name);
-        setEditProfession(parsed.profession || "");
-        setEditLearningGoal(parsed.learningGoal || "");
-        setEditCity(parsed.city || "");
-        setEditAge(parsed.age ? String(parsed.age) : "");
-      } else {
-        // No saved profile yet — pull from Supabase auth cache
-        const cached = JSON.parse(localStorage.getItem("bldr_profile_cache") || "{}");
-        const initial: UserProfile = {
-          ...DEFAULT_PROFILE,
-          name: cached.full_name || "",
-          email: cached.email || "",
-        };
-        setProfile(initial);
-        setEditName(initial.name);
+        // Verify the stored profile belongs to the current user
+        if (parsed.email && currentEmail && parsed.email !== currentEmail) {
+          // Stale profile from a different user — discard it
+          localStorage.removeItem("bldr_user_profile");
+        } else {
+          setProfile(parsed);
+          setEditName(parsed.name);
+          setEditProfession(parsed.profession || "");
+          setEditLearningGoal(parsed.learningGoal || "");
+          setEditCity(parsed.city || "");
+          setEditAge(parsed.age ? String(parsed.age) : "");
+          return; // loaded successfully
+        }
       }
+
+      // No valid stored profile — initialize from auth cache
+      const initial: UserProfile = {
+        ...DEFAULT_PROFILE,
+        name: cached.full_name || "",
+        email: currentEmail,
+      };
+      setProfile(initial);
+      setEditName(initial.name);
     } catch {}
     try {
       const settings = JSON.parse(localStorage.getItem("bldr_user_settings") || "{}");
