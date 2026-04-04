@@ -553,6 +553,15 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
           id="logout-btn"
           onClick={async () => {
             setLoggingOut(true);
+            // Clear all user-specific localStorage data
+            const userKeys = [
+              "bldr_profile_cache", "bldr_user_profile", "bldr_tourist",
+              "bldr_active_school", "bldr_notes", "bldr_completed_lessons",
+              "bldr_prompt_logs", "bldr_notifications", "bldr_trial",
+              "bldr_user_settings", "bldr_login_count", "bldr_feedback",
+              "bldr_questionnaire_done",
+            ];
+            userKeys.forEach((k) => localStorage.removeItem(k));
             await fetch("/api/auth/logout", { method: "POST" });
             window.location.replace("/login");
           }}

@@ -36,6 +36,31 @@ export function getTouristData(): TouristData | null {
 }
 
 const CACHE_KEY = "bldr_profile_cache";
+const USER_ID_KEY = "bldr_current_user_id";
+
+// Keys that contain user-specific data and must be cleared on user switch
+const USER_DATA_KEYS = [
+  "bldr_user_profile", "bldr_tourist", "bldr_active_school",
+  "bldr_notes", "bldr_completed_lessons", "bldr_prompt_logs",
+  "bldr_notifications", "bldr_trial", "bldr_user_settings",
+  "bldr_login_count", "bldr_feedback", "bldr_questionnaire_done",
+];
+
+/**
+ * Clear all user-specific localStorage when a different user logs in.
+ * Prevents data leakage between users on the same browser.
+ */
+function clearStaleUserData(newUserId: string) {
+  try {
+    const previousUserId = localStorage.getItem(USER_ID_KEY);
+    if (previousUserId && previousUserId !== newUserId) {
+      USER_DATA_KEYS.forEach((k) => localStorage.removeItem(k));
+      localStorage.removeItem(CACHE_KEY);
+      sessionStorage.removeItem(CACHE_KEY);
+    }
+    localStorage.setItem(USER_ID_KEY, newUserId);
+  } catch {}
+}
 
 function getCachedProfile(): Profile | null {
   try {
@@ -72,6 +97,7 @@ export function useUser() {
       setUser(user);
 
       if (user) {
+        clearStaleUserData(user.id);
         const { data, error } = await supabase
           .from("profiles")
           .select("*")
@@ -93,6 +119,7 @@ export function useUser() {
       async (_event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
+          clearStaleUserData(session.user.id);
           const { data } = await supabase
             .from("profiles")
             .select("*")
