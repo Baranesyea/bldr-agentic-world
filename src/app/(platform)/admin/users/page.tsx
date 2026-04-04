@@ -671,10 +671,32 @@ export default function AdminUsersPage() {
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setDetailUser(user);
-                                      // Load current access settings
                                       setUserSchools([]);
                                       setUserBlockedCourses([]);
-                                      fetch(`/api/user-course-access?userId=${encodeURIComponent(user.email)}&byEmail=true`)
+
+                                      // Load current school memberships
+                                      (async () => {
+                                        try {
+                                          const res = await fetch(`/api/users`);
+                                          const data = await res.json();
+                                          const match = (data.users || []).find((u: { email: string }) => u.email.toLowerCase() === user.email.toLowerCase());
+                                          if (match) {
+                                            // Check each school for membership
+                                            const memberSchools: string[] = [];
+                                            for (const s of schools) {
+                                              const mRes = await fetch(`/api/schools/${s.id}/members`);
+                                              const members = await mRes.json();
+                                              if (Array.isArray(members) && members.some((m: { membership: { userId: string } }) => m.membership.userId === match.id)) {
+                                                memberSchools.push(s.id);
+                                              }
+                                            }
+                                            setUserSchools(memberSchools);
+                                          }
+                                        } catch {}
+                                      })();
+
+                                      // Load current blocked courses
+                                      fetch(`/api/user-course-access?userId=${encodeURIComponent(user.email)}`)
                                         .then(r => r.json())
                                         .then(data => {
                                           if (Array.isArray(data)) {
@@ -845,22 +867,50 @@ export default function AdminUsersPage() {
                 disabled={savingDetail}
                 onClick={async () => {
                   setSavingDetail(true);
-                  // Save course access
-                  if (userBlockedCourses.length > 0) {
-                    const courses = allCourses.map((c) => ({
-                      courseId: c.id,
-                      isAvailable: !userBlockedCourses.includes(c.id),
-                    }));
-                    await fetch("/api/user-course-access", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        email: detailUser.email,
-                        courses,
-                        schoolId: userSchools[0] || null,
-                      }),
-                    });
+                  // Resolve user ID from email
+                  let dbUserId: string | null = null;
+                  try {
+                    const res = await fetch(`/api/users`);
+                    const data = await res.json();
+                    const match = (data.users || []).find((u: { email: string }) => u.email.toLowerCase() === detailUser.email.toLowerCase());
+                    if (match) dbUserId = match.id;
+                  } catch {}
+
+                  // Save school memberships
+                  if (dbUserId) {
+                    // Remove from all schools first, then add selected
+                    for (const s of schools) {
+                      if (userSchools.includes(s.id)) {
+                        await fetch(`/api/schools/${s.id}/members`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ userId: dbUserId }),
+                        });
+                      } else {
+                        await fetch(`/api/schools/${s.id}/members`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ action: "remove", userId: dbUserId }),
+                        });
+                      }
+                    }
                   }
+
+                  // Save course access
+                  const courses = allCourses.map((c) => ({
+                    courseId: c.id,
+                    isAvailable: !userBlockedCourses.includes(c.id),
+                  }));
+                  await fetch("/api/user-course-access", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      email: detailUser.email,
+                      courses,
+                      schoolId: userSchools[0] || null,
+                    }),
+                  });
+
                   setSavingDetail(false);
                   setDetailUser(null);
                 }}
