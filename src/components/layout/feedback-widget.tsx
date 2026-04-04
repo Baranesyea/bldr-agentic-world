@@ -1,18 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-
-interface FeedbackItem {
-  id: string;
-  category: string;
-  content: string;
-  mood: number | null;
-  page: string;
-  createdAt: string;
-  status: "new" | "read" | "resolved";
-  userName: string;
-  userEmail: string;
-}
+import React, { useState, useRef } from "react";
 
 const categories = ["באג", "הצעה לשיפור", "בעיה כללית", "אחר"];
 
@@ -55,33 +43,91 @@ export function FeedbackWidget() {
   const [mood, setMood] = useState<number | null>(null);
   const [success, setSuccess] = useState(false);
   const [hover, setHover] = useState(false);
+  const [attachment, setAttachment] = useState<string | null>(null);
+  const [attachmentName, setAttachmentName] = useState("");
+  const [capturing, setCapturing] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = () => {
+  const captureScreenshot = async () => {
+    setCapturing(true);
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(document.body, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 0.5,
+        logging: false,
+      });
+      const dataUrl = canvas.toDataURL("image/png", 0.7);
+      setAttachment(dataUrl);
+      setAttachmentName("screenshot.png");
+    } catch {
+      // Fallback if html2canvas not available
+      try {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        if (ctx) {
+          ctx.fillStyle = "#050510";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#fff";
+          ctx.font = "16px sans-serif";
+          ctx.fillText("צילום מסך לא זמין - נא צרף תמונה ידנית", 20, 40);
+        }
+        setAttachment(canvas.toDataURL("image/png"));
+        setAttachmentName("screenshot-fallback.png");
+      } catch {}
+    }
+    setCapturing(false);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert("הקובץ גדול מדי (מקסימום 5MB)");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAttachment(reader.result as string);
+      setAttachmentName(file.name);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = async () => {
     if (!content.trim()) return;
     let userName = "אורח";
     let userEmail = "";
     try {
-      const profile = JSON.parse(localStorage.getItem("bldr_user_profile") || "{}");
-      if (profile.name) userName = profile.name;
-      if (profile.email) userEmail = profile.email;
+      const cached = JSON.parse(localStorage.getItem("bldr_profile_cache") || "{}");
+      if (cached.full_name) userName = cached.full_name;
+      if (cached.email) userEmail = cached.email;
     } catch {}
-    const item: FeedbackItem = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-      category,
-      content: content.trim(),
-      mood,
-      page: typeof window !== "undefined" ? window.location.pathname : "",
-      createdAt: new Date().toISOString(),
-      status: "new",
-      userName,
-      userEmail,
-    };
-    const existing = JSON.parse(localStorage.getItem("bldr_feedback") || "[]");
-    existing.push(item);
-    localStorage.setItem("bldr_feedback", JSON.stringify(existing));
+
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userName,
+          userEmail,
+          category,
+          message: content.trim(),
+          mood,
+          pageUrl: typeof window !== "undefined" ? window.location.pathname : "",
+          attachmentUrl: attachment,
+        }),
+      });
+    } catch {}
+
     setContent("");
     setMood(null);
     setCategory(categories[0]);
+    setAttachment(null);
+    setAttachmentName("");
     setSuccess(true);
     setTimeout(() => {
       setSuccess(false);
@@ -126,12 +172,7 @@ export function FeedbackWidget() {
       {open && (
         <div
           onClick={() => setOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 51,
-            background: "rgba(0,0,0,0.3)",
-          }}
+          style={{ position: "fixed", inset: 0, zIndex: 51, background: "rgba(0,0,0,0.3)" }}
         />
       )}
 
@@ -174,18 +215,10 @@ export function FeedbackWidget() {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               style={{
-                width: "100%",
-                padding: "10px 14px",
-                borderRadius: 4,
-                border: "1px solid rgba(255,255,255,0.1)",
-                background: "rgba(255,255,255,0.05)",
-                color: "#fff",
-                fontSize: 14,
-                marginBottom: 14,
-                outline: "none",
-                appearance: "none",
-                direction: "rtl",
-                cursor: "pointer",
+                width: "100%", padding: "10px 14px", borderRadius: 4,
+                border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)",
+                color: "#fff", fontSize: 14, marginBottom: 14, outline: "none",
+                appearance: "none", direction: "rtl", cursor: "pointer",
               }}
             >
               {categories.map((c) => (
@@ -198,23 +231,84 @@ export function FeedbackWidget() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="ספר לנו מה הפריע לך או מה אפשר לשפר..."
-              rows={4}
+              rows={3}
               style={{
-                width: "100%",
-                padding: "12px 14px",
-                borderRadius: 4,
-                border: "1px solid rgba(255,255,255,0.1)",
-                background: "rgba(255,255,255,0.05)",
-                color: "#fff",
-                fontSize: 14,
-                resize: "vertical",
-                outline: "none",
-                marginBottom: 14,
-                direction: "rtl",
-                lineHeight: 1.6,
-                boxSizing: "border-box",
+                width: "100%", padding: "12px 14px", borderRadius: 4,
+                border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)",
+                color: "#fff", fontSize: 14, resize: "vertical", outline: "none",
+                marginBottom: 14, direction: "rtl", lineHeight: 1.6, boxSizing: "border-box",
               }}
             />
+
+            {/* Attachment area */}
+            <div style={{ marginBottom: 14 }}>
+              {attachment ? (
+                <div style={{
+                  position: "relative", borderRadius: 4, overflow: "hidden",
+                  border: "1px solid rgba(255,255,255,0.1)", marginBottom: 8,
+                }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={attachment} alt="צילום" style={{ width: "100%", maxHeight: 150, objectFit: "cover", display: "block" }} />
+                  <button
+                    onClick={() => { setAttachment(null); setAttachmentName(""); }}
+                    style={{
+                      position: "absolute", top: 6, left: 6, width: 24, height: 24,
+                      borderRadius: "50%", background: "rgba(0,0,0,0.7)", border: "none",
+                      color: "#fff", fontSize: 14, cursor: "pointer", display: "flex",
+                      alignItems: "center", justifyContent: "center",
+                    }}
+                  >
+                    ×
+                  </button>
+                  <div style={{ padding: "6px 10px", background: "rgba(0,0,0,0.4)", fontSize: 11, color: "rgba(240,240,245,0.6)" }}>
+                    {attachmentName}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={captureScreenshot}
+                    disabled={capturing}
+                    style={{
+                      flex: 1, padding: "8px 12px", borderRadius: 4,
+                      border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
+                      color: "rgba(240,240,245,0.7)", fontSize: 12, cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    }}
+                  >
+                    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                    {capturing ? "מצלם..." : "צלם מסך"}
+                  </button>
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    style={{
+                      flex: 1, padding: "8px 12px", borderRadius: 4,
+                      border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
+                      color: "rgba(240,240,245,0.7)", fontSize: 12, cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    }}
+                  >
+                    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    צרף קובץ
+                  </button>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    style={{ display: "none" }}
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Mood */}
             <div style={{ marginBottom: 18 }}>
@@ -231,14 +325,10 @@ export function FeedbackWidget() {
               onClick={handleSubmit}
               disabled={!content.trim()}
               style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: 4,
-                border: "none",
+                width: "100%", padding: "12px", borderRadius: 4, border: "none",
                 background: content.trim() ? "rgba(0,0,255,0.7)" : "rgba(255,255,255,0.08)",
                 color: content.trim() ? "#fff" : "rgba(255,255,255,0.3)",
-                fontSize: 15,
-                fontWeight: 600,
+                fontSize: 15, fontWeight: 600,
                 cursor: content.trim() ? "pointer" : "default",
                 transition: "background 0.2s",
               }}

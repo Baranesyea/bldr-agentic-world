@@ -42,6 +42,25 @@ export async function GET(request: NextRequest) {
         loginUrl.searchParams.set("error", "no_access");
         return NextResponse.redirect(loginUrl.toString());
       }
+
+      // Sync Google avatar to profiles table if not already set
+      const user = data.session.user;
+      const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+      if (googleAvatar) {
+        try {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("avatar_url")
+            .eq("id", user.id)
+            .single();
+          if (profile && !profile.avatar_url) {
+            await supabase
+              .from("profiles")
+              .update({ avatar_url: googleAvatar })
+              .eq("id", user.id);
+          }
+        } catch {}
+      }
     }
   }
 

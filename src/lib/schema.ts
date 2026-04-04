@@ -377,6 +377,11 @@ export const feedback = pgTable("feedback", {
   type: varchar("type", { length: 100 }),
   message: text("message"),
   rating: integer("rating"),
+  category: varchar("category", { length: 100 }),
+  mood: integer("mood"),
+  pageUrl: text("page_url"),
+  attachmentUrl: text("attachment_url"),
+  status: varchar("status", { length: 50 }).default("new"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

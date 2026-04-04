@@ -696,21 +696,19 @@ export default function ProfilePage() {
               </button>
               <button
                 onClick={async () => {
-                  // Save to deleted accounts log
+                  // Delete account in DB
                   try {
                     const tourist = getTouristData();
-                    const userType = tourist ? "tourist" : "member";
-                    const log = JSON.parse(localStorage.getItem("bldr_deleted_accounts") || "[]");
-                    const now = new Date();
-                    log.unshift({
-                      id: Date.now().toString(),
-                      date: now.toLocaleDateString("he-IL"),
-                      time: now.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }),
-                      userType,
-                      name: tourist?.name || profile.name,
-                      email: tourist?.email || profile.email,
+                    await fetch("/api/account/delete", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        email: tourist?.email || profile.email,
+                        fullName: tourist?.name || profile.name,
+                        userType: tourist ? "tourist" : "member",
+                        deletedBy: "user",
+                      }),
                     });
-                    localStorage.setItem("bldr_deleted_accounts", JSON.stringify(log));
                   } catch {}
 
                   // Clear all local data
@@ -718,6 +716,7 @@ export default function ProfilePage() {
                     "bldr_tourist", "bldr_user_profile", "bldr_profile_cache",
                     "bldr_user_settings", "bldr_completed_lessons", "bldr_notes",
                     "bldr_trial", "bldr_calendar_events", "bldr_onboarding_v4",
+                    "bldr_current_user_id",
                   ];
                   keysToRemove.forEach(k => localStorage.removeItem(k));
 

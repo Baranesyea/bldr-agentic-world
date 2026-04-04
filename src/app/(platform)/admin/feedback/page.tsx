@@ -12,6 +12,15 @@ interface FeedbackItem {
   status: "new" | "read" | "resolved";
   userName?: string;
   userEmail?: string;
+  attachmentUrl?: string;
+  // DB field mappings
+  message?: string;
+  user_name?: string;
+  user_email?: string;
+  page_url?: string;
+  attachment_url?: string;
+  created_at?: string;
+  rating?: number | null;
 }
 
 const categoryColors: Record<string, string> = {
@@ -48,21 +57,42 @@ export default function AdminFeedbackPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("bldr_feedback") || "[]") as FeedbackItem[];
-    setItems(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+    fetch("/api/feedback")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          // Normalize DB fields to component fields
+          const normalized = data.map((item: FeedbackItem) => ({
+            ...item,
+            content: item.message || item.content || "",
+            category: item.category || (item as unknown as Record<string, string>).type || "אחר",
+            userName: item.user_name || item.userName || "",
+            userEmail: item.user_email || item.userEmail || "",
+            page: item.page_url || item.page || "",
+            attachmentUrl: item.attachment_url || item.attachmentUrl || "",
+            createdAt: item.created_at || item.createdAt || "",
+            mood: item.mood ?? item.rating ?? null,
+            status: item.status || "new",
+          }));
+          setItems(normalized);
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const save = (updated: FeedbackItem[]) => {
-    setItems(updated);
-    localStorage.setItem("bldr_feedback", JSON.stringify(updated));
-  };
-
-  const updateStatus = (id: string, status: "new" | "read" | "resolved") => {
-    save(items.map((i) => (i.id === id ? { ...i, status } : i)));
+  const updateStatus = async (id: string, status: "new" | "read" | "resolved") => {
+    setItems(items.map((i) => (i.id === id ? { ...i, status } : i)));
+    try {
+      await fetch("/api/feedback", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+    } catch {}
   };
 
   const deleteItem = (id: string) => {
-    save(items.filter((i) => i.id !== id));
+    setItems(items.filter((i) => i.id !== id));
     if (expandedId === id) setExpandedId(null);
   };
 
@@ -236,6 +266,13 @@ export default function AdminFeedbackPage() {
 
                 {expanded && (
                   <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                    {/* Attachment */}
+                    {item.attachmentUrl && (
+                      <div style={{ marginBottom: 12, borderRadius: 4, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.attachmentUrl} alt="צילום מצורף" style={{ width: "100%", maxHeight: 300, objectFit: "contain", background: "#000", display: "block" }} />
+                      </div>
+                    )}
                     <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                       {item.userName && (
                         <span style={{ fontSize: 12, color: "rgba(240,240,245,0.7)" }}>משתמש: {item.userName}{item.userEmail ? ` (${item.userEmail})` : ""}</span>

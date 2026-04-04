@@ -4,12 +4,17 @@ import { useState, useEffect } from "react";
 
 interface DeletedAccount {
   id: string;
-  date: string;
-  time: string;
-  userType: "tourist" | "member" | "admin";
-  name: string;
   email: string;
+  full_name: string;
+  user_type: string;
+  deleted_by: string;
+  deleted_at: string;
 }
+
+const DELETED_BY_LABELS: Record<string, string> = {
+  user: "המשתמש",
+  admin: "מנהל",
+};
 
 const USER_TYPE_LABELS: Record<string, string> = {
   tourist: "תייר",
@@ -25,22 +30,20 @@ const USER_TYPE_COLORS: Record<string, string> = {
 
 export default function DeletedAccountsPage() {
   const [accounts, setAccounts] = useState<DeletedAccount[]>([]);
-  const [filter, setFilter] = useState<"all" | "tourist" | "member">("all");
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "user" | "admin">("all");
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("bldr_deleted_accounts");
-      if (stored) setAccounts(JSON.parse(stored));
-    } catch {}
+    fetch("/api/account/deleted")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setAccounts(data);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const clearAll = () => {
-    if (!confirm("האם אתה בטוח שאתה רוצה לנקות את כל הדו\"ח?")) return;
-    localStorage.removeItem("bldr_deleted_accounts");
-    setAccounts([]);
-  };
-
-  const filtered = filter === "all" ? accounts : accounts.filter(a => a.userType === filter);
+  const filtered = filter === "all" ? accounts : accounts.filter((a) => a.deleted_by === filter);
 
   const cardStyle: React.CSSProperties = {
     background: "rgba(255,255,255,0.03)",
@@ -49,99 +52,113 @@ export default function DeletedAccountsPage() {
     padding: "24px",
   };
 
+  const formatDate = (d: string) => {
+    try {
+      const date = new Date(d);
+      return date.toLocaleDateString("he-IL") + " " + date.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+    } catch {
+      return d;
+    }
+  };
+
+  if (loading) {
+    return <div style={{ padding: "40px", color: "rgba(240,240,245,0.7)", textAlign: "center" }}>טוען...</div>;
+  }
+
   return (
-    <div style={{ padding: "32px", maxWidth: "900px", margin: "0 auto" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-        <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#fff" }}>חשבונות מחוקים</h1>
-        {accounts.length > 0 && (
-          <button onClick={clearAll} style={{
-            padding: "8px 16px", borderRadius: "4px",
-            border: "1px solid rgba(239,68,68,0.2)",
-            background: "rgba(239,68,68,0.08)", color: "#ef4444",
-            fontSize: "12px", fontWeight: 600, cursor: "pointer",
-          }}>
-            נקה דו&quot;ח
-          </button>
-        )}
-      </div>
-      <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", marginBottom: "28px" }}>
-        דו&quot;ח של חשבונות שנמחקו ידנית על ידי המשתמשים
+    <div style={{ padding: "32px", maxWidth: "1000px", margin: "0 auto" }}>
+      <h1 style={{ fontSize: "24px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px" }}>
+        חשבונות שנמחקו
+      </h1>
+      <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.5)", marginBottom: "24px" }}>
+        {accounts.length} חשבונות נמחקו
       </p>
 
-      {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "28px" }}>
-        {[
-          { label: "סה\"כ מחוקים", value: accounts.length, color: "#fff" },
-          { label: "תיירים", value: accounts.filter(a => a.userType === "tourist").length, color: "#FFB300" },
-          { label: "חברים", value: accounts.filter(a => a.userType === "member").length, color: "#22c55e" },
-        ].map(stat => (
-          <div key={stat.label} style={{ ...cardStyle, padding: "16px 20px" }}>
-            <p style={{ fontSize: "24px", fontWeight: 800, color: stat.color }}>{stat.value}</p>
-            <p style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", marginTop: "4px" }}>{stat.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Filter tabs */}
+      {/* Filter */}
       <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
-        {(["all", "tourist", "member"] as const).map(f => (
+        {[
+          { key: "all", label: "הכל" },
+          { key: "user", label: "נמחקו ע״י המשתמש" },
+          { key: "admin", label: "נמחקו ע״י מנהל" },
+        ].map((f) => (
           <button
-            key={f}
-            onClick={() => setFilter(f)}
+            key={f.key}
+            onClick={() => setFilter(f.key as typeof filter)}
             style={{
-              padding: "6px 16px", borderRadius: "4px",
-              border: filter === f ? "1px solid rgba(0,0,255,0.4)" : "1px solid rgba(255,255,255,0.08)",
-              background: filter === f ? "rgba(0,0,255,0.12)" : "transparent",
-              color: filter === f ? "#fff" : "rgba(240,240,245,0.5)",
-              fontSize: "13px", cursor: "pointer",
+              padding: "8px 16px",
+              borderRadius: "4px",
+              border: "1px solid rgba(255,255,255,0.08)",
+              background: filter === f.key ? "rgba(0,0,255,0.15)" : "rgba(255,255,255,0.03)",
+              color: filter === f.key ? "#f0f0f5" : "rgba(240,240,245,0.5)",
+              fontSize: "13px",
+              cursor: "pointer",
             }}
           >
-            {f === "all" ? "הכל" : USER_TYPE_LABELS[f]}
+            {f.label}
           </button>
         ))}
       </div>
 
-      <div style={cardStyle}>
-        {filtered.length === 0 ? (
-          <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", textAlign: "center", padding: "40px 0" }}>
-            אין חשבונות מחוקים{filter !== "all" ? " בקטגוריה זו" : ""} עדיין.
-          </p>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                  {["תאריך", "שעה", "סוג משתמש", "שם", "אימייל"].map(h => (
-                    <th key={h} style={{ padding: "10px 12px", textAlign: "right", color: "rgba(240,240,245,0.7)", fontWeight: 500, whiteSpace: "nowrap" }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(account => (
-                  <tr key={account.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.7)" }}>{account.date}</td>
-                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.7)" }}>{account.time}</td>
-                    <td style={{ padding: "12px" }}>
-                      <span style={{
-                        padding: "3px 10px", borderRadius: "6px",
-                        fontSize: "11px", fontWeight: 600,
-                        background: `${USER_TYPE_COLORS[account.userType]}20`,
-                        color: USER_TYPE_COLORS[account.userType],
-                      }}>
-                        {USER_TYPE_LABELS[account.userType] || account.userType}
-                      </span>
-                    </td>
-                    <td style={{ padding: "12px", color: "#fff" }}>{account.name}</td>
-                    <td style={{ padding: "12px", color: "rgba(240,240,245,0.7)" }}>{account.email}</td>
-                  </tr>
+      {filtered.length === 0 ? (
+        <div style={{ ...cardStyle, textAlign: "center", color: "rgba(240,240,245,0.5)", padding: "60px" }}>
+          אין חשבונות שנמחקו
+        </div>
+      ) : (
+        <div style={{ ...cardStyle, padding: 0, overflow: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                {["שם", "אימייל", "סוג", "נמחק ע״י", "תאריך ושעה"].map((h) => (
+                  <th
+                    key={h}
+                    style={{
+                      padding: "14px 16px",
+                      textAlign: "right",
+                      color: "rgba(240,240,245,0.7)",
+                      fontWeight: 500,
+                      fontSize: "12px",
+                    }}
+                  >
+                    {h}
+                  </th>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((a) => (
+                <tr key={a.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                  <td style={{ padding: "14px 16px", color: "#f0f0f5", fontWeight: 500 }}>
+                    {a.full_name || "—"}
+                  </td>
+                  <td style={{ padding: "14px 16px", color: "rgba(240,240,245,0.7)", direction: "ltr", textAlign: "right" }}>
+                    {a.email}
+                  </td>
+                  <td style={{ padding: "14px 16px" }}>
+                    <span
+                      style={{
+                        padding: "3px 10px",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        background: `${USER_TYPE_COLORS[a.user_type] || "rgba(255,255,255,0.1)"}20`,
+                        color: USER_TYPE_COLORS[a.user_type] || "rgba(240,240,245,0.5)",
+                      }}
+                    >
+                      {USER_TYPE_LABELS[a.user_type] || a.user_type}
+                    </span>
+                  </td>
+                  <td style={{ padding: "14px 16px", color: "rgba(240,240,245,0.7)" }}>
+                    {DELETED_BY_LABELS[a.deleted_by] || a.deleted_by}
+                  </td>
+                  <td style={{ padding: "14px 16px", color: "rgba(240,240,245,0.7)", fontSize: "13px" }}>
+                    {formatDate(a.deleted_at)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
