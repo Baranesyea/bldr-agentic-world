@@ -48,6 +48,7 @@ export function SchoolSwitcher({ userId, activeSchoolId, collapsed }: SchoolSwit
   }, []);
 
   if (loading || schools.length === 0) return null;
+  if (schools.length === 1) return null; // No switcher needed for single school
 
   const active = schools.find((s) => s.school.id === activeSchoolId);
   const label = active?.school.name || "כל בתי הספר";

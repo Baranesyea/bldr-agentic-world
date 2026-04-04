@@ -144,6 +144,15 @@ export default function AdminUsersPage() {
   const [newPhone, setNewPhone] = useState("");
   const [newAmount, setNewAmount] = useState("99");
   const [newStatus, setNewStatus] = useState<User["status"]>("paying");
+  const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
+  const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
+
+  // Load schools
+  useEffect(() => {
+    fetch("/api/schools").then(r => r.json()).then(data => {
+      if (Array.isArray(data)) setSchools(data);
+    }).catch(() => {});
+  }, []);
 
   // Load from localStorage
   useEffect(() => {
@@ -265,6 +274,22 @@ export default function AdminUsersPage() {
       });
     } catch {}
 
+    // Add to selected schools (will be linked after user logs in and gets a users table entry)
+    // For now, store school IDs on the member record
+    if (selectedSchools.length > 0) {
+      try {
+        await fetch("/api/members", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: undefined, // will match by email
+            email: newUser.email,
+            schoolId: selectedSchools[0], // primary school
+          }),
+        });
+      } catch {}
+    }
+
     // Send invite email
     try {
       const res = await fetch("/api/invite-user", {
@@ -285,7 +310,7 @@ export default function AdminUsersPage() {
       return;
     }
 
-    setNewName(""); setNewEmail(""); setNewPhone(""); setNewAmount("99"); setNewStatus("paying");
+    setNewName(""); setNewEmail(""); setNewPhone(""); setNewAmount("99"); setNewStatus("paying"); setSelectedSchools([]);
     setAddError("");
     setAddLoading(false);
     setShowAddModal(false);
@@ -706,6 +731,41 @@ export default function AdminUsersPage() {
                   ))}
                 </select>
               </div>
+
+              {schools.length > 0 && (
+                <div>
+                  <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>
+                    שיוך לבתי ספר
+                  </label>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {schools.map((s) => (
+                      <label
+                        key={s.id}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 10,
+                          padding: "8px 12px", borderRadius: 4, cursor: "pointer",
+                          background: selectedSchools.includes(s.id) ? "rgba(0,0,255,0.08)" : "rgba(255,255,255,0.02)",
+                          border: `1px solid ${selectedSchools.includes(s.id) ? "rgba(0,0,255,0.3)" : "rgba(255,255,255,0.06)"}`,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedSchools.includes(s.id)}
+                          onChange={() => {
+                            setSelectedSchools((prev) =>
+                              prev.includes(s.id)
+                                ? prev.filter((id) => id !== s.id)
+                                : [...prev, s.id]
+                            );
+                          }}
+                          style={{ width: 16, height: 16 }}
+                        />
+                        <span style={{ color: "#f0f0f5", fontSize: 14 }}>{s.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {addError && (
