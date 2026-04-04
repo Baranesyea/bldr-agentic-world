@@ -290,7 +290,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
   }, [refresh]);
 
   const user = getUserProfile();
-  const isAdmin = user.role === "admin" || user.role === "Architect";
+  const isAdmin = user.role === "admin";
 
   const resetForm = () => {
     setTitle("");
@@ -363,7 +363,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
       content: text,
       mediaUrls: [],
       createdAt: new Date().toISOString(),
-      isAdmin: user.role === "admin" || user.role === "Architect",
+      isAdmin: user.role === "admin",
       replies: [],
     };
     addAnswer(questionId, answer);
@@ -380,7 +380,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
       content: text,
       mediaUrls: [],
       createdAt: new Date().toISOString(),
-      isAdmin: user.role === "admin" || user.role === "Architect",
+      isAdmin: user.role === "admin",
       replies: [],
     };
     addAnswer(questionId, reply, parentAnswerId);

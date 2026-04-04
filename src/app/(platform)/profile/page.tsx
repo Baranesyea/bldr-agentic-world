@@ -17,10 +17,10 @@ interface UserProfile {
 }
 
 const DEFAULT_PROFILE: UserProfile = {
-  name: "ערן בראון",
-  email: "eran@bldr.co.il",
+  name: "",
+  email: "",
   avatarUrl: "",
-  role: "Architect",
+  role: "",
   avatarGenerated: false,
 };
 
@@ -87,7 +87,15 @@ export default function ProfilePage() {
         setEditCity(parsed.city || "");
         setEditAge(parsed.age ? String(parsed.age) : "");
       } else {
-        setEditName(DEFAULT_PROFILE.name);
+        // No saved profile yet — pull from Supabase auth cache
+        const cached = JSON.parse(localStorage.getItem("bldr_profile_cache") || "{}");
+        const initial: UserProfile = {
+          ...DEFAULT_PROFILE,
+          name: cached.full_name || "",
+          email: cached.email || "",
+        };
+        setProfile(initial);
+        setEditName(initial.name);
       }
     } catch {}
     try {

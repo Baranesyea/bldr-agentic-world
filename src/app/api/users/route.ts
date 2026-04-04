@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// GET /api/users — List members (admin only)
+// GET /api/users — List users from DB
 export async function GET() {
-  const mockUsers = [
-    {
-      id: "u1",
-      fullName: "ערן בראון",
-      email: "eran@example.com",
-      role: "admin",
-      avatarType: "uploaded",
-      createdAt: "2026-01-01T00:00:00Z",
-    },
-  ];
-  return NextResponse.json({ users: mockUsers });
+  try {
+    const { db } = await import("@/lib/db");
+    const { users } = await import("@/lib/schema");
+    const { desc } = await import("drizzle-orm");
+    const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+    return NextResponse.json({ users: allUsers });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
 
 // POST /api/users — Register new user
