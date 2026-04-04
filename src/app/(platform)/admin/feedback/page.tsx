@@ -55,6 +55,7 @@ export default function AdminFeedbackPage() {
   const [filterCategory, setFilterCategory] = useState("הכל");
   const [filterStatus, setFilterStatus] = useState("הכל");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/feedback")
@@ -268,7 +269,10 @@ export default function AdminFeedbackPage() {
                   <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                     {/* Attachment */}
                     {item.attachmentUrl && (
-                      <div style={{ marginBottom: 12, borderRadius: 4, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+                      <div
+                        onClick={(e) => { e.stopPropagation(); setZoomedImage(item.attachmentUrl!); }}
+                        style={{ marginBottom: 12, borderRadius: 4, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)", cursor: "zoom-in" }}
+                      >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={item.attachmentUrl} alt="צילום מצורף" style={{ width: "100%", maxHeight: 300, objectFit: "contain", background: "#000", display: "block" }} />
                       </div>
@@ -315,6 +319,26 @@ export default function AdminFeedbackPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Image zoom overlay */}
+      {zoomedImage && (
+        <div
+          onClick={() => setZoomedImage(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "zoom-out", padding: 24,
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={zoomedImage}
+            alt="תמונה מוגדלת"
+            style={{ maxWidth: "90vw", maxHeight: "90vh", objectFit: "contain", borderRadius: 4 }}
+          />
         </div>
       )}
     </div>

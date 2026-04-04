@@ -38,7 +38,7 @@ function MoodFace({ type, selected, onClick }: { type: number; selected: boolean
 
 export function FeedbackWidget() {
   const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState(categories[0]);
+  const [category, setCategory] = useState("הצעה לשיפור");
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<number | null>(null);
   const [success, setSuccess] = useState(false);
@@ -48,9 +48,19 @@ export function FeedbackWidget() {
   const [capturing, setCapturing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const widgetRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
   const captureScreenshot = async () => {
     setCapturing(true);
     try {
+      // Hide the feedback widget and button before capturing
+      if (widgetRef.current) widgetRef.current.style.display = "none";
+      if (btnRef.current) btnRef.current.style.display = "none";
+      // Hide the overlay too
+      const overlay = document.querySelector("[data-feedback-overlay]") as HTMLElement;
+      if (overlay) overlay.style.display = "none";
+
       const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(document.body, {
         useCORS: true,
@@ -58,6 +68,11 @@ export function FeedbackWidget() {
         scale: 0.5,
         logging: false,
       });
+
+      // Restore visibility
+      if (widgetRef.current) widgetRef.current.style.display = "";
+      if (btnRef.current) btnRef.current.style.display = "";
+      if (overlay) overlay.style.display = "";
       const dataUrl = canvas.toDataURL("image/png", 0.7);
       setAttachment(dataUrl);
       setAttachmentName("screenshot.png");
@@ -125,7 +140,7 @@ export function FeedbackWidget() {
 
     setContent("");
     setMood(null);
-    setCategory(categories[0]);
+    setCategory("הצעה לשיפור");
     setAttachment(null);
     setAttachmentName("");
     setSuccess(true);
@@ -139,6 +154,7 @@ export function FeedbackWidget() {
     <>
       {/* Floating button */}
       <button
+        ref={btnRef}
         onClick={() => setOpen(!open)}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
@@ -171,6 +187,7 @@ export function FeedbackWidget() {
       {/* Panel overlay */}
       {open && (
         <div
+          data-feedback-overlay=""
           onClick={() => setOpen(false)}
           style={{ position: "fixed", inset: 0, zIndex: 51, background: "rgba(0,0,0,0.3)" }}
         />
@@ -178,6 +195,7 @@ export function FeedbackWidget() {
 
       {/* Slide-up panel */}
       <div
+        ref={widgetRef}
         style={{
           position: "fixed",
           bottom: 24,
@@ -211,13 +229,14 @@ export function FeedbackWidget() {
             <h3 style={{ color: "#fff", fontSize: 18, fontWeight: 700, margin: "0 0 20px" }}>שלח פידבק</h3>
 
             {/* Category */}
+            <div style={{ position: "relative", marginBottom: 14 }}>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               style={{
-                width: "100%", padding: "10px 14px", borderRadius: 4,
+                width: "100%", padding: "10px 14px", paddingLeft: 36, borderRadius: 4,
                 border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)",
-                color: "#fff", fontSize: 14, marginBottom: 14, outline: "none",
+                color: "#fff", fontSize: 14, outline: "none",
                 appearance: "none", direction: "rtl", cursor: "pointer",
               }}
             >
@@ -225,6 +244,8 @@ export function FeedbackWidget() {
                 <option key={c} value={c} style={{ background: "#1a1a2e" }}>{c}</option>
               ))}
             </select>
+            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", fontSize: 10, color: "rgba(240,240,245,0.5)" }}>▼</span>
+            </div>
 
             {/* Textarea */}
             <textarea

@@ -91,6 +91,8 @@ export default function ProfilePage() {
           // Fill Google avatar if user hasn't set a custom one
           if (!parsed.avatarUrl && cached.avatar_url) {
             parsed.avatarUrl = cached.avatar_url;
+            // Persist so it's available next load
+            localStorage.setItem("bldr_user_profile", JSON.stringify(parsed));
           }
           setProfile(parsed);
           setEditName(parsed.name);
