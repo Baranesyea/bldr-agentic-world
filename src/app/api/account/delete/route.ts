@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
       .set({ status: "inactive", updatedAt: new Date() })
       .where(eq(members.email, email.toLowerCase().trim()));
 
-    // Deactivate in profiles table
-    await sql`UPDATE profiles SET role = 'deleted' WHERE email = ${email}`;
+    // Mark profile as deleted (keep role valid, clear name)
+    await sql`UPDATE profiles SET bio = 'DELETED', full_name = '[deleted]' WHERE email = ${email}`;
 
     await sql.end();
 
