@@ -701,7 +701,7 @@ export default function ProfilePage() {
                   // Delete account in DB
                   try {
                     const tourist = getTouristData();
-                    await fetch("/api/account/delete", {
+                    const res = await fetch("/api/account/delete", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
@@ -711,7 +711,10 @@ export default function ProfilePage() {
                         deletedBy: "user",
                       }),
                     });
-                  } catch {}
+                    if (!res.ok) console.error("Delete failed:", await res.text());
+                  } catch (err) {
+                    console.error("Delete error:", err);
+                  }
 
                   // Clear all local data
                   const keysToRemove = [

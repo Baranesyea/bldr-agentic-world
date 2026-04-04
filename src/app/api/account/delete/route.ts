@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { members } from "@/lib/schema";
 import { eq } from "drizzle-orm";
-import postgres from "postgres";
-
-const sql = postgres(process.env.DATABASE_URL!);
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,6 +10,10 @@ export async function POST(req: NextRequest) {
     if (!email) {
       return NextResponse.json({ error: "email is required" }, { status: 400 });
     }
+
+    // Dynamic import to avoid top-level connection issues
+    const postgres = (await import("postgres")).default;
+    const sql = postgres(process.env.DATABASE_URL!);
 
     // Log the deletion
     await sql`
@@ -29,9 +30,12 @@ export async function POST(req: NextRequest) {
     // Deactivate in profiles table
     await sql`UPDATE profiles SET role = 'deleted' WHERE email = ${email}`;
 
+    await sql.end();
+
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("Delete account error:", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
