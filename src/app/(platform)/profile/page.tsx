@@ -88,6 +88,10 @@ export default function ProfilePage() {
           // Stale profile from a different user — discard it
           localStorage.removeItem("bldr_user_profile");
         } else {
+          // Fill Google avatar if user hasn't set a custom one
+          if (!parsed.avatarUrl && cached.avatar_url) {
+            parsed.avatarUrl = cached.avatar_url;
+          }
           setProfile(parsed);
           setEditName(parsed.name);
           setEditProfession(parsed.profession || "");
@@ -103,6 +107,7 @@ export default function ProfilePage() {
         ...DEFAULT_PROFILE,
         name: cached.full_name || "",
         email: currentEmail,
+        avatarUrl: cached.avatar_url || "",
       };
       setProfile(initial);
       setEditName(initial.name);

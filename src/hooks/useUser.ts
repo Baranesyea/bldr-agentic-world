@@ -105,8 +105,19 @@ export function useUser() {
           .single();
         if (error) console.error("Profile fetch error:", error);
         else {
-          setProfile(data as Profile);
-          setCachedProfile(data as Profile);
+          const profile = data as Profile;
+          // Pull Google avatar if profile has no avatar set
+          if (!profile.avatar_url && user.user_metadata?.avatar_url) {
+            profile.avatar_url = user.user_metadata.avatar_url;
+            // Persist to DB so it's available server-side too
+            supabase
+              .from("profiles")
+              .update({ avatar_url: user.user_metadata.avatar_url })
+              .eq("id", user.id)
+              .then();
+          }
+          setProfile(profile);
+          setCachedProfile(profile);
         }
       }
 
