@@ -13,7 +13,7 @@ export default async function DashboardPage() {
     title: c.title,
     description: c.description || "",
     status: c.status,
-    featured: false, // DB doesn't have featured field currently
+    featured: c.featured ?? false,
     thumbnailUrl: c.thumbnail || "",
     chapters: c.chapters.map((ch) => ({
       id: ch.id,

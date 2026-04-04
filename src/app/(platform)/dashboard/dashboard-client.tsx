@@ -67,8 +67,10 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
   }, []);
 
   const activeCourses = courses.filter((c) => c.status === "active");
-  const comingSoonCourses = courses.filter((c) => c.status === "coming_soon" || c.status === "draft");
-  const featuredCourse = courses.find((c) => c.featured && c.status === "active") || activeCourses[0];
+  const comingSoonCourses = courses.filter((c) =>
+    c.status === "coming_soon" || (c.status === "draft" && isAdmin)
+  );
+  const featuredCourse = activeCourses.find((c) => c.featured) || activeCourses[0];
   // Show all active courses in the grid (including featured)
   const nonFeaturedActive = activeCourses;
 
