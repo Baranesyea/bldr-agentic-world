@@ -148,6 +148,7 @@ export default function AdminUsersPage() {
   const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
   const [deletedEmails, setDeletedEmails] = useState<Set<string>>(new Set());
   const [allCourses, setAllCourses] = useState<{ id: string; title: string }[]>([]);
+  const [userAccessMap, setUserAccessMap] = useState<Record<string, { schoolIds: string[]; blockedCourseIds: string[] }>>({});
 
   // User detail panel state
   const [detailUser, setDetailUser] = useState<User | null>(null);
@@ -167,6 +168,9 @@ export default function AdminUsersPage() {
     }).catch(() => {});
     fetch("/api/courses").then(r => r.json()).then(data => {
       if (Array.isArray(data)) setAllCourses(data.map((c: { id: string; title: string }) => ({ id: c.id, title: c.title })));
+    }).catch(() => {});
+    fetch("/api/users/access-map").then(r => r.json()).then(data => {
+      if (data && typeof data === "object" && !data.error) setUserAccessMap(data);
     }).catch(() => {});
   }, []);
 
@@ -524,12 +528,41 @@ export default function AdminUsersPage() {
                           {user.phone || "—"}
                         </td>
                         <td style={{ padding: "12px 14px" }}>
-                          <span style={{
-                            background: statusInfo.bg, color: statusInfo.color,
-                            padding: "4px 12px", borderRadius: 4, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap",
-                          }}>
-                            {statusInfo.label}
-                          </span>
+                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
+                            <span style={{
+                              background: statusInfo.bg, color: statusInfo.color,
+                              padding: "4px 12px", borderRadius: 4, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap",
+                            }}>
+                              {statusInfo.label}
+                            </span>
+                            {(() => {
+                              const access = userAccessMap[user.email.toLowerCase()];
+                              if (!access) return null;
+                              return access.schoolIds.map((sid) => {
+                                const school = schools.find((s) => s.id === sid);
+                                return school ? (
+                                  <span key={sid} style={{
+                                    background: "rgba(0,0,255,0.1)", color: "#6666FF",
+                                    padding: "3px 8px", borderRadius: 4, fontSize: 10, fontWeight: 600, whiteSpace: "nowrap",
+                                  }}>
+                                    {school.name}
+                                  </span>
+                                ) : null;
+                              });
+                            })()}
+                            {(() => {
+                              const access = userAccessMap[user.email.toLowerCase()];
+                              if (!access || access.blockedCourseIds.length === 0) return null;
+                              return (
+                                <span style={{
+                                  background: "rgba(255,59,48,0.1)", color: "#ff6b6b",
+                                  padding: "3px 8px", borderRadius: 4, fontSize: 10, fontWeight: 600, whiteSpace: "nowrap",
+                                }}>
+                                  {access.blockedCourseIds.length} קורסים חסומים
+                                </span>
+                              );
+                            })()}
+                          </div>
                         </td>
                         <td style={{ padding: "12px 14px", color: "#f0f0f5", fontWeight: 600, fontSize: 13 }}>
                           {user.amount > 0 ? formatCurrency(user.amount) : "—"}
@@ -673,35 +706,12 @@ export default function AdminUsersPage() {
                                       setDetailUser(user);
                                       setUserSchools([]);
                                       setUserBlockedCourses([]);
-
-                                      // Load current school memberships
-                                      (async () => {
-                                        try {
-                                          const res = await fetch(`/api/users`);
-                                          const data = await res.json();
-                                          const match = (data.users || []).find((u: { email: string }) => u.email.toLowerCase() === user.email.toLowerCase());
-                                          if (match) {
-                                            // Check each school for membership
-                                            const memberSchools: string[] = [];
-                                            for (const s of schools) {
-                                              const mRes = await fetch(`/api/schools/${s.id}/members`);
-                                              const members = await mRes.json();
-                                              if (Array.isArray(members) && members.some((m: { membership: { userId: string } }) => m.membership.userId === match.id)) {
-                                                memberSchools.push(s.id);
-                                              }
-                                            }
-                                            setUserSchools(memberSchools);
-                                          }
-                                        } catch {}
-                                      })();
-
-                                      // Load current blocked courses
-                                      fetch(`/api/user-course-access?userId=${encodeURIComponent(user.email)}`)
+                                      // Load all access data in one call
+                                      fetch(`/api/users/by-email?email=${encodeURIComponent(user.email)}`)
                                         .then(r => r.json())
                                         .then(data => {
-                                          if (Array.isArray(data)) {
-                                            setUserBlockedCourses(data.filter((d: { isAvailable: boolean }) => !d.isAvailable).map((d: { courseId: string }) => d.courseId));
-                                          }
+                                          if (data.schoolIds) setUserSchools(data.schoolIds);
+                                          if (data.blockedCourseIds) setUserBlockedCourses(data.blockedCourseIds);
                                         }).catch(() => {});
                                     }}
                                     style={{
@@ -867,32 +877,34 @@ export default function AdminUsersPage() {
                 disabled={savingDetail}
                 onClick={async () => {
                   setSavingDetail(true);
-                  // Resolve user ID from email
+                  // Get DB user ID
                   let dbUserId: string | null = null;
                   try {
-                    const res = await fetch(`/api/users`);
+                    const res = await fetch(`/api/users/by-email?email=${encodeURIComponent(detailUser.email)}`);
                     const data = await res.json();
-                    const match = (data.users || []).find((u: { email: string }) => u.email.toLowerCase() === detailUser.email.toLowerCase());
-                    if (match) dbUserId = match.id;
+                    dbUserId = data.id || null;
                   } catch {}
 
+                  if (!dbUserId) {
+                    alert("משתמש לא נמצא במערכת");
+                    setSavingDetail(false);
+                    return;
+                  }
+
                   // Save school memberships
-                  if (dbUserId) {
-                    // Remove from all schools first, then add selected
-                    for (const s of schools) {
-                      if (userSchools.includes(s.id)) {
-                        await fetch(`/api/schools/${s.id}/members`, {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ userId: dbUserId }),
-                        });
-                      } else {
-                        await fetch(`/api/schools/${s.id}/members`, {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ action: "remove", userId: dbUserId }),
-                        });
-                      }
+                  for (const s of schools) {
+                    if (userSchools.includes(s.id)) {
+                      await fetch(`/api/schools/${s.id}/members`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ userId: dbUserId }),
+                      });
+                    } else {
+                      await fetch(`/api/schools/${s.id}/members`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: "remove", userId: dbUserId }),
+                      });
                     }
                   }
 
@@ -910,6 +922,11 @@ export default function AdminUsersPage() {
                       schoolId: userSchools[0] || null,
                     }),
                   });
+
+                  // Refresh access map
+                  fetch("/api/users/access-map").then(r => r.json()).then(data => {
+                    if (data && typeof data === "object" && !data.error) setUserAccessMap(data);
+                  }).catch(() => {});
 
                   setSavingDetail(false);
                   setDetailUser(null);
