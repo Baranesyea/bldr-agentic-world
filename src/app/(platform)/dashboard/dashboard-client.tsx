@@ -304,12 +304,11 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      top: "45%",
                       padding: "0 20px 16px",
                       zIndex: 2,
                       display: "flex",
                       flexDirection: "column",
-                      justifyContent: "flex-start",
+                      justifyContent: "flex-end",
                     }}>
                       <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 6, textShadow: "0 1px 6px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", lineHeight: 1.35 }}>{c.title}</h3>
                       {c.description && (
@@ -390,10 +389,10 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                     )}
                     <div style={{
                       position: "absolute",
-                      bottom: 0, left: 0, right: 0, top: "45%",
+                      bottom: 0, left: 0, right: 0,
                       padding: "0 20px 16px",
                       zIndex: 2,
-                      display: "flex", flexDirection: "column", justifyContent: "flex-start",
+                      display: "flex", flexDirection: "column", justifyContent: "flex-end",
                     }}>
                       <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 6, textShadow: "0 1px 6px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", lineHeight: 1.35 }}>{c.title}</h3>
                       {c.description && (
@@ -444,12 +443,11 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  top: "45%",
                   padding: "0 20px 16px",
                   zIndex: 2,
                   display: "flex",
                   flexDirection: "column",
-                  justifyContent: "flex-start",
+                  justifyContent: "flex-end",
                 }}>
                   <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 6, textShadow: "0 1px 6px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", lineHeight: 1.35 }}>{c.title}</h3>
                   {c.description && (
