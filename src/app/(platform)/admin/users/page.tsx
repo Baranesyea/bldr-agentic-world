@@ -146,11 +146,27 @@ export default function AdminUsersPage() {
   const [newStatus, setNewStatus] = useState<User["status"]>("paying");
   const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
   const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
+  const [deletedEmails, setDeletedEmails] = useState<Set<string>>(new Set());
+  const [allCourses, setAllCourses] = useState<{ id: string; title: string }[]>([]);
 
-  // Load schools
+  // User detail panel state
+  const [detailUser, setDetailUser] = useState<User | null>(null);
+  const [userSchools, setUserSchools] = useState<string[]>([]);
+  const [userBlockedCourses, setUserBlockedCourses] = useState<string[]>([]);
+  const [savingDetail, setSavingDetail] = useState(false);
+
+  // Load schools, deleted emails, courses
   useEffect(() => {
     fetch("/api/schools").then(r => r.json()).then(data => {
       if (Array.isArray(data)) setSchools(data);
+    }).catch(() => {});
+    fetch("/api/account/deleted").then(r => r.json()).then(data => {
+      if (Array.isArray(data)) {
+        setDeletedEmails(new Set(data.map((d: { email: string }) => d.email.toLowerCase())));
+      }
+    }).catch(() => {});
+    fetch("/api/courses").then(r => r.json()).then(data => {
+      if (Array.isArray(data)) setAllCourses(data.map((c: { id: string; title: string }) => ({ id: c.id, title: c.title })));
     }).catch(() => {});
   }, []);
 
@@ -196,7 +212,8 @@ export default function AdminUsersPage() {
 
   /* ─── Filter & Sort ─── */
   const filtered = useMemo(() => {
-    let list = users;
+    // Exclude deleted users
+    let list = users.filter((u) => !deletedEmails.has(u.email.toLowerCase()));
 
     if (filterTab === "paying") list = list.filter((u) => u.status === "paying");
     else if (filterTab === "trial") list = list.filter((u) => u.status === "trial");
@@ -631,7 +648,7 @@ export default function AdminUsersPage() {
 
                               {/* Change Status */}
                               {user.role !== "tourist" && (
-                                <div style={{ display: "flex", gap: 10, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.05)", alignItems: "center" }}>
+                                <div style={{ display: "flex", gap: 10, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.05)", alignItems: "center", flexWrap: "wrap" }}>
                                   <div style={{ fontSize: 12, color: "rgba(240,240,245,0.7)", marginLeft: 8 }}>
                                     שינוי סטטוס:
                                   </div>
@@ -650,6 +667,47 @@ export default function AdminUsersPage() {
                                       {opt.label}
                                     </button>
                                   ))}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDetailUser(user);
+                                      setUserSchools([]); // Will be loaded in the modal
+                                      setUserBlockedCourses([]);
+                                    }}
+                                    style={{
+                                      padding: "6px 14px", borderRadius: 6, marginRight: "auto",
+                                      border: "1px solid rgba(0,0,255,0.3)",
+                                      background: "rgba(0,0,255,0.08)", color: "#6666FF",
+                                      fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                    }}
+                                  >
+                                    ניהול גישה
+                                  </button>
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (!confirm(`למחוק את ${user.fullName || user.email}?`)) return;
+                                      await fetch("/api/account/delete", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                          email: user.email,
+                                          fullName: user.fullName,
+                                          userType: user.role,
+                                          deletedBy: "admin",
+                                        }),
+                                      });
+                                      setDeletedEmails(new Set([...deletedEmails, user.email.toLowerCase()]));
+                                    }}
+                                    style={{
+                                      padding: "6px 14px", borderRadius: 6,
+                                      border: "1px solid rgba(255,59,48,0.3)",
+                                      background: "rgba(255,59,48,0.08)", color: "#ff6b6b",
+                                      fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                    }}
+                                  >
+                                    מחק חשבון
+                                  </button>
                                 </div>
                               )}
                             </div>
@@ -666,6 +724,150 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Add Subscriber Modal */}
+      {/* Access Management Modal */}
+      {detailUser && (
+        <div
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 1000, backdropFilter: "blur(4px)",
+          }}
+          onClick={() => setDetailUser(null)}
+        >
+          <div
+            style={{
+              background: "#0a0a1a", border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 6, padding: 32, maxWidth: 520, width: "90%", direction: "rtl",
+              maxHeight: "80vh", overflowY: "auto",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginTop: 0, marginBottom: 8 }}>
+              ניהול גישה — {detailUser.fullName || detailUser.email}
+            </h2>
+            <p style={{ fontSize: 13, color: "rgba(240,240,245,0.5)", marginBottom: 24, direction: "ltr", textAlign: "right" }}>
+              {detailUser.email}
+            </p>
+
+            {/* Schools */}
+            {schools.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: "rgba(240,240,245,0.8)", marginBottom: 12 }}>
+                  בתי ספר
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {schools.map((s) => (
+                    <label
+                      key={s.id}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 10,
+                        padding: "10px 14px", borderRadius: 4, cursor: "pointer",
+                        background: userSchools.includes(s.id) ? "rgba(0,0,255,0.08)" : "rgba(255,255,255,0.02)",
+                        border: `1px solid ${userSchools.includes(s.id) ? "rgba(0,0,255,0.3)" : "rgba(255,255,255,0.06)"}`,
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={userSchools.includes(s.id)}
+                        onChange={() => {
+                          setUserSchools((prev) =>
+                            prev.includes(s.id) ? prev.filter((id) => id !== s.id) : [...prev, s.id]
+                          );
+                        }}
+                        style={{ width: 16, height: 16 }}
+                      />
+                      <span style={{ color: "#f0f0f5", fontSize: 14 }}>{s.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Courses */}
+            {allCourses.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: "rgba(240,240,245,0.8)", marginBottom: 4 }}>
+                  חסימת קורסים
+                </h3>
+                <p style={{ fontSize: 12, color: "rgba(240,240,245,0.4)", marginBottom: 12 }}>
+                  סמן קורסים שהמשתמש לא יוכל לגשת אליהם
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {allCourses.map((c) => (
+                    <label
+                      key={c.id}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 10,
+                        padding: "10px 14px", borderRadius: 4, cursor: "pointer",
+                        background: userBlockedCourses.includes(c.id) ? "rgba(255,59,48,0.06)" : "rgba(255,255,255,0.02)",
+                        border: `1px solid ${userBlockedCourses.includes(c.id) ? "rgba(255,59,48,0.2)" : "rgba(255,255,255,0.06)"}`,
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={userBlockedCourses.includes(c.id)}
+                        onChange={() => {
+                          setUserBlockedCourses((prev) =>
+                            prev.includes(c.id) ? prev.filter((id) => id !== c.id) : [...prev, c.id]
+                          );
+                        }}
+                        style={{ width: 16, height: 16 }}
+                      />
+                      <span style={{
+                        color: userBlockedCourses.includes(c.id) ? "#ff6b6b" : "#f0f0f5",
+                        fontSize: 14,
+                        textDecoration: userBlockedCourses.includes(c.id) ? "line-through" : "none",
+                      }}>
+                        {c.title}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-start" }}>
+              <button
+                disabled={savingDetail}
+                onClick={async () => {
+                  setSavingDetail(true);
+                  // Save course access
+                  if (userBlockedCourses.length > 0) {
+                    const courses = allCourses.map((c) => ({
+                      courseId: c.id,
+                      isAvailable: !userBlockedCourses.includes(c.id),
+                    }));
+                    await fetch("/api/user-course-access", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        userId: detailUser.id,
+                        courses,
+                        schoolId: userSchools[0] || null,
+                      }),
+                    });
+                  }
+                  setSavingDetail(false);
+                  setDetailUser(null);
+                }}
+                style={{
+                  ...BTN,
+                  opacity: savingDetail ? 0.6 : 1,
+                }}
+              >
+                {savingDetail ? "שומר..." : "שמור"}
+              </button>
+              <button
+                onClick={() => setDetailUser(null)}
+                style={{ ...BTN, background: "rgba(255,255,255,0.06)" }}
+              >
+                ביטול
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showAddModal && (
         <div
           style={{
