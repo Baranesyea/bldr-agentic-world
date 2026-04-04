@@ -251,6 +251,20 @@ export default function AdminUsersPage() {
     saveUsers(toSave);
     setUsers(updated);
 
+    // Create member record in DB (required for login access)
+    try {
+      await fetch("/api/members", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: newUser.email,
+          fullName: newUser.fullName || newUser.email.split("@")[0],
+          type: newStatus === "paying" ? "paid" : "free",
+          pricePaid: parseFloat(newAmount) || 0,
+        }),
+      });
+    } catch {}
+
     // Send invite email
     try {
       const res = await fetch("/api/invite-user", {
