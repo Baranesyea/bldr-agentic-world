@@ -697,7 +697,13 @@ export default function AdminUsersPage() {
                                           deletedBy: "admin",
                                         }),
                                       });
+                                      // Update UI state
                                       setDeletedEmails(new Set([...deletedEmails, user.email.toLowerCase()]));
+                                      // Also remove from localStorage
+                                      const stored = loadUsers().filter(u => u.email.toLowerCase() !== user.email.toLowerCase());
+                                      saveUsers(stored);
+                                      setUsers(prev => prev.filter(u => u.id !== user.id));
+                                      setExpandedId(null);
                                     }}
                                     style={{
                                       padding: "6px 14px", borderRadius: 6,
