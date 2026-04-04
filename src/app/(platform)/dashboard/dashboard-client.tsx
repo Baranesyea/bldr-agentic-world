@@ -50,7 +50,7 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ courses }: DashboardClientProps) {
-  const [userName, setUserName] = useState("ערן");
+  const [userName, setUserName] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
   const access = useAccessCheck();
@@ -63,6 +63,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
     try {
       const cached = JSON.parse(localStorage.getItem("bldr_profile_cache") || "{}");
       if (cached.role === "admin") setIsAdmin(true);
+      if (!userName && cached.full_name) setUserName(cached.full_name.split(" ")[0]);
     } catch {}
   }, []);
 
