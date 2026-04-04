@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserCourseAccessList, bulkSetUserCourseAccess } from "@/lib/data/user-course-access";
-import { db } from "@/lib/db";
-import { users } from "@/lib/schema";
-import { eq } from "drizzle-orm";
 
 async function resolveUserId(idOrEmail: string): Promise<string | null> {
   // If it looks like a UUID, use as-is
   if (/^[0-9a-f]{8}-/.test(idOrEmail)) return idOrEmail;
-  // Otherwise treat as email and look up
-  const [user] = await db.select({ id: users.id }).from(users).where(eq(users.email, idOrEmail.toLowerCase().trim()));
-  return user?.id || null;
+  // Look up in profiles table (Supabase-managed, has all users)
+  const postgres = (await import("postgres")).default;
+  const sql = postgres(process.env.DATABASE_URL!);
+  const [row] = await sql`SELECT id FROM profiles WHERE email = ${idOrEmail.toLowerCase().trim()}`;
+  await sql.end();
+  return row?.id || null;
 }
 
 export async function GET(req: NextRequest) {

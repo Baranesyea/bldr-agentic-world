@@ -1,6 +1,24 @@
 import { db } from "@/lib/db";
-import { userCourseAccess, schoolCourses, schoolMemberships, courses } from "@/lib/schema";
+import { userCourseAccess, schoolCourses, schoolMemberships, courses, users } from "@/lib/schema";
 import { eq, and, asc } from "drizzle-orm";
+import postgres from "postgres";
+
+async function ensureUserExists(userId: string) {
+  const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.id, userId));
+  if (existing) return;
+  const sql = postgres(process.env.DATABASE_URL!);
+  const [profile] = await sql`SELECT id, email, full_name FROM profiles WHERE id = ${userId}`;
+  await sql.end();
+  if (profile) {
+    await db.insert(users).values({
+      id: profile.id,
+      email: profile.email,
+      fullName: profile.full_name || profile.email.split("@")[0],
+      passwordHash: "oauth",
+      role: "member",
+    }).onConflictDoNothing();
+  }
+}
 
 // ============================================
 // Per-user course access overrides
@@ -23,6 +41,7 @@ export async function setUserCourseAccess(
   isAvailable: boolean,
   schoolId?: string | null
 ) {
+  await ensureUserExists(userId);
   const [row] = await db
     .insert(userCourseAccess)
     .values({

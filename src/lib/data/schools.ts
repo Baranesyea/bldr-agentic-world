@@ -1,6 +1,29 @@
 import { db } from "@/lib/db";
 import { schools, schoolMemberships, schoolCourses, users } from "@/lib/schema";
 import { eq, desc, and } from "drizzle-orm";
+import postgres from "postgres";
+
+/**
+ * Ensure a user exists in the Drizzle `users` table by syncing from Supabase `profiles`.
+ * Needed because school_memberships FK references users.id.
+ */
+async function ensureUserExists(userId: string) {
+  const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.id, userId));
+  if (existing) return;
+  // Copy from profiles
+  const sql = postgres(process.env.DATABASE_URL!);
+  const [profile] = await sql`SELECT id, email, full_name FROM profiles WHERE id = ${userId}`;
+  await sql.end();
+  if (profile) {
+    await db.insert(users).values({
+      id: profile.id,
+      email: profile.email,
+      fullName: profile.full_name || profile.email.split("@")[0],
+      passwordHash: "oauth",
+      role: "member",
+    }).onConflictDoNothing();
+  }
+}
 
 // ============================================
 // Schools CRUD
@@ -85,6 +108,7 @@ export async function addMemberToSchool(data: {
   accessExpiresAt?: Date | null;
   expiryMode?: "full_lock" | "partial_lock";
 }) {
+  await ensureUserExists(data.userId);
   const [membership] = await db
     .insert(schoolMemberships)
     .values({
