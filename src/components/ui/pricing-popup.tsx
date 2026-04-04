@@ -2,6 +2,7 @@
 
 interface PricingPopupProps {
   onClose: () => void;
+  dismissible?: boolean;
 }
 
 const features = [
@@ -12,10 +13,10 @@ const features = [
   "המחיר נעול לנצח",
 ];
 
-export function PricingPopup({ onClose }: PricingPopupProps) {
+export function PricingPopup({ onClose, dismissible = true }: PricingPopupProps) {
   return (
     <div
-      onClick={onClose}
+      onClick={dismissible ? onClose : undefined}
       style={{
         position: "fixed", inset: 0, zIndex: 9999,
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -39,7 +40,7 @@ export function PricingPopup({ onClose }: PricingPopupProps) {
         }}
       >
         {/* Close */}
-        <button
+        {dismissible && <button
           onClick={onClose}
           style={{
             position: "absolute", top: "16px", left: "16px",
@@ -50,7 +51,7 @@ export function PricingPopup({ onClose }: PricingPopupProps) {
           }}
         >
           ×
-        </button>
+        </button>}
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: "36px" }}>

@@ -38,6 +38,7 @@ import { useUser, getTouristData } from "@/hooks/useUser";
 import { createClient } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { SchoolSwitcher } from "@/components/layout/school-switcher";
 
 const mainNav = [
   { label: "לימודים", href: "/dashboard", icon: CoursesIcon },
@@ -62,6 +63,8 @@ const adminNav = [
   { label: "רעיונות לפיתוח", href: "/admin/ideas", icon: LightbulbIcon },
   { label: "משימות", href: "/admin/tasks", icon: LightbulbIcon },
   { label: "סטודנטים", href: "/admin/members", icon: UsersIcon },
+  { label: "בתי ספר", href: "/admin/schools", icon: GraduationIcon },
+  { label: "ייבוא משתמשים", href: "/admin/import-users", icon: ImportIcon },
   { label: "אנליטיקס", href: "/admin/analytics", icon: DashboardIcon },
 ];
 
@@ -323,6 +326,14 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
           <Image src="/logo.png" alt="BLDR" width={collapsed ? 36 : 160} height={collapsed ? 36 : 60} style={{ objectFit: "contain", transition: "all 0.3s" }} />
         </Link>
       </div>
+
+      {!isTourist && (
+        <SchoolSwitcher
+          userId={userProfile?.id || ""}
+          activeSchoolId={typeof window !== "undefined" ? localStorage.getItem("bldr_active_school") : null}
+          collapsed={collapsed}
+        />
+      )}
 
       <nav style={{ flex: 1, padding: "16px 8px", display: "flex", flexDirection: "column", gap: "4px", overflowY: "auto" }}>
         {isTourist ? (

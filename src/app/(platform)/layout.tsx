@@ -11,6 +11,9 @@ import { OnboardingTour } from "@/components/layout/onboarding-tour";
 import { ProfileQuestionnaire } from "@/components/layout/profile-questionnaire";
 import { TouristGuard } from "@/components/ui/tourist-guard";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAccessCheck } from "@/hooks/useAccessCheck";
+import { CountdownTimer } from "@/components/layout/countdown-timer";
+import { PricingPopup } from "@/components/ui/pricing-popup";
 
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
@@ -22,6 +25,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
     if (pathname) trackPageView(pathname);
   }, [pathname, trackPageView]);
   const isAdmin = pathname?.startsWith("/admin");
+  const access = useAccessCheck();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Start expanded
   const collapseTimerRef = useRef<NodeJS.Timeout | null>(null);
   const tourActiveRef = useRef(false);
@@ -94,9 +98,19 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
         <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
       </div>
       <main style={{ marginRight: `${sidebarWidth}px`, minHeight: "100vh", paddingBottom: "64px", transition: "margin-right 0.3s" }}>
+        {/* Countdown timer for time-limited access */}
+        {!access.loading && access.expiresAt && !access.expired && (
+          <div style={{ display: "flex", justifyContent: "center", padding: "8px 16px" }}>
+            <CountdownTimer expiresAt={access.expiresAt} />
+          </div>
+        )}
         <TrialBanner />
         <TouristGuard>{children}</TouristGuard>
       </main>
+      {/* Full lock popup - non-dismissible when access fully expired */}
+      {!access.loading && access.expired && access.expiryMode === "full_lock" && (
+        <PricingPopup onClose={() => {}} dismissible={false} />
+      )}
       {!isAdmin && <FeedbackWidget />}
       {!isAdmin && <WhatsAppCTA />}
       {!isAdmin && <NextEventBanner event={null} />}

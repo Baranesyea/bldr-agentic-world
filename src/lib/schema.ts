@@ -8,6 +8,7 @@ import {
   uuid,
   varchar,
   pgEnum,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 // ============================================
@@ -31,6 +32,7 @@ export const videoProviderEnum = pgEnum("video_provider", ["youtube", "vimeo", "
 export const reputationEventTypeEnum = pgEnum("reputation_event_type", [
   "module_complete", "assignment_done", "helped_peer", "event_attend", "pod_checkin", "qa_published",
 ]);
+export const expiryModeEnum = pgEnum("expiry_mode", ["full_lock", "partial_lock"]);
 
 // ============================================
 // Layer 0: Users
@@ -46,6 +48,7 @@ export const users = pgTable("users", {
   currentProjects: text("current_projects"),
   role: userRoleEnum("role").default("member").notNull(),
   timezone: varchar("timezone", { length: 50 }).default("Asia/Jerusalem"),
+  activeSchoolId: uuid("active_school_id"),
   notificationPrefs: jsonb("notification_prefs").default({}),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -334,6 +337,10 @@ export const members = pgTable("members", {
   pricePaid: integer("price_paid").default(0),
   supabaseUserId: text("supabase_user_id"),
   notes: text("notes"),
+  schoolId: uuid("school_id"),
+  accessExpiresAt: timestamp("access_expires_at"),
+  expiryMode: expiryModeEnum("expiry_mode").default("full_lock"),
+  importBatchId: uuid("import_batch_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -409,4 +416,67 @@ export const themeSettings = pgTable("theme_settings", {
   fontBody: varchar("font_body", { length: 100 }),
   logoUrl: text("logo_url"),
   faviconUrl: text("favicon_url"),
+});
+
+// ============================================
+// Schools (Workspaces)
+// ============================================
+export const schools = pgTable("schools", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).unique(),
+  logoUrl: text("logo_url"),
+  whatsappLink: text("whatsapp_link"),
+  settings: jsonb("settings").default({}),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const schoolMemberships = pgTable("school_memberships", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  schoolId: uuid("school_id").notNull().references(() => schools.id, { onDelete: "cascade" }),
+  role: varchar("role", { length: 50 }).default("student").notNull(),
+  accessExpiresAt: timestamp("access_expires_at"),
+  expiryMode: expiryModeEnum("expiry_mode").default("full_lock"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("school_memberships_user_school_idx").on(table.userId, table.schoolId),
+]);
+
+export const schoolCourses = pgTable("school_courses", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  schoolId: uuid("school_id").notNull().references(() => schools.id, { onDelete: "cascade" }),
+  courseId: uuid("course_id").notNull().references(() => courses.id, { onDelete: "cascade" }),
+  isAvailable: boolean("is_available").default(true).notNull(),
+  availableAfterExpiry: boolean("available_after_expiry").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("school_courses_school_course_idx").on(table.schoolId, table.courseId),
+]);
+
+export const userCourseAccess = pgTable("user_course_access", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  courseId: uuid("course_id").notNull().references(() => courses.id, { onDelete: "cascade" }),
+  schoolId: uuid("school_id").references(() => schools.id, { onDelete: "cascade" }),
+  isAvailable: boolean("is_available").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("user_course_access_user_course_school_idx").on(table.userId, table.courseId, table.schoolId),
+]);
+
+export const importBatches = pgTable("import_batches", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  schoolId: uuid("school_id").references(() => schools.id, { onDelete: "set null" }),
+  importedBy: uuid("imported_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+  fileName: varchar("file_name", { length: 500 }).notNull(),
+  totalRows: integer("total_rows").default(0).notNull(),
+  successCount: integer("success_count").default(0).notNull(),
+  failCount: integer("fail_count").default(0).notNull(),
+  fieldMapping: jsonb("field_mapping").default({}),
+  courseAvailability: jsonb("course_availability").default({}),
+  accessExpiresAt: timestamp("access_expires_at"),
+  expiryMode: expiryModeEnum("expiry_mode"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });

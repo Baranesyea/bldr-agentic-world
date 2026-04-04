@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { BookIcon, FireIcon, TrophyIcon, PlayIcon } from "@/components/ui/icons";
+import { BookIcon, FireIcon, TrophyIcon, PlayIcon, LockIcon } from "@/components/ui/icons";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
 import { resolveImageUrl } from "@/lib/image-store";
 import { YouTubeCarousel, YouTubeShortsCarousel } from "@/components/youtube-carousel";
+import { useAccessCheck, isCourseAvailable } from "@/hooks/useAccessCheck";
+import { PricingPopup } from "@/components/ui/pricing-popup";
 
 const MOCK_STUDENTS = [
   { id: 1, name: "שירה כהן", designation: "סטודנטית", image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face" },
@@ -50,6 +52,8 @@ interface DashboardClientProps {
 export default function DashboardClient({ courses }: DashboardClientProps) {
   const [userName, setUserName] = useState("ערן");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
+  const access = useAccessCheck();
 
   useEffect(() => {
     try {
@@ -233,8 +237,10 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
             {nonFeaturedActive.map((c, idx) => {
               const lessonCount = c.chapters?.reduce((s, ch) => s + ch.lessons.length, 0) || 0;
-              return (
-                <Link key={c.id} href={`/courses/${c.id}`} style={{ textDecoration: "none" }}>
+              const locked = !isAdmin && !access.loading && access.allCourseIds.length > 0 && !isCourseAvailable(c.id, access);
+              if (locked) {
+                return (
+                <div key={c.id} onClick={() => setShowPricing(true)} style={{ textDecoration: "none", cursor: "pointer" }}>
                   <div className="course-card-wrap" style={{
                     position: "relative",
                     borderRadius: 4,
@@ -307,6 +313,90 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                         <p style={{ fontSize: 12, color: "rgba(240,240,245,0.7)", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{c.description}</p>
                       )}
                     </div>
+                    {/* Lock overlay for unavailable courses */}
+                    {locked && (
+                      <div style={{
+                        position: "absolute",
+                        inset: 0,
+                        background: "rgba(5,5,16,0.6)",
+                        zIndex: 4,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexDirection: "column",
+                        gap: "8px",
+                      }}>
+                        <LockIcon size={32} color="rgba(240,240,245,0.5)" />
+                        <span style={{ fontSize: "13px", color: "rgba(240,240,245,0.6)", fontWeight: 500 }}>תוכן למנויים בלבד</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                );
+              }
+              return (
+                <Link key={c.id} href={`/courses/${c.id}`} style={{ textDecoration: "none" }}>
+                  <div className="course-card-wrap" style={{
+                    position: "relative",
+                    borderRadius: 4,
+                    overflow: "hidden",
+                    aspectRatio: "16 / 10",
+                    cursor: "pointer",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    transition: "all 0.3s",
+                    background: "linear-gradient(135deg, #0a0a2a, #000033)",
+                    animation: `dashFadeUp 0.6s ease-out ${0.15 * idx}s both`,
+                  }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.borderColor = "rgba(0,0,255,0.4)"; e.currentTarget.style.boxShadow = "0 8px 40px rgba(0,0,255,0.2)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.boxShadow = "none"; }}
+                  >
+                    {c.thumbnailUrl && (
+                      <ResolvedImg src={c.thumbnailUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                    )}
+                    <div style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "linear-gradient(to top, #050510 0%, rgba(5,5,16,0.92) 35%, rgba(5,5,16,0.5) 55%, rgba(5,5,16,0.15) 80%, rgba(5,5,16,0.08) 100%)",
+                    }} />
+                    {c.featured && (
+                      <span style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,255,0.35)", color: "#6666FF", padding: "4px 12px", borderRadius: 4, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>מומלץ</span>
+                    )}
+                    <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "rgba(240,240,245,0.7)", padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>
+                      {lessonCount} שיעורים
+                    </span>
+                    {isAdmin && (
+                      <a
+                        href={`/admin/courses/${c.id}/edit`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="admin-edit-btn"
+                        style={{
+                          position: "absolute", top: 12, right: 12,
+                          width: 32, height: 32, borderRadius: "50%",
+                          background: "rgba(255,255,255,0.15)",
+                          border: "1px solid rgba(255,255,255,0.2)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          zIndex: 3, cursor: "pointer", textDecoration: "none",
+                          opacity: 0, transition: "opacity 0.2s",
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,245,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </a>
+                    )}
+                    <div style={{
+                      position: "absolute",
+                      bottom: 0, left: 0, right: 0, top: "45%",
+                      padding: "0 20px 16px",
+                      zIndex: 2,
+                      display: "flex", flexDirection: "column", justifyContent: "flex-start",
+                    }}>
+                      <h3 style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f5", marginBottom: 6, textShadow: "0 1px 6px rgba(0,0,0,0.8)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", lineHeight: 1.35 }}>{c.title}</h3>
+                      {c.description && (
+                        <p style={{ fontSize: 12, color: "rgba(240,240,245,0.7)", lineHeight: 1.5, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{c.description}</p>
+                      )}
+                    </div>
                   </div>
                 </Link>
               );
@@ -370,6 +460,9 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
       )}
       {/* ── YouTube Shorts ── */}
       <YouTubeShortsCarousel />
+
+      {/* Pricing Popup */}
+      {showPricing && <PricingPopup onClose={() => setShowPricing(false)} />}
     </div>
   );
 }
