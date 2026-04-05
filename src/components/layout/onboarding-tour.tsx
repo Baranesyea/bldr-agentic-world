@@ -953,6 +953,7 @@ export function OnboardingTour() {
                     <button
                       onClick={prevStep}
                       style={{
+                        flex: 1,
                         background: "rgba(255,255,255,0.04)",
                         border: "1px solid rgba(255,255,255,0.08)",
                         color: "#f0f0f5",
@@ -972,6 +973,7 @@ export function OnboardingTour() {
                     <button
                       onClick={nextStep}
                       style={{
+                        flex: 1,
                         background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
                         color: "white",
                         border: "none",
@@ -1036,12 +1038,14 @@ export function OnboardingTour() {
           Completion Celebration — Glow Edition
           ═══════════════════════════════════════ */}
       {showDone && createPortal(
-        <div style={{
+        <div
+          onClick={() => setShowDone(false)}
+          style={{
           position: "fixed", inset: 0, zIndex: 99995,
           display: "flex", alignItems: "center", justifyContent: "center",
           background: "rgba(3,3,12,0.75)",
           animation: "siriOverlayIn 0.3s ease",
-          pointerEvents: "none",
+          cursor: "pointer",
         }}>
           {/* Confetti */}
           {Array.from({ length: 24 }).map((_, i) => (
