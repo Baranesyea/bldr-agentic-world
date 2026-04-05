@@ -339,10 +339,16 @@ export default function AdminUsersPage() {
 
   /* ─── Update status ─── */
   const handleStatusChange = (userId: string, status: User["status"]) => {
-    const updated = users.map((u) => u.id === userId ? { ...u, status } : u);
-    const toSave = updated.filter((u) => u.role !== "tourist");
-    saveUsers(toSave);
-    setUsers(updated);
+    setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, status } : u));
+    // Only update localStorage for users that originated from there
+    try {
+      const stored = loadUsers();
+      const idx = stored.findIndex((u) => u.id === userId);
+      if (idx !== -1) {
+        stored[idx].status = status;
+        saveUsers(stored);
+      }
+    } catch {}
   };
 
   const TABS: { key: FilterTab; label: string }[] = [
