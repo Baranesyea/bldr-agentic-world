@@ -93,20 +93,13 @@ export function FeedbackWidget() {
   const captureScreenshot = useCallback(async () => {
     setCapturing(true);
 
-    // Hide widget and overlay (use opacity to avoid layout shift on button)
-    if (widgetRef.current) widgetRef.current.style.display = "none";
-    if (btnRef.current) btnRef.current.style.opacity = "0";
-    if (flashRef.current) flashRef.current.style.display = "none";
-    const overlay = document.querySelector("[data-feedback-overlay]") as HTMLElement;
-    if (overlay) overlay.style.display = "none";
-
-    await new Promise(r => setTimeout(r, 100));
+    // No need to hide real elements — we capture from a clean clone
 
     try {
       const html2canvas = (await import("html2canvas")).default;
 
-      const sx = window.scrollX;
       const sy = window.scrollY;
+      const sx = window.scrollX;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
@@ -115,31 +108,41 @@ export function FeedbackWidget() {
       audio.volume = 0.6;
       await audio.load();
 
-      // Capture the FULL page — no width/height/x/y constraints
-      const fullCanvas = await html2canvas(document.documentElement, {
+      // Create a temporary wrapper that shows only the viewport
+      // This avoids all the scroll/crop issues with html2canvas
+      const wrapper = document.createElement("div");
+      wrapper.style.cssText = `
+        position: fixed; top: 0; left: 0;
+        width: ${vw}px; height: ${vh}px;
+        overflow: hidden; z-index: -1;
+        pointer-events: none;
+      `;
+      // Clone the body content into the wrapper, shifted by scroll
+      const clone = document.body.cloneNode(true) as HTMLElement;
+      clone.style.position = "absolute";
+      clone.style.top = `-${sy}px`;
+      clone.style.left = `-${sx}px`;
+      clone.style.width = `${document.body.scrollWidth}px`;
+      clone.style.margin = "0";
+      // Remove feedback elements from clone
+      clone.querySelectorAll("[data-feedback-overlay], [data-feedback-widget]").forEach(el => el.remove());
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
+
+      // Small delay for render
+      await new Promise(r => setTimeout(r, 50));
+
+      const canvas = await html2canvas(wrapper, {
         useCORS: true,
         allowTaint: true,
         scale: 1,
         logging: false,
+        width: vw,
+        height: vh,
       });
 
-      // Calculate the ratio between canvas pixels and CSS pixels
-      // (html2canvas may render at a different scale than expected)
-      const scaleX = fullCanvas.width / document.documentElement.scrollWidth;
-      const scaleY = fullCanvas.height / document.documentElement.scrollHeight;
-
-      // Crop to the visible viewport, accounting for canvas scale
-      const cropCanvas = document.createElement("canvas");
-      cropCanvas.width = vw;
-      cropCanvas.height = vh;
-      const ctx = cropCanvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(
-          fullCanvas,
-          sx * scaleX, sy * scaleY, vw * scaleX, vh * scaleY,
-          0, 0, vw, vh
-        );
-      }
+      // Clean up
+      document.body.removeChild(wrapper);
 
       // Flash + sound after capture
       audio.play().catch(() => {});
@@ -154,7 +157,7 @@ export function FeedbackWidget() {
         });
       }
 
-      const dataUrl = cropCanvas.toDataURL("image/webp", 0.75);
+      const dataUrl = canvas.toDataURL("image/webp", 0.75);
       setAttachment(dataUrl);
       setAttachmentName("screenshot.webp");
     } catch {
@@ -175,11 +178,7 @@ export function FeedbackWidget() {
       } catch {}
     }
 
-    // Restore
-    if (flashRef.current) flashRef.current.style.display = "";
-    if (widgetRef.current) widgetRef.current.style.display = "";
-    if (btnRef.current) btnRef.current.style.opacity = "";
-    if (overlay) overlay.style.display = "";
+    // Nothing to restore — capture used a temporary clone
 
     setCapturing(false);
   }, []);
@@ -258,6 +257,7 @@ export function FeedbackWidget() {
 
       {/* Floating button */}
       <button
+        data-feedback-widget=""
         ref={btnRef}
         onClick={() => setOpen(!open)}
         onMouseEnter={() => setHover(true)}
@@ -303,6 +303,7 @@ export function FeedbackWidget() {
 
       {/* Slide-up panel */}
       <div
+        data-feedback-widget=""
         ref={widgetRef}
         style={{
           position: "fixed",
