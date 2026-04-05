@@ -56,15 +56,17 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
   const access = useAccessCheck();
 
   useEffect(() => {
-    try {
-      const profile = JSON.parse(localStorage.getItem("bldr_user_profile") || "{}");
-      if (profile.name) setUserName(profile.name.split(" ")[0]);
-    } catch {}
+    let name = "";
     try {
       const cached = JSON.parse(localStorage.getItem("bldr_profile_cache") || "{}");
       if (cached.role === "admin") setIsAdmin(true);
-      if (!userName && cached.full_name) setUserName(cached.full_name.split(" ")[0]);
+      if (cached.full_name) name = cached.full_name.split(" ")[0];
     } catch {}
+    try {
+      const profile = JSON.parse(localStorage.getItem("bldr_user_profile") || "{}");
+      if (profile.name) name = profile.name.split(" ")[0];
+    } catch {}
+    if (name) setUserName(name);
   }, []);
 
   const activeCourses = courses.filter((c) => c.status === "active");

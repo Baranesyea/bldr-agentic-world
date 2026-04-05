@@ -22,12 +22,25 @@ export function SchoolSwitcher({ userId, activeSchoolId, collapsed }: SchoolSwit
   useEffect(() => {
     async function fetchSchools() {
       try {
+        // Get user's profile to find their DB id
+        const cached = JSON.parse(localStorage.getItem("bldr_profile_cache") || "{}");
+        const email = cached.email;
+        if (!email) { setLoading(false); return; }
+
+        // Fetch user's school memberships
+        const accessRes = await fetch(`/api/users/by-email?email=${encodeURIComponent(email)}`);
+        const accessData = await accessRes.json();
+        const memberSchoolIds: string[] = accessData.schoolIds || [];
+
+        if (memberSchoolIds.length === 0) { setLoading(false); return; }
+
+        // Fetch school details for member schools only
         const res = await fetch(`/api/schools`);
         const allSchools = await res.json();
-        if (Array.isArray(allSchools) && allSchools.length > 0) {
-          // For now, show all schools. In the future, filter by user membership.
+        if (Array.isArray(allSchools)) {
+          const memberSchools = allSchools.filter((s: { id: string }) => memberSchoolIds.includes(s.id));
           setSchools(
-            allSchools.map((s: { id: string; name: string; slug: string }) => ({
+            memberSchools.map((s: { id: string; name: string; slug: string }) => ({
               membership: { schoolId: s.id },
               school: s,
             }))

@@ -118,6 +118,22 @@ export function useUser() {
           }
           setProfile(profile);
           setCachedProfile(profile);
+          // Sync to bldr_user_profile so dashboard/profile page have data immediately
+          try {
+            const existing = JSON.parse(localStorage.getItem("bldr_user_profile") || "{}");
+            const needsUpdate = !existing.email || existing.email !== profile.email;
+            if (needsUpdate) {
+              localStorage.setItem("bldr_user_profile", JSON.stringify({
+                ...existing,
+                name: profile.full_name || existing.name || "",
+                email: profile.email || existing.email || "",
+                avatarUrl: profile.avatar_url || existing.avatarUrl || "",
+              }));
+            } else if (!existing.avatarUrl && profile.avatar_url) {
+              existing.avatarUrl = profile.avatar_url;
+              localStorage.setItem("bldr_user_profile", JSON.stringify(existing));
+            }
+          } catch {}
         }
       }
 
