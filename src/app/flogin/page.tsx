@@ -76,10 +76,10 @@ export default function FreeLoginPage() {
 
     if (signInError) {
       // Retry once after a longer delay
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 1500));
       const { error: retryError } = await supabase.auth.signInWithPassword({ email, password });
       if (retryError) {
-        setError("לא הצלחנו להתחבר. נסה שוב.");
+        setError(`שגיאה: ${retryError.message}`);
         setLoading(false);
         return;
       }

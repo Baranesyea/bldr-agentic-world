@@ -140,6 +140,7 @@ export async function POST(req: NextRequest) {
       ok: true,
       accessDays: settings.accessDays,
       expiresAt: expiresAt.toISOString(),
+      debug: { userExisted: !!existingUser, email: email.toLowerCase().trim() },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
