@@ -436,6 +436,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           .lesson-notes-sidebar { width: 100% !important; min-width: 100% !important; height: auto !important; max-height: none !important; position: relative !important; border-right: none !important; border-top: 1px solid rgba(255,255,255,0.06) !important; order: 2 !important; }
           .lesson-notes-sidebar > button { display: none !important; }
           .lesson-notes-sidebar { overflow-y: visible !important; }
+          .lesson-timestamp { display: none !important; }
         }
       `}</style>
 
@@ -993,7 +994,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
 
           {/* Add note area */}
           <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <div style={{
+            <div className="lesson-timestamp" style={{
               display: "flex",
               alignItems: "center",
               gap: "6px",
@@ -1064,7 +1065,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
                 padding: "10px 12px",
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                  <span style={{
+                  <span className="lesson-timestamp" style={{
                     fontSize: "11px",
                     fontWeight: 600,
                     color: "#f0f0f5",

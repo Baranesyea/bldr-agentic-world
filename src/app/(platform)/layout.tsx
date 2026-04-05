@@ -114,7 +114,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       {/* Mobile top bar */}
       {isMobile && (
         <div style={{
-          position: "fixed", top: 0, left: 0, right: 0, height: 56, zIndex: 50,
+          position: "fixed", top: 0, left: 0, right: 0, height: 64, zIndex: 50,
           background: "rgba(10,10,26,0.95)", backdropFilter: "blur(12px)",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -137,7 +137,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
               </svg>
             )}
           </button>
-          <img src="/logo.png" alt="BLDR" style={{ height: 56, objectFit: "contain" }} />
+          <img src="/logo.png" alt="BLDR" style={{ height: 80, objectFit: "contain" }} />
           <div style={{ width: 40 }} /> {/* spacer for centering logo */}
         </div>
       )}
@@ -176,7 +176,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
 
       <main style={{
         marginRight: isMobile ? 0 : `${sidebarWidth}px`,
-        paddingTop: isMobile ? 56 : 0,
+        paddingTop: isMobile ? 64 : 0,
         minHeight: "100vh",
         paddingBottom: "64px",
         transition: "margin-right 0.3s",

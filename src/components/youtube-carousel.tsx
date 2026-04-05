@@ -445,7 +445,9 @@ export function YouTubeShortsCarousel() {
               key={v.videoId}
               onClick={() => { if (!isHidden || !isAdmin) setActiveShort(v); }}
               style={{
-                flex: "0 0 calc((100vw - 96px - 68px - 72px) / 6.5)",
+                flex: typeof window !== "undefined" && window.innerWidth <= 768
+                  ? "0 0 calc((100vw - 48px) / 3.2)"
+                  : "0 0 calc((100vw - 96px - 68px - 72px) / 6.5)",
                 cursor: "pointer",
                 borderRadius: "4px",
                 overflow: "hidden",

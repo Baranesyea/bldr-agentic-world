@@ -402,6 +402,7 @@ export function FeedbackWidget() {
               ) : (
                 <div style={{ display: "flex", gap: 8 }}>
                   <button
+                    className="feedback-screenshot-btn"
                     onClick={captureScreenshot}
                     disabled={capturing}
                     style={{

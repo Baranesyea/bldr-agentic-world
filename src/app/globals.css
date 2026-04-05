@@ -264,9 +264,19 @@ input, textarea, select, button {
     overflow-x: hidden;
   }
 
+  /* Prevent iOS zoom on input focus */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
   /* Responsive images and videos */
   img, video, iframe {
     max-width: 100%;
+  }
+
+  /* Hide feedback screenshot button on mobile */
+  .feedback-screenshot-btn {
+    display: none !important;
   }
 
   /* Tables: horizontal scroll */
