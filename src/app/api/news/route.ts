@@ -1,44 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
-
-interface NewsItem {
-  id: string;
-  title: string;
-  description: string;
-  icon?: string;
-  url?: string;
-  createdAt: string;
-}
-
-// In-memory store (persists during server lifetime)
-let newsStore: NewsItem[] = [
-  { id: "1", title: "Claude 4 שוחרר!", description: "הדור החדש של Claude הגיע עם יכולות מתקדמות — context window של מיליון טוקנים, כלים חדשים ועוד", icon: "sparkles", url: "https://www.anthropic.com", createdAt: new Date().toISOString() },
-  { id: "2", title: "קורס חדש: Building AI Agents", description: "למד לבנות סוכני AI חכמים עם Claude Agent SDK. הקורס כולל 20 שיעורים ו-5 פרויקטים מעשיים", icon: "book", createdAt: new Date().toISOString() },
-  { id: "3", title: "עדכון פלטפורמה", description: "הוספנו נגן וידאו מותאם, מערכת התראות חדשה ושיפורים בממשק הניהול", icon: "rocket", createdAt: new Date().toISOString() },
-  { id: "4", title: "MCP Servers — מדריך מקיף", description: "פרסמנו מדריך מקיף על Model Context Protocol שמסביר איך לחבר כלים חיצוניים", icon: "layers", url: "https://modelcontextprotocol.io", createdAt: new Date().toISOString() },
-  { id: "5", title: "מיטאפ קהילתי — מרץ", description: "המיטאפ הקרוב יתקיים ב-28 למרץ בשעה 18:00. הנושא: אוטומציות חכמות לעסקים", icon: "calendar", createdAt: new Date().toISOString() },
-];
+import { db } from "@/lib/db";
+import { news } from "@/lib/schema";
+import { desc, eq } from "drizzle-orm";
 
 const MAX_NEWS = 10;
 
 /**
  * GET /api/news
- * Returns the latest 10 news items
+ * Returns the latest 10 news items from the database
  */
 export async function GET() {
-  return NextResponse.json(newsStore.slice(0, MAX_NEWS));
+  try {
+    const items = await db
+      .select()
+      .from(news)
+      .orderBy(desc(news.createdAt))
+      .limit(MAX_NEWS);
+
+    // Map DB fields to API format
+    return NextResponse.json(
+      items.map((n) => ({
+        id: n.id,
+        title: n.title,
+        description: n.body || "",
+        imageUrl: n.imageUrl,
+        createdAt: n.createdAt.toISOString(),
+      }))
+    );
+  } catch (err) {
+    console.error("News GET error:", err);
+    return NextResponse.json([], { status: 200 });
+  }
 }
 
 /**
  * POST /api/news
- * Add a new news item. Body: { title, description, icon? }
- * Keeps only the latest 10 items.
- *
- * Can also accept an array of items: [{ title, description, icon? }, ...]
+ * Add a new news item. Body: { title, description } or array
  */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-
     const items = Array.isArray(body) ? body : [body];
 
     for (const item of items) {
@@ -49,43 +50,49 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const newsItem: NewsItem = {
-        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      await db.insert(news).values({
         title: item.title,
-        description: item.description,
-        icon: item.icon || "sparkles",
-        url: item.url || undefined,
-        createdAt: new Date().toISOString(),
-      };
-
-      newsStore.unshift(newsItem);
+        body: item.description,
+        imageUrl: item.imageUrl || item.url || null,
+      });
     }
 
-    // Keep only latest 10
-    newsStore = newsStore.slice(0, MAX_NEWS);
+    const allNews = await db
+      .select()
+      .from(news)
+      .orderBy(desc(news.createdAt))
+      .limit(MAX_NEWS);
 
     return NextResponse.json({
       success: true,
-      count: newsStore.length,
-      items: newsStore,
+      count: allNews.length,
+      items: allNews.map((n) => ({
+        id: n.id,
+        title: n.title,
+        description: n.body || "",
+        imageUrl: n.imageUrl,
+        createdAt: n.createdAt.toISOString(),
+      })),
     });
-  } catch {
-    return NextResponse.json(
-      { error: "גוף הבקשה לא תקין" },
-      { status: 400 }
-    );
+  } catch (err) {
+    console.error("News POST error:", err);
+    return NextResponse.json({ error: "שגיאה בשמירת חדשות" }, { status: 500 });
   }
 }
 
 /**
  * DELETE /api/news?id=xxx
- * Delete a specific news item
  */
 export async function DELETE(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
   if (!id) {
     return NextResponse.json({ error: "חסר פרמטר id" }, { status: 400 });
   }
-  newsStore = newsStore.filter((n) => n.id !== id);
-  return NextResponse.json({ success: true, count: newsStore.length });
+  try {
+    await db.delete(news).where(eq(news.id, id));
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("News DELETE error:", err);
+    return NextResponse.json({ error: "שגיאה במחיקה" }, { status: 500 });
+  }
 }
