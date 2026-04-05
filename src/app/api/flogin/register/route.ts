@@ -68,10 +68,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: authError.message }, { status: 400 });
     }
 
-    // Create or reactivate member record
-    const existingMember = await db.select().from(members).where(eq(members.email, email.toLowerCase().trim()));
+    // Update member record with access expiry
+    const memberRecord = await db.select().from(members).where(eq(members.email, email.toLowerCase().trim()));
 
-    if (existingMember.length > 0) {
+    if (memberRecord.length > 0) {
       await db.update(members).set({
         fullName,
         status: "active",
