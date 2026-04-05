@@ -123,26 +123,33 @@ export function FeedbackWidget() {
 
       const vw = window.innerWidth;
       const vh = window.innerHeight;
+      const sx = window.scrollX;
+      const sy = window.scrollY;
 
-      // Simplest possible capture: let html2canvas handle everything
-      // Pass scrollX/scrollY as 0 to disable its scroll compensation
-      // Then use x/y to crop from the actual scroll position
-      const canvas = await html2canvas(document.body, {
+      // Capture the full page — zero config, let html2canvas do its thing
+      const fullCanvas = await html2canvas(document.body, {
         useCORS: true,
         allowTaint: true,
         scale: 1,
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        x: window.scrollX,
-        y: window.scrollY,
-        width: vw,
-        height: vh,
-        windowWidth: document.body.scrollWidth,
-        windowHeight: document.body.scrollHeight,
       });
 
-      const dataUrl = canvas.toDataURL("image/webp", 0.75);
+      // Crop to the viewport: map scroll to canvas pixel position
+      const rX = fullCanvas.width / document.body.scrollWidth;
+      const rY = fullCanvas.height / document.body.scrollHeight;
+      const cropCanvas = document.createElement("canvas");
+      cropCanvas.width = vw;
+      cropCanvas.height = vh;
+      const ctx = cropCanvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(
+          fullCanvas,
+          Math.round(sx * rX), Math.round(sy * rY),
+          Math.round(vw * rX), Math.round(vh * rY),
+          0, 0, vw, vh
+        );
+      }
+
+      const dataUrl = cropCanvas.toDataURL("image/webp", 0.75);
       setAttachment(dataUrl);
       setAttachmentName("screenshot.webp");
     } catch {
