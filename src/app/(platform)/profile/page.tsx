@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { TrophyIcon, BookIcon, FireIcon, NotebookIcon, SettingsIcon } from "@/components/ui/icons";
-import { getTouristData } from "@/hooks/useUser";
+import { getTouristData, useUser } from "@/hooks/useUser";
 
 interface UserProfile {
   name: string;
@@ -60,6 +60,7 @@ const BTN_SECONDARY: React.CSSProperties = {
 };
 
 export default function ProfilePage() {
+  const { profile: authProfile } = useUser();
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState("");
@@ -119,6 +120,26 @@ export default function ProfilePage() {
       if (typeof settings.autoPlayNext === "boolean") setAutoPlayNext(settings.autoPlayNext);
     } catch {}
   }, []);
+
+  // Update profile reactively when auth data arrives (fixes race condition)
+  useEffect(() => {
+    if (!authProfile) return;
+    setProfile((prev) => {
+      // Only update if profile is still default/empty or belongs to this user
+      if (prev.email && prev.email !== authProfile.email) return prev;
+      const updated = {
+        ...prev,
+        name: prev.name || authProfile.full_name || "",
+        email: prev.email || authProfile.email || "",
+        avatarUrl: prev.avatarUrl || authProfile.avatar_url || "",
+      };
+      if (updated.name !== prev.name || updated.email !== prev.email || updated.avatarUrl !== prev.avatarUrl) {
+        localStorage.setItem("bldr_user_profile", JSON.stringify(updated));
+        if (!editName && updated.name) setEditName(updated.name);
+      }
+      return updated;
+    });
+  }, [authProfile]);
 
   const saveProfile = (updates: Partial<UserProfile>) => {
     const updated = { ...profile, ...updates };

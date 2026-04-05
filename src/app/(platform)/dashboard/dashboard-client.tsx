@@ -8,6 +8,7 @@ import { resolveImageUrl } from "@/lib/image-store";
 import { YouTubeCarousel, YouTubeShortsCarousel } from "@/components/youtube-carousel";
 import { useAccessCheck, isCourseAvailable } from "@/hooks/useAccessCheck";
 import { PricingPopup } from "@/components/ui/pricing-popup";
+import { useUser } from "@/hooks/useUser";
 
 const MOCK_STUDENTS = [
   { id: 1, name: "שירה כהן", designation: "סטודנטית", image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face" },
@@ -50,24 +51,11 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ courses }: DashboardClientProps) {
-  const [userName, setUserName] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { profile: userProfile, isAdmin } = useUser();
   const [showPricing, setShowPricing] = useState(false);
   const access = useAccessCheck();
 
-  useEffect(() => {
-    let name = "";
-    try {
-      const cached = JSON.parse(localStorage.getItem("bldr_profile_cache") || "{}");
-      if (cached.role === "admin") setIsAdmin(true);
-      if (cached.full_name) name = cached.full_name.split(" ")[0];
-    } catch {}
-    try {
-      const profile = JSON.parse(localStorage.getItem("bldr_user_profile") || "{}");
-      if (profile.name) name = profile.name.split(" ")[0];
-    } catch {}
-    if (name) setUserName(name);
-  }, []);
+  const userName = userProfile?.full_name?.split(" ")[0] || "";
 
   const activeCourses = courses.filter((c) => c.status === "active");
   const comingSoonCourses = courses.filter((c) =>
