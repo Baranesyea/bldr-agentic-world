@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     description: "המועדון הראשון בישראל ללימודי תהליכים אג׳נטיים. עדכונים שבועיים, קהילה ומפגשים.",
     url: "https://app.bldr.co.il",
     siteName: "BLDR",
-    images: [{ url: "https://app.bldr.co.il/og-image.png", width: 1200, height: 630, alt: "BLDR - We Build" }],
+    images: [{ url: "https://app.bldr.co.il/og-image.jpg", width: 1200, height: 630, alt: "BLDR - We Build" }],
     locale: "he_IL",
     type: "website",
   },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "BLDR | מועדון לאנשים שבונים בעידן האג׳נטי",
     description: "המועדון הראשון בישראל ללימודי תהליכים אג׳נטיים. עדכונים שבועיים, קהילה ומפגשים.",
-    images: ["https://app.bldr.co.il/og-image.png"],
+    images: ["https://app.bldr.co.il/og-image.jpg"],
   },
 };
 
