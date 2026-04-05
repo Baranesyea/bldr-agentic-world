@@ -11,6 +11,7 @@ interface EntryVideoSettings {
 
 export function EntryVideo() {
   const [show, setShow] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
   const [vimeoId, setVimeoId] = useState<string | null>(null);
   const triggeredRef = useRef(false);
 
@@ -37,15 +38,10 @@ export function EntryVideo() {
         const id = data.vimeoUrl.match(/vimeo\.com\/(\d+)/)?.[1];
         if (!id) return;
 
-        // Check if tour is currently happening or about to happen
         const tourDone = localStorage.getItem("bldr_onboarding_done") === "true";
-        const tourCurrentlyActive = document.querySelector("[data-tour-overlay]") !== null;
 
-        if ((!tourDone || tourCurrentlyActive) && data.showAfterTour) {
-          // Tour is active or hasn't happened yet — wait for it to finish
-          const onDismiss = () => {
-            triggerVideo(id, data.delaySec);
-          };
+        if ((!tourDone || document.querySelector("[data-tour-active]")) && data.showAfterTour) {
+          const onDismiss = () => triggerVideo(id, data.delaySec);
           window.addEventListener("bldr:tour-done-dismissed", onDismiss);
           window.addEventListener("bldr:tour-complete", onDismiss);
           return () => {
@@ -53,19 +49,12 @@ export function EntryVideo() {
             window.removeEventListener("bldr:tour-complete", onDismiss);
           };
         } else if (data.showAfterTour) {
-          // Tour was done in a previous session — check if tour is running right now
-          // Listen in case tour gets triggered during this session
-          const checkAndTrigger = () => {
-            // Only trigger if no tour overlay is visible
-            const tourOverlay = document.querySelector("[data-tour-active]");
-            if (!tourOverlay) {
+          setTimeout(() => {
+            if (!document.querySelector("[data-tour-active]")) {
               triggerVideo(id, data.delaySec);
             }
-          };
-          // Small delay to let tour initialize if it's going to
-          setTimeout(checkAndTrigger, 2000);
+          }, 2000);
         } else {
-          // Not linked to tour
           triggerVideo(id, data.delaySec);
         }
       })
@@ -89,17 +78,11 @@ export function EntryVideo() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        animation: "entryVideoIn 0.3s ease",
+        opacity: iframeLoaded ? 1 : 0,
+        transition: "opacity 0.5s ease",
         direction: "rtl",
       }}
     >
-      <style>{`
-        @keyframes entryVideoIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
-
       {/* Close button */}
       <button
         onClick={close}
@@ -138,6 +121,7 @@ export function EntryVideo() {
           overflow: "hidden",
           boxShadow: "0 0 60px rgba(0,0,255,0.2), 0 20px 60px rgba(0,0,0,0.5)",
           border: "1px solid rgba(255,255,255,0.08)",
+          background: "#000",
         }}
       >
         <iframe
@@ -145,6 +129,7 @@ export function EntryVideo() {
           style={{ width: "100%", height: "100%", border: "none" }}
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
+          onLoad={() => setIframeLoaded(true)}
         />
       </div>
     </div>
