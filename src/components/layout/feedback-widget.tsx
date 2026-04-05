@@ -93,9 +93,9 @@ export function FeedbackWidget() {
   const captureScreenshot = useCallback(async () => {
     setCapturing(true);
 
-    // Hide widget, button, overlay, and flash
+    // Hide widget and overlay (use opacity to avoid layout shift on button)
     if (widgetRef.current) widgetRef.current.style.display = "none";
-    if (btnRef.current) btnRef.current.style.display = "none";
+    if (btnRef.current) btnRef.current.style.opacity = "0";
     if (flashRef.current) flashRef.current.style.display = "none";
     const overlay = document.querySelector("[data-feedback-overlay]") as HTMLElement;
     if (overlay) overlay.style.display = "none";
@@ -105,8 +105,6 @@ export function FeedbackWidget() {
     try {
       const html2canvas = (await import("html2canvas")).default;
 
-      const sx = window.scrollX;
-      const sy = window.scrollY;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
@@ -115,14 +113,13 @@ export function FeedbackWidget() {
       audio.volume = 0.6;
       await audio.load();
 
-      // Capture viewport
+      // Capture viewport — html2canvas handles scroll position automatically
+      // Only pass width/height to constrain output to viewport size
       const canvas = await html2canvas(document.documentElement, {
         useCORS: true,
         allowTaint: true,
         scale: 1,
         logging: false,
-        x: sx,
-        y: sy,
         width: vw,
         height: vh,
       });
@@ -164,7 +161,7 @@ export function FeedbackWidget() {
     // Restore
     if (flashRef.current) flashRef.current.style.display = "";
     if (widgetRef.current) widgetRef.current.style.display = "";
-    if (btnRef.current) btnRef.current.style.display = "";
+    if (btnRef.current) btnRef.current.style.opacity = "";
     if (overlay) overlay.style.display = "";
 
     setCapturing(false);

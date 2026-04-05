@@ -142,23 +142,29 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
     calendar: <Calendar size={20} />,
   };
 
+  // Fetch news on open + poll every 60s
   React.useEffect(() => {
-    if (!showNews) return;
-    fetch("/api/news")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          const cards: CardData[] = data.map((n: { id: string; title: string; description: string; icon?: string; url?: string }) => ({
-            id: n.id,
-            title: n.title,
-            description: n.description,
-            icon: n.icon ? iconMap[n.icon] : undefined,
-            url: n.url,
-          }));
-          setNewsCards(cards);
-        }
-      })
-      .catch(() => {});
+    const fetchNews = () => {
+      fetch("/api/news")
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            const cards: CardData[] = data.map((n: { id: string; title: string; description: string; icon?: string; url?: string }) => ({
+              id: n.id,
+              title: n.title,
+              description: n.description,
+              icon: n.icon ? iconMap[n.icon] : undefined,
+              url: n.url,
+            }));
+            setNewsCards(cards);
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchNews();
+    const interval = setInterval(fetchNews, 60000);
+    return () => clearInterval(interval);
   }, [showNews]);
 
   // Close news on Escape
