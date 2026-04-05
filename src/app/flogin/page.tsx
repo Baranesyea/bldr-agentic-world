@@ -15,7 +15,6 @@ export default function FreeLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
@@ -23,19 +22,14 @@ export default function FreeLoginPage() {
   const [loading, setLoading] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
   const [pageEnabled, setPageEnabled] = useState(true);
-  const [success, setSuccess] = useState(false);
 
-  // Check if flogin is enabled
   useEffect(() => {
     fetch("/api/flogin/settings")
       .then((r) => r.json())
-      .then((data) => {
-        setPageEnabled(data.enabled !== false);
-      })
+      .then((data) => { setPageEnabled(data.enabled !== false); })
       .catch(() => {});
   }, []);
 
-  // Check existing session
   useEffect(() => {
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -60,52 +54,39 @@ export default function FreeLoginPage() {
       return;
     }
 
-    // First try to sign in directly (user might already have this password)
-    const { error: directSignIn } = await supabase.auth.signInWithPassword({ email, password });
+    // Step 1: Register (creates auth user or updates password if exists)
+    const res = await fetch("/api/flogin/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, fullName: email.split("@")[0] }),
+    });
 
-    if (!directSignIn) {
-      // Login succeeded — check member access
-      const memberRes = await fetch(`/api/members/check?email=${encodeURIComponent(email)}`);
-      const memberData = await memberRes.json();
-      if (!memberData.active) {
-        setError("המייל הזה לא נמצא במערכת. פנה למנהל לקבלת גישה.");
-        await supabase.auth.signOut();
-        setLoading(false);
-        return;
-      }
-    } else {
-      // Direct sign in failed — register or update password via API
-      const res = await fetch("/api/flogin/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, fullName: email.split("@")[0] }),
-      });
+    const data = await res.json();
 
-      const data = await res.json();
+    if (!res.ok) {
+      setError(data.error || "שגיאה");
+      setLoading(false);
+      return;
+    }
 
-      if (!res.ok) {
-        setError(data.error || "שגיאה בהתחברות");
-        setLoading(false);
-        return;
-      }
+    // Step 2: Sign in (small delay to let Supabase process the new user)
+    await new Promise((r) => setTimeout(r, 500));
 
-      // Now sign in with the new password
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-      if (signInError) {
-        setError("יצירת החשבון הצליחה אבל ההתחברות נכשלה. נסה שוב.");
+    if (signInError) {
+      // Retry once after a longer delay
+      await new Promise((r) => setTimeout(r, 1000));
+      const { error: retryError } = await supabase.auth.signInWithPassword({ email, password });
+      if (retryError) {
+        setError("לא הצלחנו להתחבר. נסה שוב.");
         setLoading(false);
         return;
       }
     }
 
-    setSuccess(true);
-    setLoading(false);
-
-    setTimeout(() => {
-      router.push("/dashboard");
-      router.refresh();
-    }, 1500);
+    router.push("/dashboard");
+    router.refresh();
   };
 
   const inputStyle = (name: string): React.CSSProperties => ({
@@ -122,127 +103,47 @@ export default function FreeLoginPage() {
     boxSizing: "border-box" as const,
   });
 
-  if (showSpinner) {
-    return <LoadingSpinner text="טוען..." />;
-  }
+  if (showSpinner) return <LoadingSpinner text="טוען..." />;
 
   if (!pageEnabled) {
     return (
-      <div style={{
-        minHeight: "100vh",
-        background: "#050510",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-        direction: "rtl",
-      }}>
+      <div style={{ minHeight: "100vh", background: "#050510", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, direction: "rtl" }}>
         <div style={{ textAlign: "center" }}>
-          <h1 style={{ color: "#fff", fontSize: 28, fontWeight: 700, marginBottom: 12 }}>
-            ההרשמה סגורה כרגע
-          </h1>
-          <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 15 }}>
-            הדף הזה אינו פעיל. לפרטים נוספים פנו אלינו.
-          </p>
+          <h1 style={{ color: "#fff", fontSize: 28, fontWeight: 700, marginBottom: 12 }}>ההרשמה סגורה כרגע</h1>
+          <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 15 }}>הדף הזה אינו פעיל. לפרטים נוספים פנו אלינו.</p>
         </div>
       </div>
     );
   }
 
-  if (success) {
-    return <LoadingSpinner text="מתחבר..." />;
-  }
-
   return (
     <>
       <style>{`
-        @keyframes fade-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        @keyframes robotFadeIn {
-          0% { opacity: 0; }
-          30% { opacity: 0; }
-          100% { opacity: 1; }
-        }
+        @keyframes fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes robotFadeIn { 0% { opacity: 0; } 30% { opacity: 0; } 100% { opacity: 1; } }
       `}</style>
 
-      <div style={{
-        minHeight: "100vh",
-        background: "#050510",
-        display: "flex",
-        flexDirection: "row-reverse",
-      }}>
+      <div style={{ minHeight: "100vh", background: "#050510", display: "flex", flexDirection: "row-reverse" }}>
         {/* RIGHT HALF — Form */}
-        <div style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "40px 24px",
-          background: "linear-gradient(135deg, rgba(10,10,30,0.9) 0%, #050510 100%)",
-          minHeight: "100vh",
-        }}>
-          <div style={{
-            maxWidth: 420,
-            width: "100%",
-            animation: "fade-up 0.6s ease-out",
-          }}>
-            {/* Title */}
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px", background: "linear-gradient(135deg, rgba(10,10,30,0.9) 0%, #050510 100%)", minHeight: "100vh" }}>
+          <div style={{ maxWidth: 420, width: "100%", animation: "fade-up 0.6s ease-out" }}>
             <div style={{ marginBottom: 32, textAlign: "center" }}>
-              <h1 style={{
-                fontFamily: "'Robot Heroes', sans-serif",
-                fontSize: 42,
-                fontWeight: 400,
-                color: "#fff",
-                margin: 0,
-                textShadow: "0 0 40px rgba(0,0,255,0.3), 0 0 80px rgba(0,0,255,0.15)",
-                lineHeight: 1.2,
-              }}>
+              <h1 style={{ fontFamily: "'Robot Heroes', sans-serif", fontSize: 42, fontWeight: 400, color: "#fff", margin: 0, textShadow: "0 0 40px rgba(0,0,255,0.3), 0 0 80px rgba(0,0,255,0.15)", lineHeight: 1.2 }}>
                 Agentic World
               </h1>
-              <p style={{
-                fontSize: 14,
-                color: "rgba(240,240,245,0.7)",
-                marginTop: 12,
-                lineHeight: 1.7,
-              }}>
+              <p style={{ fontSize: 14, color: "rgba(240,240,245,0.7)", marginTop: 12, lineHeight: 1.7 }}>
                 מועדון לאנשים שבונים בעידן האג׳נטי
               </p>
             </div>
 
-            {/* Registration Form */}
-            <div style={{
-              background: "rgba(255,255,255,0.02)",
-              border: "1px solid rgba(255,255,255,0.06)",
-              borderRadius: 6,
-              padding: "32px 28px",
-              backdropFilter: "blur(20px)",
-            }}>
-              <h2 style={{
-                fontSize: 20,
-                fontWeight: 700,
-                color: "#f0f0f5",
-                marginTop: 0,
-                marginBottom: 24,
-              }}>
+            <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, padding: "32px 28px", backdropFilter: "blur(20px)" }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: "#f0f0f5", marginTop: 0, marginBottom: 24 }}>
                 התחברות
               </h2>
 
-              {/* Error */}
               {error && (
-                <div style={{
-                  background: "rgba(255,59,48,0.1)",
-                  border: "1px solid rgba(255,59,48,0.3)",
-                  borderRadius: 4,
-                  padding: "10px 14px",
-                  marginBottom: 16,
-                  fontSize: 13,
-                  color: "#ff6b6b",
-                }}>
+                <div style={{ background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.3)", borderRadius: 4, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#ff6b6b" }}>
                   {error}
                 </div>
               )}
@@ -274,19 +175,7 @@ export default function FreeLoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: "absolute",
-                      left: 14,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      background: "none",
-                      border: "none",
-                      color: "rgba(240,240,245,0.7)",
-                      cursor: "pointer",
-                      padding: 0,
-                      fontSize: 13,
-                      lineHeight: 1,
-                    }}
+                    style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "rgba(240,240,245,0.7)", cursor: "pointer", padding: 0, fontSize: 13, lineHeight: 1 }}
                   >
                     {showPassword ? (
                       <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -319,27 +208,19 @@ export default function FreeLoginPage() {
                   onMouseEnter={() => setHoveredBtn("login")}
                   onMouseLeave={() => setHoveredBtn(null)}
                   style={{
-                    width: "100%",
-                    padding: "14px 16px",
+                    width: "100%", padding: "14px 16px",
                     background: loading ? "rgba(0,0,255,0.5)" : "#0000FF",
-                    border: "none",
-                    borderRadius: 4,
-                    color: "#fff",
-                    fontSize: 16,
-                    fontWeight: 700,
-                    cursor: loading ? "not-allowed" : "pointer",
-                    marginTop: 4,
+                    border: "none", borderRadius: 4, color: "#fff", fontSize: 16, fontWeight: 700,
+                    cursor: loading ? "not-allowed" : "pointer", marginTop: 4,
                     transition: "box-shadow 0.2s, background 0.2s, transform 0.15s",
-                    boxShadow: hoveredBtn === "login"
-                      ? "0 0 30px rgba(0,0,255,0.4), 0 0 60px rgba(0,0,255,0.15)"
-                      : "0 0 15px rgba(0,0,255,0.2)",
+                    boxShadow: hoveredBtn === "login" ? "0 0 30px rgba(0,0,255,0.4), 0 0 60px rgba(0,0,255,0.15)" : "0 0 15px rgba(0,0,255,0.2)",
                     transform: hoveredBtn === "login" ? "translateY(-1px)" : "none",
                   }}
                 >
                   {loading ? (
                     <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                       <span style={{ width: 18, height: 18, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} />
-                      נרשם...
+                      מתחבר...
                     </span>
                   ) : "התחבר"}
                 </button>
@@ -348,9 +229,7 @@ export default function FreeLoginPage() {
               <div style={{ textAlign: "center", marginTop: 20 }}>
                 <p style={{ fontSize: 13, color: "rgba(240,240,245,0.5)", margin: 0 }}>
                   שכחת סיסמה?{" "}
-                  <a href="/login" style={{ color: "#f0f0f5", fontWeight: 700, textDecoration: "none" }}>
-                    לחץ כאן
-                  </a>
+                  <a href="/login" style={{ color: "#f0f0f5", fontWeight: 700, textDecoration: "none" }}>לחץ כאן</a>
                 </p>
               </div>
             </div>
@@ -358,68 +237,22 @@ export default function FreeLoginPage() {
         </div>
 
         {/* LEFT HALF — Spline 3D Robot */}
-        <div
-          className="login-hero-left"
-          style={{
-            flex: 1,
-            position: "relative",
-            overflow: "hidden",
-            background: "#050510",
-            minHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {/* Layer 0: Gradient dots */}
-          <GradientDots
-            duration={20}
-            colorCycleDuration={8}
-            dotSize={6}
-            spacing={12}
-            backgroundColor="#050510"
-            style={{ zIndex: 0 }}
-          />
-
-          {/* Layer 1: Spline 3D Robot with fade-in */}
-          <div style={{
-            position: "absolute", inset: 0, zIndex: 1,
-            animation: "robotFadeIn 2s ease-out forwards",
-            opacity: 0,
-          }}>
-            <SplineScene
-              scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-              className="w-full h-full"
-            />
+        <div className="login-hero-left" style={{ flex: 1, position: "relative", overflow: "hidden", background: "#050510", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <GradientDots duration={20} colorCycleDuration={8} dotSize={6} spacing={12} backgroundColor="#050510" style={{ zIndex: 0 }} />
+          <div style={{ position: "absolute", inset: 0, zIndex: 1, animation: "robotFadeIn 2s ease-out forwards", opacity: 0 }}>
+            <SplineScene scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode" className="w-full h-full" />
           </div>
-
-          {/* Layer 2: Particle text — IN FRONT of robot */}
-          <div style={{
-            position: "absolute", inset: 0,
-            zIndex: 3, pointerEvents: "none",
-          }}>
-            <ParticleTextEffect
-              words={["Welcome to", "Agentic World", "AI Agents", "Agentic Workflows", "Agentic Marketing"]}
-              style={{ position: "absolute", inset: 0, opacity: 0.6 }}
-            />
-            {/* Bottom fade */}
-            <div style={{
-              position: "absolute", bottom: 0, left: 0, right: 0, height: "40%",
-              background: "linear-gradient(to bottom, transparent 0%, #050510 100%)",
-            }} />
+          <div style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
+            <ParticleTextEffect words={["Welcome to", "Agentic World", "AI Agents", "Agentic Workflows", "Agentic Marketing"]} style={{ position: "absolute", inset: 0, opacity: 0.6 }} />
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "40%", background: "linear-gradient(to bottom, transparent 0%, #050510 100%)" }} />
           </div>
-
-          {/* Layer 3: Spotlight */}
           <Spotlight className="z-10" size={400} />
         </div>
       </div>
 
       <style>{`
         @media (max-width: 768px) {
-          .login-hero-left {
-            display: none !important;
-          }
+          .login-hero-left { display: none !important; }
         }
       `}</style>
     </>
