@@ -3,19 +3,10 @@
 import React, { useState, useEffect } from "react";
 
 const STORAGE_KEY = "bldr_whatsapp_clicked";
-const SETTINGS_KEY = "bldr_whatsapp_settings";
 
 interface WhatsAppSettings {
   url: string;
   enabled: boolean;
-}
-
-function getSettings(): WhatsAppSettings {
-  try {
-    const stored = localStorage.getItem(SETTINGS_KEY);
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return { url: "https://chat.whatsapp.com/YOUR_GROUP_LINK", enabled: true };
 }
 
 export function WhatsAppCTA() {
@@ -26,16 +17,23 @@ export function WhatsAppCTA() {
 
   useEffect(() => {
     const clicked = localStorage.getItem(STORAGE_KEY);
-    const s = getSettings();
-    setSettings(s);
-    if (!clicked && s.enabled) {
-      // Show after 15 seconds
-      const timer = setTimeout(() => {
-        setVisible(true);
-        setReady(true);
-      }, 15000);
-      return () => clearTimeout(timer);
-    }
+    if (clicked) return;
+
+    fetch("/api/whatsapp-settings")
+      .then((r) => r.json())
+      .then((s: WhatsAppSettings) => {
+        setSettings(s);
+        // Also cache in localStorage for sidebar use
+        if (s.url) localStorage.setItem("bldr_whatsapp_settings", JSON.stringify(s));
+        if (s.enabled && s.url) {
+          const timer = setTimeout(() => {
+            setVisible(true);
+            setReady(true);
+          }, 15000);
+          return () => clearTimeout(timer);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   if (!visible || !ready) return null;
