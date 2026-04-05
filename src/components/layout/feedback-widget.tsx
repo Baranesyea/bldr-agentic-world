@@ -272,16 +272,30 @@ export function FeedbackWidget() {
           direction: "rtl",
         }}
       >
-        {success ? (
-          <div style={{ textAlign: "center", padding: "32px 0" }}>
-            <svg width={48} height={48} viewBox="0 0 24 24" fill="none" stroke="#00C853" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto 16px" }}>
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="8 12 11 15 16 9" />
-            </svg>
-            <p style={{ color: "#fff", fontSize: 16, fontWeight: 600 }}>תודה! הפידבק שלך התקבל</p>
-          </div>
-        ) : (
-          <>
+        {/* Success overlay — sits on top of the form with crossfade */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "rgba(14,14,32,0.97)",
+          borderRadius: 6,
+          opacity: success ? 1 : 0,
+          pointerEvents: success ? "auto" : "none",
+          transition: "opacity 0.4s ease",
+          zIndex: 1,
+        }}>
+          <svg width={48} height={48} viewBox="0 0 24 24" fill="none" stroke="#00C853" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }}>
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="8 12 11 15 16 9" />
+          </svg>
+          <p style={{ color: "#fff", fontSize: 16, fontWeight: 600, margin: 0 }}>תודה! הפידבק שלך התקבל</p>
+        </div>
+
+        {/* Form content — always rendered underneath */}
+        <div style={{ opacity: success ? 0 : 1, transition: "opacity 0.3s ease" }}>
             <h3 style={{ color: "#fff", fontSize: 18, fontWeight: 700, margin: "0 0 20px" }}>שלח פידבק</h3>
 
             {/* Category */}
@@ -412,8 +426,7 @@ export function FeedbackWidget() {
             >
               שלח
             </button>
-          </>
-        )}
+        </div>
       </div>
     </>
   );
