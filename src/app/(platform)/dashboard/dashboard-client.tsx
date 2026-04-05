@@ -82,9 +82,15 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
         .course-card-wrap:hover .admin-edit-btn { opacity: 1 !important; }
         .admin-edit-btn:hover { background: rgba(255,255,255,0.25) !important; }
         .hero-edit-btn:hover { background: rgba(255,255,255,0.25) !important; }
+        @media (max-width: 768px) {
+          .dash-hero { height: auto !important; min-height: 280px !important; padding: 24px 16px !important; }
+          .dash-hero h1 { font-size: 28px !important; }
+          .dash-section { padding: 20px 16px 16px !important; }
+          .dash-stats-bar { padding: 10px 16px !important; flex-wrap: wrap; gap: 8px; }
+        }
       `}</style>
       {/* ── Stats Bar ── */}
-      <div style={{
+      <div className="dash-stats-bar" style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "12px 32px", borderBottom: "1px solid rgba(255,255,255,0.04)",
         background: "rgba(10,10,26,0.6)", backdropFilter: "blur(12px)",
@@ -113,7 +119,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
 
       {/* ── Hero — Featured Course ── */}
       {featuredCourse ? (
-        <div style={{
+        <div className="dash-hero" style={{
           position: "relative", height: "75vh", minHeight: "450px",
           overflow: "hidden", display: "flex", alignItems: "flex-end", padding: "48px",
           animation: "dashHeroFade 0.8s ease-out",
@@ -225,7 +231,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
 
       {/* ── All Active Courses ── */}
       {nonFeaturedActive.length > 0 && (
-        <div style={{ padding: "32px 48px 24px" }}>
+        <div className="dash-section" style={{ padding: "32px 48px 24px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "16px" }}>כל הקורסים</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
             {nonFeaturedActive.map((c, idx) => {
@@ -399,7 +405,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
 
       {/* ── Coming Soon ── */}
       {comingSoonCourses.length > 0 && (
-        <div style={{ padding: "16px 48px 48px" }}>
+        <div className="dash-section" style={{ padding: "16px 48px 48px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
             עולה בקרוב
             <span style={{ background: "rgba(255,179,0,0.15)", color: "#FFB300", padding: "2px 10px", borderRadius: "4px", fontSize: "12px", fontWeight: 600 }}>{comingSoonCourses.length}</span>

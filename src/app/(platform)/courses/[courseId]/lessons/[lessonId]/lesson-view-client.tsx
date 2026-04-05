@@ -428,15 +428,21 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @media (max-width: 768px) {
+          .lesson-layout { flex-direction: column-reverse !important; }
+          .lesson-sidebar { width: 100% !important; min-width: 100% !important; height: auto !important; max-height: 50vh !important; position: relative !important; border-left: none !important; border-top: 1px solid rgba(255,255,255,0.06) !important; }
+          .lesson-main { padding: 16px !important; }
+          .lesson-below-video { padding: 16px !important; }
+        }
       `}</style>
 
-      <div style={{
+      <div className="lesson-layout" style={{
         display: "flex",
         minHeight: "calc(100vh - 60px)",
         animation: fadeIn ? "bldrFadeIn 0.5s ease-out" : undefined,
       }}>
         {/* ── RIGHT SIDEBAR: Course Nav ── */}
-        <div style={{
+        <div className="lesson-sidebar" style={{
           width: lessonsCollapsed ? "50px" : "280px",
           minWidth: lessonsCollapsed ? "50px" : "280px",
           borderLeft: "1px solid rgba(255,255,255,0.06)",
@@ -662,7 +668,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
         </div>
 
         {/* ── CENTER: Video + Info ── */}
-        <div style={{
+        <div className="lesson-main" style={{
           flex: 1,
           padding: "24px 32px",
           position: "relative",

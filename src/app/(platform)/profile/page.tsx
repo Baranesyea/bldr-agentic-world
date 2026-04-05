@@ -288,7 +288,13 @@ export default function ProfilePage() {
   };
 
   return (
-    <div style={{ padding: "32px", maxWidth: "800px", margin: "0 auto" }}>
+    <div className="profile-page" style={{ padding: "32px", maxWidth: "800px", margin: "0 auto" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .profile-page { padding: 16px !important; }
+          .profile-page > div { padding: 20px !important; }
+        }
+      `}</style>
       {/* Avatar & Name Section */}
       <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", padding: "32px", marginBottom: "24px" }}>
         <div style={{ display: "flex", gap: "28px", alignItems: "flex-start", flexWrap: "wrap" }}>

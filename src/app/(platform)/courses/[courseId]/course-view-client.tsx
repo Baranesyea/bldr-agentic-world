@@ -84,8 +84,15 @@ export default function CourseViewClient({ course }: { course: Course }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #050510, #080820 30%, #050510)" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .cv-hero { min-height: 280px !important; padding: 24px 16px !important; }
+          .cv-hero h1 { font-size: 28px !important; }
+          .cv-chapters { padding: 20px 16px !important; }
+        }
+      `}</style>
       {/* Hero Header */}
-      <div style={{
+      <div className="cv-hero" style={{
         position: "relative", minHeight: "420px", overflow: "hidden",
         display: "flex", alignItems: "flex-end", padding: "48px",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -147,7 +154,7 @@ export default function CourseViewClient({ course }: { course: Course }) {
       </div>
 
       {/* Chapters */}
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "32px 48px" }}>
+      <div className="cv-chapters" style={{ maxWidth: "900px", margin: "0 auto", padding: "32px 48px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {(() => {
             const singleChapter = course.chapters?.length === 1;
