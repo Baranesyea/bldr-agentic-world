@@ -335,6 +335,7 @@ export const members = pgTable("members", {
   status: memberStatusEnum("status").default("active").notNull(),
   type: memberTypeEnum("type").default("free").notNull(),
   pricePaid: integer("price_paid").default(0),
+  phone: varchar("phone", { length: 50 }),
   supabaseUserId: text("supabase_user_id"),
   notes: text("notes"),
   schoolId: uuid("school_id"),

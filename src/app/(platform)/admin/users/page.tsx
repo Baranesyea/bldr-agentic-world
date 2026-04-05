@@ -24,6 +24,7 @@ interface User {
   lastPaymentDate: string | null;
   subscriptionStart: string | null;
   payments: UserPayment[];
+  accessExpiresAt?: string | null;
 }
 
 type FilterTab = "all" | "paying" | "trial" | "blocked" | "inactive" | "tourist";
@@ -156,6 +157,30 @@ export default function AdminUsersPage() {
   const [userSchools, setUserSchools] = useState<string[]>([]);
   const [userBlockedCourses, setUserBlockedCourses] = useState<string[]>([]);
   const [savingDetail, setSavingDetail] = useState(false);
+  const [editingNameId, setEditingNameId] = useState<string | null>(null);
+  const [editingNameValue, setEditingNameValue] = useState("");
+
+  const saveUserName = async (user: User) => {
+    const newName = editingNameValue.trim();
+    if (!newName || newName === user.fullName) { setEditingNameId(null); return; }
+    // Update in UI
+    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, fullName: newName } : u));
+    setEditingNameId(null);
+    // Update in DB
+    try {
+      await fetch("/api/members", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id, fullName: newName }),
+      });
+    } catch {}
+    // Update localStorage too
+    try {
+      const stored = loadUsers();
+      const idx = stored.findIndex(u => u.id === user.id);
+      if (idx !== -1) { stored[idx].fullName = newName; saveUsers(stored); }
+    } catch {}
+  };
 
   // Load schools, deleted emails, courses
   useEffect(() => {
@@ -206,24 +231,26 @@ export default function AdminUsersPage() {
 
     // Merge with database members
     fetch("/api/members").then(r => r.json()).then(data => {
-      if (!Array.isArray(data)) return;
+      if (!Array.isArray(data)) { setUsers(stored); return; }
       const merged = [...stored];
       const existingEmails = new Set(merged.map(u => u.email.toLowerCase()));
 
       for (const m of data) {
         if (existingEmails.has(m.email.toLowerCase())) continue;
+        const isExpired = m.accessExpiresAt && new Date(m.accessExpiresAt) < new Date();
         merged.push({
           id: m.id,
           email: m.email,
           fullName: m.fullName || m.email.split("@")[0],
-          phone: "",
+          phone: m.phone || "",
           role: "member",
-          status: m.type === "paid" ? "paying" : "trial",
+          status: isExpired ? "expired" : m.type === "paid" ? "paying" : "trial",
           amount: m.pricePaid || 0,
           joinedAt: m.createdAt || new Date().toISOString(),
           lastPaymentDate: null,
           subscriptionStart: null,
           payments: [],
+          accessExpiresAt: m.accessExpiresAt || null,
         });
       }
       setUsers(merged);
@@ -530,7 +557,8 @@ export default function AdminUsersPage() {
                 {filtered.map((user, idx) => {
                   const isExpanded = expandedId === user.id;
                   const isDeleted = deletedEmails.has(user.email.toLowerCase());
-                  const statusKey = user.role === "tourist" ? "tourist" : user.status;
+                  const isExpiredUser = user.status === "expired" || (user.accessExpiresAt && new Date(user.accessExpiresAt) < new Date());
+                  const statusKey = user.role === "tourist" ? "tourist" : isExpiredUser ? "expired" : user.status;
                   const statusInfo = STATUS_CONFIG[statusKey] || STATUS_CONFIG.trial;
                   const totalPaid = user.payments.reduce((s, p) => s + p.amount, 0);
 
@@ -542,7 +570,7 @@ export default function AdminUsersPage() {
                           borderBottom: "1px solid rgba(255,255,255,0.04)",
                           cursor: "pointer",
                           transition: "background 0.15s",
-                          opacity: isDeleted ? 0.4 : 1,
+                          opacity: isDeleted ? 0.4 : isExpiredUser ? 0.5 : 1,
                           background: isExpanded ? "rgba(100,100,255,0.03)" : "transparent",
                         }}
                         onMouseEnter={(e) => { if (!isExpanded) e.currentTarget.style.background = "rgba(255,255,255,0.025)"; }}
@@ -559,7 +587,31 @@ export default function AdminUsersPage() {
                           </div>
                         </td>
                         <td style={{ padding: "12px 14px", color: "#f0f0f5", fontWeight: 600 }}>
-                          {user.fullName || "—"}
+                          {editingNameId === user.id ? (
+                            <input
+                              autoFocus
+                              value={editingNameValue}
+                              onChange={(e) => setEditingNameValue(e.target.value)}
+                              onBlur={() => saveUserName(user)}
+                              onKeyDown={(e) => { if (e.key === "Enter") saveUserName(user); if (e.key === "Escape") setEditingNameId(null); }}
+                              onClick={(e) => e.stopPropagation()}
+                              style={{
+                                background: "rgba(255,255,255,0.08)", border: "1px solid rgba(0,0,255,0.4)",
+                                borderRadius: 4, padding: "4px 8px", color: "#f0f0f5", fontSize: 14,
+                                fontWeight: 600, outline: "none", width: "100%", boxSizing: "border-box",
+                              }}
+                            />
+                          ) : (
+                            <span
+                              onClick={(e) => { e.stopPropagation(); setEditingNameId(user.id); setEditingNameValue(user.fullName || ""); }}
+                              style={{ cursor: "pointer", borderBottom: "1px dashed transparent", transition: "border-color 0.2s" }}
+                              onMouseEnter={(e) => { e.currentTarget.style.borderBottomColor = "rgba(240,240,245,0.3)"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.borderBottomColor = "transparent"; }}
+                              title="לחץ לעריכת שם"
+                            >
+                              {user.fullName || "—"}
+                            </span>
+                          )}
                         </td>
                         <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.7)", direction: "ltr", textAlign: "right", fontSize: 13 }}>
                           {user.email}

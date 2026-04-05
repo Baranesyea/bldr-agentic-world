@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
             .update(members)
             .set({
               fullName: user.fullName || existing[0].fullName,
+              phone: user.phone || existing[0].phone,
               notes: user.notes || existing[0].notes,
               schoolId: schoolId || existing[0].schoolId,
               accessExpiresAt,
@@ -119,6 +120,7 @@ export async function POST(req: NextRequest) {
             .values({
               email: user.email,
               fullName: user.fullName || user.email.split("@")[0],
+              phone: user.phone || null,
               status: (user.status as "active" | "inactive") || "active",
               type: (user.type as "free" | "paid") || "free",
               schoolId: schoolId || null,
