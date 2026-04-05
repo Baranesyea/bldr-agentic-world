@@ -193,6 +193,36 @@ const DEFAULT_TEMPLATES: Partial<EmailTemplate>[] = [
 </body>
 </html>`,
   },
+  {
+    slug: "plain-text",
+    name: "טקסט נקי",
+    subject: "{{subject}}",
+    variables: [
+      { key: "subject", label: "נושא", defaultValue: "עדכון מ-BLDR" },
+      { key: "name", label: "שם המשתמש", defaultValue: "חבר/ה" },
+      { key: "body", label: "תוכן", defaultValue: "תוכן ההודעה כאן." },
+    ],
+    bodyHtml: `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:'Segoe UI',Tahoma,Helvetica,Arial,sans-serif;direction:rtl;text-align:right;">
+<div style="max-width:600px;margin:0 auto;padding:40px 24px;direction:rtl;text-align:right;">
+  <p style="color:#333;font-size:15px;line-height:1.8;margin:0 0 16px;">
+    היי {{name}},
+  </p>
+  <div style="color:#333;font-size:15px;line-height:1.8;margin:0 0 24px;">
+    {{body}}
+  </div>
+  <p style="color:#333;font-size:15px;line-height:1.8;margin:24px 0 0;">
+    תודה,<br>צוות BLDR
+  </p>
+  <div style="border-top:1px solid #eee;margin-top:32px;padding-top:16px;">
+    <p style="color:#999;font-size:12px;margin:0;">BLDR — Agentic World</p>
+  </div>
+</div>
+</body>
+</html>`,
+  },
 ];
 
 /* ─── Styles ─── */
@@ -244,6 +274,7 @@ const SLUG_COLORS: Record<string, string> = {
   "password-reset": "#FFA500",
   "subscription-expiring": "#FF6B6B",
   "system-update": "#4488FF",
+  "plain-text": "#999999",
 };
 
 /* ─── Visual Editor Component ─── */
@@ -965,7 +996,7 @@ export default function EmailTemplatesPage() {
                       justifyContent: "center",
                       fontSize: 18,
                     }}>
-                      {t.slug === "welcome" ? "👋" : t.slug === "password-reset" ? "🔑" : t.slug === "subscription-expiring" ? "⏰" : "📢"}
+                      {t.slug === "welcome" ? "👋" : t.slug === "password-reset" ? "🔑" : t.slug === "subscription-expiring" ? "⏰" : t.slug === "plain-text" ? "📝" : "📢"}
                     </div>
                     <div>
                       <div style={{ fontSize: 15, fontWeight: 600, color: "#f0f0f5" }}>{t.name}</div>
