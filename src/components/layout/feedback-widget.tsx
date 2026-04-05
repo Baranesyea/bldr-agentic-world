@@ -93,87 +93,64 @@ export function FeedbackWidget() {
   const captureScreenshot = useCallback(async () => {
     setCapturing(true);
 
-    // Play sound immediately for instant feedback
-    const audio = new Audio("/sounds/camera-shutter.mp3");
-    audio.volume = 0.6;
-    audio.play().catch(() => {});
-
-    // Flash immediately
-    if (flashRef.current) {
-      flashRef.current.style.transition = "none";
-      flashRef.current.style.opacity = "0.9";
-      requestAnimationFrame(() => {
-        if (flashRef.current) {
-          flashRef.current.style.transition = "opacity 0.3s ease-out";
-          flashRef.current.style.opacity = "0";
-        }
-      });
-    }
-
-    // Hide feedback UI elements
-    if (widgetRef.current) widgetRef.current.style.opacity = "0";
-    if (btnRef.current) btnRef.current.style.opacity = "0";
-    const overlay = document.querySelector("[data-feedback-overlay]") as HTMLElement;
-    if (overlay) overlay.style.opacity = "0";
-
-    await new Promise(r => setTimeout(r, 150));
-
     try {
-      const html2canvas = (await import("html2canvas")).default;
-
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const sx = window.scrollX;
-      const sy = window.scrollY;
-
-      // Capture the full page — zero config, let html2canvas do its thing
-      const fullCanvas = await html2canvas(document.body, {
-        useCORS: true,
-        allowTaint: true,
-        scale: 1,
+      // Use Screen Capture API — captures actual pixels from the screen
+      const mediaStream = await navigator.mediaDevices.getDisplayMedia({
+        video: { displaySurface: "browser" } as MediaTrackConstraints,
+        audio: false,
+        // @ts-expect-error preferCurrentTab is a Chrome-specific option
+        preferCurrentTab: true,
       });
 
-      // Crop to the viewport: map scroll to canvas pixel position
-      const rX = fullCanvas.width / document.body.scrollWidth;
-      const rY = fullCanvas.height / document.body.scrollHeight;
-      const cropCanvas = document.createElement("canvas");
-      cropCanvas.width = vw;
-      cropCanvas.height = vh;
-      const ctx = cropCanvas.getContext("2d");
+      // Grab a single frame
+      const track = mediaStream.getVideoTracks()[0];
+      const settings = track.getSettings();
+      const w = settings.width || window.innerWidth;
+      const h = settings.height || window.innerHeight;
+
+      const video = document.createElement("video");
+      video.srcObject = mediaStream;
+      video.muted = true;
+      await video.play();
+
+      // Wait one frame for the video to render
+      await new Promise(r => requestAnimationFrame(r));
+
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
       if (ctx) {
-        ctx.drawImage(
-          fullCanvas,
-          Math.round(sx * rX), Math.round(sy * rY),
-          Math.round(vw * rX), Math.round(vh * rY),
-          0, 0, vw, vh
-        );
+        ctx.drawImage(video, 0, 0, w, h);
       }
 
-      const dataUrl = cropCanvas.toDataURL("image/webp", 0.75);
+      // Stop the stream immediately
+      track.stop();
+      mediaStream.getTracks().forEach(t => t.stop());
+      video.srcObject = null;
+
+      // Sound + flash
+      const audio = new Audio("/sounds/camera-shutter.mp3");
+      audio.volume = 0.6;
+      audio.play().catch(() => {});
+      if (flashRef.current) {
+        flashRef.current.style.transition = "none";
+        flashRef.current.style.opacity = "0.9";
+        requestAnimationFrame(() => {
+          if (flashRef.current) {
+            flashRef.current.style.transition = "opacity 0.3s ease-out";
+            flashRef.current.style.opacity = "0";
+          }
+        });
+      }
+
+      const dataUrl = canvas.toDataURL("image/webp", 0.75);
       setAttachment(dataUrl);
       setAttachmentName("screenshot.webp");
     } catch {
-      try {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        if (ctx) {
-          ctx.fillStyle = "#050510";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = "#fff";
-          ctx.font = "16px sans-serif";
-          ctx.fillText("צילום מסך לא זמין - נא צרף תמונה ידנית", 20, 40);
-        }
-        setAttachment(canvas.toDataURL("image/webp", 0.75));
-        setAttachmentName("screenshot-fallback.webp");
-      } catch {}
+      // User denied permission or API not available — silent fail
+      // They can still attach a file manually
     }
-
-    // Restore UI elements
-    if (widgetRef.current) widgetRef.current.style.opacity = "";
-    if (btnRef.current) btnRef.current.style.opacity = "";
-    if (overlay) overlay.style.opacity = "";
 
     setCapturing(false);
   }, []);
