@@ -143,34 +143,30 @@ export async function POST(req: NextRequest) {
 
         // Add to school if specified
         if (schoolId) {
-          // We need the user's actual users table ID, not the member ID.
-          // For now, use the supabaseUserId if available, otherwise skip school membership
-          // (it will be created when user first logs in)
-          const memberRow = existing.length > 0 ? existing[0] : null;
-          if (memberRow?.supabaseUserId) {
-            // Find corresponding users table entry
-            const { users: usersTable } = await import("@/lib/schema");
-            const [userRow] = await db
-              .select()
-              .from(usersTable)
-              .where(eq(usersTable.email, user.email));
-            if (userRow) {
-              await addMemberToSchool({
-                userId: userRow.id,
-                schoolId,
-                accessExpiresAt,
-                expiryMode: (expiryMode as "full_lock" | "partial_lock") || "full_lock",
-              });
+          const { users: usersTable } = await import("@/lib/schema");
+          const [userRow] = await db
+            .select()
+            .from(usersTable)
+            .where(eq(usersTable.email, user.email));
 
-              // Set course availability
-              const blockedCourses = Object.entries(courseAvailability)
-                .filter(([, available]) => !available)
-                .map(([courseId]) => ({ courseId, isAvailable: false }));
-              if (blockedCourses.length > 0) {
-                await bulkSetUserCourseAccess(userRow.id, blockedCourses, schoolId);
-              }
+          if (userRow) {
+            await addMemberToSchool({
+              userId: userRow.id,
+              schoolId,
+              accessExpiresAt,
+              expiryMode: (expiryMode as "full_lock" | "partial_lock") || "full_lock",
+            });
+
+            // Set course availability
+            const blockedCourses = Object.entries(courseAvailability)
+              .filter(([, available]) => !available)
+              .map(([courseId]) => ({ courseId, isAvailable: false }));
+            if (blockedCourses.length > 0) {
+              await bulkSetUserCourseAccess(userRow.id, blockedCourses, schoolId);
             }
           }
+          // If no users table entry yet, schoolId + expiry are saved on the members
+          // record above. The bulk-assign endpoint can link them later.
         }
 
         successCount++;

@@ -160,6 +160,11 @@ export default function AdminUsersPage() {
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
   const [editingNameValue, setEditingNameValue] = useState("");
 
+  // Multi-select state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkSchoolId, setBulkSchoolId] = useState<string>("");
+  const [bulkAssigning, setBulkAssigning] = useState(false);
+
   // Auto-format phone numbers once
   useEffect(() => {
     if (localStorage.getItem("bldr_phones_formatted")) return;
@@ -413,6 +418,43 @@ export default function AdminUsersPage() {
     } catch {}
   };
 
+  const handleBulkAssignSchool = async () => {
+    if (!bulkSchoolId || selectedIds.size === 0) return;
+    setBulkAssigning(true);
+    const emails = users.filter((u) => selectedIds.has(u.id)).map((u) => u.email);
+    try {
+      await fetch("/api/schools/bulk-assign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emails, schoolId: bulkSchoolId }),
+      });
+      // Refresh access map
+      const res = await fetch("/api/users/access-map");
+      const data = await res.json();
+      if (data && typeof data === "object" && !data.error) setUserAccessMap(data);
+      setSelectedIds(new Set());
+      setBulkSchoolId("");
+    } catch {}
+    setBulkAssigning(false);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((u) => u.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const TABS: { key: FilterTab; label: string }[] = [
     { key: "all", label: "הכל" },
     { key: "tourist", label: "תיירים" },
@@ -517,6 +559,42 @@ export default function AdminUsersPage() {
         </select>
       </div>
 
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12, marginBottom: 12,
+          padding: "12px 16px", borderRadius: 4,
+          background: "rgba(100,100,255,0.08)", border: "1px solid rgba(100,100,255,0.2)",
+        }}>
+          <span style={{ color: "#8888ff", fontSize: 13, fontWeight: 600 }}>
+            {selectedIds.size} נבחרו
+          </span>
+          <select
+            value={bulkSchoolId}
+            onChange={(e) => setBulkSchoolId(e.target.value)}
+            style={{ ...INPUT, width: "auto", minWidth: 180, fontSize: 13, padding: "8px 12px" }}
+          >
+            <option value="">בחר בית ספר...</option>
+            {schools.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+          <button
+            onClick={handleBulkAssignSchool}
+            disabled={!bulkSchoolId || bulkAssigning}
+            style={{ ...BTN, padding: "8px 16px", fontSize: 13, opacity: !bulkSchoolId || bulkAssigning ? 0.5 : 1 }}
+          >
+            {bulkAssigning ? "משייך..." : "שייך לבית ספר"}
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            style={{ ...BTN, background: "rgba(255,255,255,0.06)", padding: "8px 14px", fontSize: 13 }}
+          >
+            בטל בחירה
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       <div style={{ ...CARD, padding: 0, overflow: "hidden" }}>
         {filtered.length === 0 ? (
@@ -528,7 +606,15 @@ export default function AdminUsersPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                  {[
+                    <th style={{ padding: "14px 8px 14px 0", width: "40px", textAlign: "center" }}>
+                    <input
+                      type="checkbox"
+                      checked={filtered.length > 0 && selectedIds.size === filtered.length}
+                      onChange={toggleSelectAll}
+                      style={{ width: 15, height: 15, cursor: "pointer" }}
+                    />
+                  </th>
+                {[
                     { label: "", width: "52px", sortable: false, key: null },
                     { label: "שם", width: undefined, sortable: false, key: null },
                     { label: "אימייל", width: undefined, sortable: false, key: null },
@@ -536,6 +622,7 @@ export default function AdminUsersPage() {
                     { label: "סטטוס", width: "120px", sortable: false, key: null },
                     { label: "סכום", width: "100px", sortable: true, key: "amount" as SortKey },
                     { label: "הצטרף", width: "110px", sortable: true, key: "joined" as SortKey },
+                    { label: "פג תוקף", width: "110px", sortable: false, key: null },
                     { label: "זמן במערכת", width: "110px", sortable: false, key: null },
                     { label: "תשלום אחרון", width: "120px", sortable: true, key: "lastPayment" as SortKey },
                   ].map((col, i) => (
@@ -584,6 +671,14 @@ export default function AdminUsersPage() {
                         onMouseEnter={(e) => { if (!isExpanded) e.currentTarget.style.background = "rgba(255,255,255,0.025)"; }}
                         onMouseLeave={(e) => { if (!isExpanded) e.currentTarget.style.background = "transparent"; }}
                       >
+                        <td style={{ padding: "12px 8px 12px 0", textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(user.id)}
+                            onChange={() => toggleSelect(user.id)}
+                            style={{ width: 15, height: 15, cursor: "pointer" }}
+                          />
+                        </td>
                         <td style={{ padding: "12px 14px" }}>
                           <div style={{
                             width: 34, height: 34, borderRadius: "50%",
@@ -670,6 +765,16 @@ export default function AdminUsersPage() {
                         <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.7)", fontSize: 13 }}>
                           {formatDate(user.joinedAt)}
                         </td>
+                        <td style={{ padding: "12px 14px", fontSize: 13 }}>
+                          {user.accessExpiresAt ? (
+                            <span style={{
+                              color: new Date(user.accessExpiresAt) < new Date() ? "#f87171" : new Date(user.accessExpiresAt) < new Date(Date.now() + 7 * 86400000) ? "#fb923c" : "rgba(240,240,245,0.7)",
+                              fontWeight: new Date(user.accessExpiresAt) < new Date() ? 600 : 400,
+                            }}>
+                              {formatDate(user.accessExpiresAt)}
+                            </span>
+                          ) : "—"}
+                        </td>
                         <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.7)", fontSize: 13 }}>
                           {user.joinedAt ? timeInSystem(user.joinedAt) : "—"}
                         </td>
@@ -680,7 +785,7 @@ export default function AdminUsersPage() {
 
                       {isExpanded && (
                         <tr>
-                          <td colSpan={9} style={{ padding: 0 }}>
+                          <td colSpan={11} style={{ padding: 0 }}>
                             <div style={{
                               background: "rgba(100,100,255,0.02)",
                               borderBottom: "1px solid rgba(255,255,255,0.06)",
