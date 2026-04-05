@@ -36,14 +36,6 @@ function MoodFace({ type, selected, onClick }: { type: number; selected: boolean
   );
 }
 
-function playShutterSound() {
-  try {
-    const audio = new Audio("/sounds/camera-shutter.mp3");
-    audio.volume = 0.6;
-    audio.play().catch(() => {});
-  } catch {}
-}
-
 export function FeedbackWidget() {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState("הצעה לשיפור");
@@ -80,8 +72,21 @@ export function FeedbackWidget() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
-      // Step 2: Flash + sound BEFORE capture (so user gets immediate feedback)
-      playShutterSound();
+      // Preload sound so it plays instantly after capture
+      const audio = new Audio("/sounds/camera-shutter.mp3");
+      audio.volume = 0.6;
+      await audio.load();
+
+      // Capture the entire page at scale 1 (no flash yet!)
+      const fullCanvas = await html2canvas(document.body, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 1,
+        logging: false,
+      });
+
+      // NOW flash + sound (after capture is done)
+      audio.play().catch(() => {});
       if (flashRef.current) {
         flashRef.current.style.transition = "none";
         flashRef.current.style.opacity = "0.9";
@@ -93,21 +98,12 @@ export function FeedbackWidget() {
         });
       }
 
-      // Capture the entire page at scale 1
-      const fullCanvas = await html2canvas(document.body, {
-        useCORS: true,
-        allowTaint: true,
-        scale: 1,
-        logging: false,
-      });
-
       // Crop to the visible viewport
       const cropCanvas = document.createElement("canvas");
       cropCanvas.width = vw;
       cropCanvas.height = vh;
       const ctx = cropCanvas.getContext("2d");
       if (ctx) {
-        // The full canvas pixel position = DOM position, so scrollX/Y maps directly
         ctx.drawImage(fullCanvas, sx, sy, vw, vh, 0, 0, vw, vh);
       }
 
