@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 
 interface Variable {
   key: string;
@@ -246,6 +246,148 @@ const SLUG_COLORS: Record<string, string> = {
   "system-update": "#4488FF",
 };
 
+/* ─── Visual Editor Component ─── */
+function VisualEditor({ html, onChange }: { html: string; onChange: (html: string) => void }) {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [initialized, setInitialized] = useState(false);
+
+  // Extract inner content from the email HTML wrapper
+  const extractContent = (fullHtml: string): string => {
+    // Find content between the inner card div and its closing
+    const match = fullHtml.match(/border-radius:8px;padding:32px 28px;">([\s\S]*?)<\/div>\s*<\/div>\s*<p style="text-align:center/);
+    if (match) return match[1].trim();
+    // Fallback: try to find content div
+    const bodyMatch = fullHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/);
+    return bodyMatch ? bodyMatch[1].trim() : fullHtml;
+  };
+
+  // Inject content back into the email HTML wrapper
+  const injectContent = (fullHtml: string, content: string): string => {
+    return fullHtml.replace(
+      /(border-radius:8px;padding:32px 28px;">)([\s\S]*?)(<\/div>\s*<\/div>\s*<p style="text-align:center)/,
+      `$1\n    ${content}\n  $3`
+    );
+  };
+
+  useEffect(() => {
+    if (editorRef.current && !initialized) {
+      editorRef.current.innerHTML = extractContent(html);
+      setInitialized(true);
+    }
+  }, [html, initialized]);
+
+  const execCmd = (cmd: string, value?: string) => {
+    document.execCommand(cmd, false, value);
+    syncToParent();
+    editorRef.current?.focus();
+  };
+
+  const syncToParent = () => {
+    if (!editorRef.current) return;
+    const content = editorRef.current.innerHTML;
+    onChange(injectContent(html, content));
+  };
+
+  const insertLink = () => {
+    const url = prompt("הכנס קישור (URL):");
+    if (url) execCmd("createLink", url);
+  };
+
+  const insertImage = () => {
+    const url = prompt("הכנס קישור לתמונה:");
+    if (url) execCmd("insertImage", url);
+  };
+
+  const insertButton = () => {
+    const text = prompt("טקסט הכפתור:", "לחץ כאן");
+    const url = prompt("קישור הכפתור:");
+    if (text && url) {
+      const btnHtml = `<div style="text-align:center;margin:24px 0;"><a href="${url}" style="display:inline-block;background:#0000FF;color:#fff;padding:14px 40px;border-radius:6px;text-decoration:none;font-size:16px;font-weight:700;">${text}</a></div>`;
+      document.execCommand("insertHTML", false, btnHtml);
+      syncToParent();
+    }
+  };
+
+  const insertVariable = () => {
+    const key = prompt("שם המשתנה (למשל: name):");
+    if (key) {
+      document.execCommand("insertText", false, `{{${key}}}`);
+      syncToParent();
+    }
+  };
+
+  const TOOLBAR_BTN: React.CSSProperties = {
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: 4,
+    color: "rgba(240,240,245,0.7)",
+    padding: "6px 10px",
+    fontSize: 13,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 32,
+    height: 32,
+  };
+
+  return (
+    <div>
+      {/* Toolbar */}
+      <div style={{
+        display: "flex",
+        gap: 4,
+        flexWrap: "wrap",
+        padding: "8px 12px",
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderBottom: "none",
+        borderRadius: "4px 4px 0 0",
+      }}>
+        <button onClick={() => execCmd("bold")} style={{ ...TOOLBAR_BTN, fontWeight: 700 }} title="בולד">B</button>
+        <button onClick={() => execCmd("italic")} style={{ ...TOOLBAR_BTN, fontStyle: "italic" }} title="נטוי">I</button>
+        <button onClick={() => execCmd("underline")} style={{ ...TOOLBAR_BTN, textDecoration: "underline" }} title="קו תחתון">U</button>
+        <div style={{ width: 1, background: "rgba(255,255,255,0.08)", margin: "0 4px" }} />
+        <button onClick={() => execCmd("formatBlock", "h2")} style={TOOLBAR_BTN} title="כותרת">H</button>
+        <button onClick={() => execCmd("formatBlock", "p")} style={TOOLBAR_BTN} title="פסקה">P</button>
+        <div style={{ width: 1, background: "rgba(255,255,255,0.08)", margin: "0 4px" }} />
+        <button onClick={() => execCmd("justifyRight")} style={TOOLBAR_BTN} title="ימין">⫢</button>
+        <button onClick={() => execCmd("justifyCenter")} style={TOOLBAR_BTN} title="מרכז">≡</button>
+        <div style={{ width: 1, background: "rgba(255,255,255,0.08)", margin: "0 4px" }} />
+        <button onClick={insertLink} style={TOOLBAR_BTN} title="קישור">🔗</button>
+        <button onClick={insertImage} style={TOOLBAR_BTN} title="תמונה">🖼</button>
+        <button onClick={insertButton} style={TOOLBAR_BTN} title="כפתור CTA">⬜ כפתור</button>
+        <button onClick={insertVariable} style={{ ...TOOLBAR_BTN, fontFamily: "monospace", fontSize: 11 }} title="משתנה דינמי">{"{{x}}"}</button>
+        <div style={{ width: 1, background: "rgba(255,255,255,0.08)", margin: "0 4px" }} />
+        <button onClick={() => execCmd("foreColor", "#ffffff")} style={{ ...TOOLBAR_BTN, color: "#fff" }} title="לבן">A</button>
+        <button onClick={() => execCmd("foreColor", "#00C853")} style={{ ...TOOLBAR_BTN, color: "#00C853" }} title="ירוק">A</button>
+        <button onClick={() => execCmd("foreColor", "#4488FF")} style={{ ...TOOLBAR_BTN, color: "#4488FF" }} title="כחול">A</button>
+        <button onClick={() => execCmd("foreColor", "#ff6b6b")} style={{ ...TOOLBAR_BTN, color: "#ff6b6b" }} title="אדום">A</button>
+      </div>
+
+      {/* Editable area */}
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={syncToParent}
+        onBlur={syncToParent}
+        dir="rtl"
+        style={{
+          ...INPUT,
+          minHeight: 300,
+          lineHeight: 1.7,
+          fontSize: 15,
+          borderRadius: "0 0 4px 4px",
+          padding: "20px 24px",
+          outline: "none",
+          overflowY: "auto",
+        }}
+      />
+    </div>
+  );
+}
+
 export default function EmailTemplatesPage() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -259,6 +401,7 @@ export default function EmailTemplatesPage() {
   const [tab, setTab] = useState<"templates" | "logs">("templates");
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [editorMode, setEditorMode] = useState<"visual" | "html">("visual");
 
   const fetchTemplates = useCallback(async () => {
     try {
@@ -539,23 +682,57 @@ export default function EmailTemplatesPage() {
               )}
             </div>
 
-            {/* HTML Editor */}
+            {/* Content Editor */}
             <div style={CARD}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f0f0f5", margin: "0 0 16px" }}>תוכן HTML</h3>
-              <textarea
-                value={editing.bodyHtml}
-                onChange={(e) => setEditing({ ...editing, bodyHtml: e.target.value })}
-                style={{
-                  ...INPUT,
-                  minHeight: 400,
-                  fontFamily: "monospace",
-                  fontSize: 13,
-                  direction: "ltr",
-                  textAlign: "left",
-                  lineHeight: 1.6,
-                  resize: "vertical",
-                }}
-              />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f0f0f5", margin: 0 }}>תוכן</h3>
+                <div style={{ display: "flex", gap: 0, borderRadius: 4, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <button
+                    onClick={() => setEditorMode("visual")}
+                    style={{
+                      padding: "6px 14px", fontSize: 12, border: "none", cursor: "pointer",
+                      background: editorMode === "visual" ? "rgba(0,0,255,0.2)" : "rgba(255,255,255,0.03)",
+                      color: editorMode === "visual" ? "#8888ff" : "rgba(240,240,245,0.5)",
+                      fontWeight: editorMode === "visual" ? 600 : 400,
+                    }}
+                  >
+                    עורך ויזואלי
+                  </button>
+                  <button
+                    onClick={() => setEditorMode("html")}
+                    style={{
+                      padding: "6px 14px", fontSize: 12, border: "none", cursor: "pointer",
+                      background: editorMode === "html" ? "rgba(0,0,255,0.2)" : "rgba(255,255,255,0.03)",
+                      color: editorMode === "html" ? "#8888ff" : "rgba(240,240,245,0.5)",
+                      fontWeight: editorMode === "html" ? 600 : 400,
+                    }}
+                  >
+                    HTML
+                  </button>
+                </div>
+              </div>
+
+              {editorMode === "html" ? (
+                <textarea
+                  value={editing.bodyHtml}
+                  onChange={(e) => setEditing({ ...editing, bodyHtml: e.target.value })}
+                  style={{
+                    ...INPUT,
+                    minHeight: 400,
+                    fontFamily: "monospace",
+                    fontSize: 13,
+                    direction: "ltr",
+                    textAlign: "left",
+                    lineHeight: 1.6,
+                    resize: "vertical",
+                  }}
+                />
+              ) : (
+                <VisualEditor
+                  html={editing.bodyHtml}
+                  onChange={(html) => setEditing({ ...editing, bodyHtml: html })}
+                />
+              )}
             </div>
 
             {/* Send test */}
