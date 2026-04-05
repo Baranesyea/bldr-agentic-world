@@ -7,6 +7,7 @@ import { addMemberToSchool } from "@/lib/data/schools";
 import { bulkSetUserCourseAccess } from "@/lib/data/user-course-access";
 import { applyMapping, validateMapping } from "@/lib/user-import";
 import type { FieldMapping } from "@/lib/user-import";
+import { formatPhoneE164 } from "@/lib/format-phone";
 
 async function getAnyUserId(): Promise<string | null> {
   try {
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
             .update(members)
             .set({
               fullName: user.fullName || existing[0].fullName,
-              phone: user.phone || existing[0].phone,
+              phone: formatPhoneE164(user.phone) || existing[0].phone,
               notes: user.notes || existing[0].notes,
               schoolId: schoolId || existing[0].schoolId,
               accessExpiresAt,
@@ -120,7 +121,7 @@ export async function POST(req: NextRequest) {
             .values({
               email: user.email,
               fullName: user.fullName || user.email.split("@")[0],
-              phone: user.phone || null,
+              phone: formatPhoneE164(user.phone),
               status: (user.status as "active" | "inactive") || "active",
               type: (user.type as "free" | "paid") || "free",
               schoolId: schoolId || null,
