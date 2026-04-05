@@ -105,6 +105,8 @@ export function FeedbackWidget() {
     try {
       const html2canvas = (await import("html2canvas")).default;
 
+      const sx = window.scrollX;
+      const sy = window.scrollY;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
@@ -113,16 +115,31 @@ export function FeedbackWidget() {
       audio.volume = 0.6;
       await audio.load();
 
-      // Capture viewport — html2canvas handles scroll position automatically
-      // Only pass width/height to constrain output to viewport size
-      const canvas = await html2canvas(document.documentElement, {
+      // Capture the FULL page — no width/height/x/y constraints
+      const fullCanvas = await html2canvas(document.documentElement, {
         useCORS: true,
         allowTaint: true,
         scale: 1,
         logging: false,
-        width: vw,
-        height: vh,
       });
+
+      // Calculate the ratio between canvas pixels and CSS pixels
+      // (html2canvas may render at a different scale than expected)
+      const scaleX = fullCanvas.width / document.documentElement.scrollWidth;
+      const scaleY = fullCanvas.height / document.documentElement.scrollHeight;
+
+      // Crop to the visible viewport, accounting for canvas scale
+      const cropCanvas = document.createElement("canvas");
+      cropCanvas.width = vw;
+      cropCanvas.height = vh;
+      const ctx = cropCanvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(
+          fullCanvas,
+          sx * scaleX, sy * scaleY, vw * scaleX, vh * scaleY,
+          0, 0, vw, vh
+        );
+      }
 
       // Flash + sound after capture
       audio.play().catch(() => {});
@@ -137,7 +154,7 @@ export function FeedbackWidget() {
         });
       }
 
-      const dataUrl = canvas.toDataURL("image/webp", 0.75);
+      const dataUrl = cropCanvas.toDataURL("image/webp", 0.75);
       setAttachment(dataUrl);
       setAttachmentName("screenshot.webp");
     } catch {
