@@ -292,7 +292,11 @@ export default function ProfilePage() {
       <style>{`
         @media (max-width: 768px) {
           .profile-page { padding: 16px !important; }
-          .profile-page > div { padding: 20px !important; }
+          .profile-page > div { padding: 16px !important; }
+          .profile-name-edit { flex-direction: column !important; }
+          .profile-name-edit input { width: 100% !important; }
+          .profile-name-edit button { width: 100% !important; }
+          .profile-info { min-width: 0 !important; }
         }
       `}</style>
       {/* Avatar & Name Section */}
@@ -478,11 +482,11 @@ export default function ProfilePage() {
           </div>
 
           {/* Profile Info */}
-          <div style={{ flex: 1, minWidth: "200px" }}>
+          <div className="profile-info" style={{ flex: 1, minWidth: "200px" }}>
             {editing ? (
               <div style={{ marginBottom: "16px" }}>
                 <label style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", display: "block", marginBottom: "6px" }}>שם</label>
-                <div style={{ display: "flex", gap: "8px" }}>
+                <div className="profile-name-edit" style={{ display: "flex", gap: "8px" }}>
                   <input
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
