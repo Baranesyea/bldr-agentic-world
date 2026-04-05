@@ -288,29 +288,42 @@ export function OnboardingTour() {
   const updateSpotlight = useCallback((stepIndex: number, immediate = false) => {
     const step = steps[stepIndex];
     if (!step) return;
+
+    const skipStep = () => {
+      // Element not found — skip to next available step or end tour
+      let nextValid = stepIndex + 1;
+      while (nextValid < steps.length) {
+        const nextEl = document.querySelector(steps[nextValid].targetSelector);
+        if (nextEl && nextEl.getBoundingClientRect().width > 0) break;
+        nextValid++;
+      }
+      if (nextValid < steps.length) {
+        setCurrentStep(nextValid);
+      } else {
+        setActive(false);
+        setSpotlightRect(null);
+        setShowDone(true);
+        localStorage.setItem("bldr_onboarding_done", "true");
+        window.dispatchEvent(new CustomEvent("bldr:tour-active", { detail: false }));
+        window.dispatchEvent(new CustomEvent("bldr:tour-complete"));
+      }
+    };
+
     const tryFind = (attempts = 0) => {
       const el = document.querySelector(step.targetSelector);
       if (el) {
         const rect = el.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
           setSpotlightRect(rect);
-        } else if (attempts < 10) {
+        } else if (attempts < 5) {
           setTimeout(() => tryFind(attempts + 1), 100);
         } else {
-          setSpotlightRect(rect);
+          skipStep();
         }
-      } else if (attempts < 10) {
+      } else if (attempts < 5) {
         setTimeout(() => tryFind(attempts + 1), 100);
       } else {
-        // Element not found — skip to next step or end tour
-        if (stepIndex < steps.length - 1) {
-          setCurrentStep(stepIndex + 1);
-        } else {
-          setActive(false);
-          setSpotlightRect(null);
-          localStorage.setItem("bldr_onboarding_done", "true");
-          window.dispatchEvent(new CustomEvent("bldr:tour-active", { detail: false }));
-        }
+        skipStep();
       }
     };
     if (immediate) {
