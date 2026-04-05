@@ -1087,7 +1087,7 @@ export function OnboardingTour() {
               onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
             >
-              כניסה למערכת
+              הבנתי. סגור.
             </button>
           </div>
         </div>,
