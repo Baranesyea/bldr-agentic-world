@@ -423,18 +423,27 @@ export default function AdminUsersPage() {
     setBulkAssigning(true);
     const emails = users.filter((u) => selectedIds.has(u.id)).map((u) => u.email);
     try {
-      await fetch("/api/schools/bulk-assign", {
+      const res = await fetch("/api/schools/bulk-assign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ emails, schoolId: bulkSchoolId }),
       });
+      const result = await res.json();
+      if (!res.ok) {
+        alert(`שגיאה בשיוך: ${result.error}`);
+        setBulkAssigning(false);
+        return;
+      }
       // Refresh access map
-      const res = await fetch("/api/users/access-map");
-      const data = await res.json();
+      const mapRes = await fetch("/api/users/access-map");
+      const data = await mapRes.json();
       if (data && typeof data === "object" && !data.error) setUserAccessMap(data);
       setSelectedIds(new Set());
       setBulkSchoolId("");
-    } catch {}
+      alert(`שויכו ${result.linked + result.pending} משתמשים (${result.linked} מקושרים, ${result.pending} ממתינים להתחברות)`);
+    } catch (err) {
+      alert("שגיאה בשיוך משתמשים");
+    }
     setBulkAssigning(false);
   };
 

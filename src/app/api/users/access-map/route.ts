@@ -5,11 +5,18 @@ export async function GET() {
     const postgres = (await import("postgres")).default;
     const sql = postgres(process.env.DATABASE_URL!);
 
-    // Get all school memberships
+    // Get school memberships from school_memberships table (logged-in users)
     const memberships = await sql`
       SELECT sm.user_id, p.email, sm.school_id
       FROM school_memberships sm
       JOIN profiles p ON p.id = sm.user_id
+    `;
+
+    // Also get school assignments from members table (imported users not yet logged in)
+    const memberSchools = await sql`
+      SELECT m.email, m.school_id
+      FROM members m
+      WHERE m.school_id IS NOT NULL AND m.status = 'active'
     `;
 
     // Get all blocked courses
@@ -28,7 +35,17 @@ export async function GET() {
     for (const m of memberships) {
       const email = m.email.toLowerCase();
       if (!map[email]) map[email] = { schoolIds: [], blockedCourseIds: [] };
-      map[email].schoolIds.push(m.school_id);
+      if (!map[email].schoolIds.includes(m.school_id)) {
+        map[email].schoolIds.push(m.school_id);
+      }
+    }
+
+    for (const m of memberSchools) {
+      const email = m.email.toLowerCase();
+      if (!map[email]) map[email] = { schoolIds: [], blockedCourseIds: [] };
+      if (!map[email].schoolIds.includes(m.school_id)) {
+        map[email].schoolIds.push(m.school_id);
+      }
     }
 
     for (const b of blocked) {
