@@ -15,6 +15,7 @@ import { useAccessCheck } from "@/hooks/useAccessCheck";
 import { CountdownTimer } from "@/components/layout/countdown-timer";
 import { PricingPopup } from "@/components/ui/pricing-popup";
 import { EntryVideo } from "@/components/layout/entry-video";
+import { ReviewPopup } from "@/components/layout/review-popup";
 
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
@@ -117,6 +118,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       {!isAdmin && <NextEventBanner event={null} />}
       <OnboardingTour />
       <EntryVideo />
+      <ReviewPopup />
       <ProfileQuestionnaire />
     </div>
   );

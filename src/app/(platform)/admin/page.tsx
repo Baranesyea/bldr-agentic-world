@@ -24,6 +24,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/subscribers": <UsersIcon size={28} />,
   "/admin/tasks": <LightbulbIcon size={28} />,
   "/admin/email-templates": <LinkIcon size={28} />,
+  "/admin/reviews": <FeedbackIcon size={28} />,
   "/admin/entry-video": <ImportIcon size={28} />,
   "/admin/flogin": <UsersIcon size={28} />,
 };
@@ -118,6 +119,11 @@ const sections = [
     title: "תבניות אימייל",
     description: "עיצוב מיילים ממותגים עם משתנים דינמיים — ברוכים הבאים, איפוס סיסמה, עדכונים ועוד",
     href: "/admin/email-templates",
+  },
+  {
+    title: "ביקורות",
+    description: "ניהול ביקורות משתמשים — דירוג, טקסטים, בקשות סרטון ווובהוק WhatsApp",
+    href: "/admin/reviews",
   },
   {
     title: "וידאו כניסה",

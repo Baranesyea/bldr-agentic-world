@@ -516,6 +516,22 @@ export const emailLogs = pgTable("email_logs", {
   clickedAt: timestamp("clicked_at"),
   deliveredAt: timestamp("delivered_at"),
   bouncedAt: timestamp("bounced_at"),
-  metadata: jsonb("metadata").default({}), // extra info like variables used
+  metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ============================================
+// Layer 8: Reviews
+// ============================================
+export const reviews = pgTable("reviews", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userEmail: varchar("user_email", { length: 500 }).notNull(),
+  userName: varchar("user_name", { length: 255 }),
+  stars: integer("stars").notNull(), // 1-5
+  text: text("text"),
+  wantsVideo: boolean("wants_video").default(false),
+  videoSent: boolean("video_sent").default(false),
+  webhookSent: boolean("webhook_sent").default(false),
+  triggerType: varchar("trigger_type", { length: 50 }), // "time", "login_count", "manual"
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
