@@ -6,7 +6,6 @@ const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const sql = postgres('postgresql://postgres.exzkttttnsnpwzouwiqq:The%40gentic3orldPa5%24@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres');
 
 async function ensureBucket() {
-  // Try to create bucket (ignore if exists)
   const res = await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' },
@@ -17,7 +16,6 @@ async function ensureBucket() {
 }
 
 async function uploadImage(id, dataUrl) {
-  // Parse data URL
   const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
   if (!match) return null;
 
@@ -25,7 +23,6 @@ async function uploadImage(id, dataUrl) {
   const base64Data = match[2];
   const buffer = Buffer.from(base64Data, 'base64');
 
-  // Determine extension
   const ext = mimeType.includes('png') ? 'png' : mimeType.includes('audio') ? 'mp3' : 'jpg';
   const fileName = `${id}.${ext}`;
 
@@ -45,24 +42,30 @@ async function uploadImage(id, dataUrl) {
     return null;
   }
 
-  // Return public URL
   return `${SUPABASE_URL}/storage/v1/object/public/images/${fileName}`;
 }
 
 async function run() {
-  const raw = JSON.parse(fs.readFileSync('/Users/eranbrownstain/Downloads/bldr-export.json', 'utf-8'));
-  const images = raw.indexedDB?.['bldr_images__images'] || [];
+  const raw = JSON.parse(fs.readFileSync('/Users/eranbrownstain/Downloads/bldr-export-2026-04-03.json', 'utf-8'));
+
+  // New format: __indexeddb_images is { key: { id, data } } or { key: dataUrl }
+  const imagesObj = raw['__indexeddb_images'] || {};
+  const images = [];
+  for (const [key, value] of Object.entries(imagesObj)) {
+    if (typeof value === 'string') {
+      images.push({ id: key, data: value });
+    } else if (value && value.data) {
+      images.push({ id: value.id || key, data: value.data });
+    }
+  }
 
   console.log(`Found ${images.length} images`);
-
   await ensureBucket();
 
-  // Build mapping: old idb:// id -> new public URL
   const urlMap = {};
 
   for (const img of images) {
-    if (!img.data || !img.id) continue;
-    // Skip audio files
+    if (!img.data) continue;
     if (img.data.startsWith('data:audio')) {
       console.log(`  Skipping audio: ${img.id}`);
       continue;
@@ -76,26 +79,29 @@ async function run() {
   }
 
   console.log(`\nUploaded ${Object.keys(urlMap).length} images`);
+  console.log('URL map:', Object.keys(urlMap).length, 'entries');
 
   // Update course thumbnails in DB
-  const courses = await sql`SELECT id, thumbnail FROM courses WHERE thumbnail IS NOT NULL`;
+  const courses = await sql`SELECT id, thumbnail FROM courses WHERE thumbnail IS NOT NULL AND thumbnail != ''`;
   let updated = 0;
   for (const course of courses) {
     const newUrl = urlMap[course.thumbnail];
     if (newUrl) {
       await sql`UPDATE courses SET thumbnail = ${newUrl} WHERE id = ${course.id}`;
+      console.log(`  Updated course thumbnail: ${course.thumbnail} -> ${newUrl.slice(-40)}`);
       updated++;
     } else if (course.thumbnail && course.thumbnail.startsWith('data:')) {
-      // Inline base64 - upload directly
       const publicUrl = await uploadImage(`course-${course.id}`, course.thumbnail);
       if (publicUrl) {
         await sql`UPDATE courses SET thumbnail = ${publicUrl} WHERE id = ${course.id}`;
+        console.log(`  Uploaded inline base64 for course ${course.id}`);
         updated++;
       }
     }
   }
 
-  console.log(`Updated ${updated} course thumbnails in DB`);
+  console.log(`\nUpdated ${updated} course thumbnails in DB`);
+  await sql.end();
   process.exit(0);
 }
 

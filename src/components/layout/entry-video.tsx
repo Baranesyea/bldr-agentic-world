@@ -11,7 +11,6 @@ interface EntryVideoSettings {
 
 export function EntryVideo() {
   const [show, setShow] = useState(false);
-  const [settings, setSettings] = useState<EntryVideoSettings | null>(null);
   const [vimeoId, setVimeoId] = useState<string | null>(null);
 
   const triggerVideo = useCallback((s: EntryVideoSettings) => {
@@ -19,7 +18,6 @@ export function EntryVideo() {
     if (!id) return;
     setVimeoId(id);
 
-    // Check if already shown this session
     const shown = sessionStorage.getItem("bldr_entry_video_shown");
     if (shown) return;
 
@@ -35,20 +33,32 @@ export function EntryVideo() {
       .then((r) => r.json())
       .then((data: EntryVideoSettings) => {
         if (!data.enabled || !data.vimeoUrl) return;
-        setSettings(data);
+
+        const id = data.vimeoUrl.match(/vimeo\.com\/(\d+)/)?.[1];
+        if (!id) return;
+        setVimeoId(id);
 
         const isFirstVisit = !localStorage.getItem("bldr_onboarding_done");
 
         if (isFirstVisit && data.showAfterTour) {
-          // Wait for tour to complete, then show video
+          // Listen for both tour complete AND tour skip
           const handler = () => {
-            // Small delay after tour completion
             setTimeout(() => triggerVideo(data), 2000);
           };
           window.addEventListener("bldr:tour-complete", handler);
-          return () => window.removeEventListener("bldr:tour-complete", handler);
+          // Also listen for tour-active becoming false (skip)
+          const skipHandler = (e: Event) => {
+            const detail = (e as CustomEvent).detail;
+            if (detail === false) {
+              setTimeout(() => triggerVideo(data), 3000);
+            }
+          };
+          window.addEventListener("bldr:tour-active", skipHandler);
+          return () => {
+            window.removeEventListener("bldr:tour-complete", handler);
+            window.removeEventListener("bldr:tour-active", skipHandler);
+          };
         } else {
-          // Not first visit or not linked to tour — show after delay
           triggerVideo(data);
         }
       })
@@ -83,7 +93,6 @@ export function EntryVideo() {
         }
       `}</style>
 
-      {/* Close button */}
       <button
         onClick={close}
         style={{
@@ -110,7 +119,6 @@ export function EntryVideo() {
         ✕
       </button>
 
-      {/* Video container */}
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
@@ -124,7 +132,7 @@ export function EntryVideo() {
         }}
       >
         <iframe
-          src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&badge=0&autopause=0&player_id=0`}
+          src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=0&badge=0&autopause=0&player_id=0`}
           style={{ width: "100%", height: "100%", border: "none" }}
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen

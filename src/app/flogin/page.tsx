@@ -127,28 +127,7 @@ export default function FreeLoginPage() {
   }
 
   if (success) {
-    return (
-      <div style={{
-        minHeight: "100vh",
-        background: "#050510",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-        direction: "rtl",
-      }}>
-        <div style={{ textAlign: "center", animation: "fade-up 0.6s ease-out" }}>
-          <style>{`@keyframes fade-up { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }`}</style>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
-          <h1 style={{ color: "#fff", fontSize: 28, fontWeight: 700, marginBottom: 12 }}>
-            ברוך הבא ל-BLDR!
-          </h1>
-          <p style={{ color: "rgba(240,240,245,0.4)", fontSize: 13 }}>
-            מעביר אותך למערכת...
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner text="מתחבר..." />;
   }
 
   return (

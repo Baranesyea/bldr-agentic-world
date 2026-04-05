@@ -12,13 +12,6 @@ const merriweather = Merriweather({
 export const metadata: Metadata = {
   title: "BLDR | Agentic World",
   description: "Learning & Community Platform for the Agentic Era",
-  manifest: "/manifest.json",
-  themeColor: "#0000FF",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "BLDR",
-  },
 };
 
 export default function RootLayout({
@@ -33,11 +26,6 @@ export default function RootLayout({
       >
         <SeedLoader />
         {children}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(()=>{});}`,
-          }}
-        />
       </body>
     </html>
   );
