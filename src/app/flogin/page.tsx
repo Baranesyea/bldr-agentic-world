@@ -14,6 +14,7 @@ export default function FreeLoginPage() {
   const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
@@ -53,10 +54,16 @@ export default function FreeLoginPage() {
     setError("");
     setLoading(true);
 
+    if (password !== confirmPassword) {
+      setError("הסיסמאות לא תואמות");
+      setLoading(false);
+      return;
+    }
+
     const res = await fetch("/api/flogin/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, fullName }),
+      body: JSON.stringify({ email, password, fullName: email.split("@")[0] }),
     });
 
     const data = await res.json();
@@ -226,17 +233,6 @@ export default function FreeLoginPage() {
 
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <input
-                  type="text"
-                  placeholder="שם מלא"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  onFocus={() => setFocusedInput("name")}
-                  onBlur={() => setFocusedInput(null)}
-                  style={inputStyle("name")}
-                  required
-                />
-
-                <input
                   type="email"
                   placeholder="כתובת אימייל"
                   value={email}
@@ -288,6 +284,18 @@ export default function FreeLoginPage() {
                     )}
                   </button>
                 </div>
+
+                <input
+                  type="password"
+                  placeholder="אימות סיסמה"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onFocus={() => setFocusedInput("confirm")}
+                  onBlur={() => setFocusedInput(null)}
+                  style={inputStyle("confirm")}
+                  required
+                  minLength={6}
+                />
 
                 <button
                   type="submit"

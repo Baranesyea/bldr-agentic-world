@@ -93,6 +93,9 @@ export default function ImportUsersPage() {
   const [expiryMode, setExpiryMode] = useState<"full_lock" | "partial_lock">("full_lock");
   const [afterExpiryCourses, setAfterExpiryCourses] = useState<Record<string, boolean>>({});
 
+  // Send invite email toggle
+  const [sendInvite, setSendInvite] = useState(true);
+
   // Step 6: Result
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ successCount: number; failCount: number; errors: { email: string; error: string }[] } | null>(null);
@@ -158,6 +161,7 @@ export default function ImportUsersPage() {
         formData.append("accessExpiresAt", new Date(expiresAt).toISOString());
         formData.append("expiryMode", expiryMode);
       }
+      formData.append("sendInvite", sendInvite ? "true" : "false");
 
       const res = await fetch("/api/import-users/execute", { method: "POST", body: formData });
       const data = await res.json();
@@ -643,6 +647,33 @@ export default function ImportUsersPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Send invite toggle */}
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "16px", background: "rgba(255,255,255,0.02)", borderRadius: "4px", marginBottom: "24px",
+              }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "#f0f0f5" }}>שלח מייל הזמנה</div>
+                  <div style={{ fontSize: 12, color: "rgba(240,240,245,0.4)", marginTop: 4 }}>
+                    {sendInvite ? "כל משתמש חדש יקבל מייל עם קישור כניסה" : "לא יישלח מייל — המשתמשים ייכנסו דרך קישור שתשתף"}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSendInvite(!sendInvite)}
+                  style={{
+                    width: 52, height: 28, borderRadius: 14, border: "none", cursor: "pointer",
+                    background: sendInvite ? "#00C853" : "rgba(255,255,255,0.1)",
+                    position: "relative", transition: "background 0.2s", flexShrink: 0,
+                  }}
+                >
+                  <div style={{
+                    width: 22, height: 22, borderRadius: "50%", background: "#fff",
+                    position: "absolute", top: 3,
+                    right: sendInvite ? 3 : 27, transition: "right 0.2s",
+                  }} />
+                </button>
               </div>
 
               <div style={{ display: "flex", justifyContent: "space-between" }}>

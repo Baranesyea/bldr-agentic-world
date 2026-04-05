@@ -771,6 +771,37 @@ export default function AdminUsersPage() {
                                   <button
                                     onClick={async (e) => {
                                       e.stopPropagation();
+                                      const newPass = prompt(`הזן סיסמה חדשה ל-${user.email}:`);
+                                      if (!newPass) return;
+                                      if (newPass.length < 6) { alert("הסיסמה חייבת להכיל לפחות 6 תווים"); return; }
+                                      try {
+                                        const res = await fetch("/api/auth/change-user-password", {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ email: user.email, newPassword: newPass }),
+                                        });
+                                        const data = await res.json();
+                                        if (!res.ok) {
+                                          alert(data.error || "שגיאה בשינוי סיסמה");
+                                        } else {
+                                          alert("הסיסמה שונתה בהצלחה!");
+                                        }
+                                      } catch {
+                                        alert("שגיאה בשינוי סיסמה");
+                                      }
+                                    }}
+                                    style={{
+                                      padding: "6px 14px", borderRadius: 6,
+                                      border: "1px solid rgba(0,200,83,0.3)",
+                                      background: "rgba(0,200,83,0.08)", color: "#00C853",
+                                      fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                    }}
+                                  >
+                                    שנה סיסמה
+                                  </button>
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
                                       if (!confirm(`למחוק את ${user.fullName || user.email}?`)) return;
                                       await fetch("/api/account/delete", {
                                         method: "POST",

@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
     const accessExpiresAtStr = formData.get("accessExpiresAt") as string | null;
     const expiryMode = formData.get("expiryMode") as string | null;
     const importedBy = formData.get("importedBy") as string;
+    const sendInvite = formData.get("sendInvite") !== "false";
 
     if (!file || !mappingJson || !importedBy) {
       return NextResponse.json(
@@ -113,8 +114,8 @@ export async function POST(req: NextRequest) {
             .returning();
           memberId = created.id;
 
-          // Invite via Supabase (send email)
-          if (supabase) {
+          // Invite via Supabase (send email) — only if sendInvite is true
+          if (supabase && sendInvite) {
             await supabase.auth.admin.inviteUserByEmail(user.email, {
               data: { full_name: user.fullName || "" },
               redirectTo: `${appUrl}/auth/callback?type=invite`,
