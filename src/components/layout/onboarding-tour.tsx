@@ -589,6 +589,7 @@ export function OnboardingTour() {
           ═══════════════════════════════════════ */}
       {showWelcome && fontReady && createPortal(
         <div
+          data-tour-active
           onClick={() => {
             // First user interaction — unlock audio autoplay and play welcome audio
             if (!welcomeAudioPlayed && soundEnabled && settings.welcomeAudioUrl) {
@@ -813,7 +814,7 @@ export function OnboardingTour() {
           Active Tour — Spotlight + Glow Tooltip
           ═══════════════════════════════════════ */}
       {active && createPortal(
-        <div style={{
+        <div data-tour-active style={{
           position: "fixed", inset: 0, zIndex: 99990,
           direction: "rtl",
           pointerEvents: "none",
