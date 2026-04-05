@@ -36,48 +36,11 @@ function MoodFace({ type, selected, onClick }: { type: number; selected: boolean
   );
 }
 
-// Camera shutter sound — two-part mechanical click
 function playShutterSound() {
   try {
-    const ctx = new AudioContext();
-    const sampleRate = ctx.sampleRate;
-    const duration = 0.25;
-    const buffer = ctx.createBuffer(1, sampleRate * duration, sampleRate);
-    const data = buffer.getChannelData(0);
-
-    for (let i = 0; i < data.length; i++) {
-      const t = i / sampleRate;
-      let sample = 0;
-
-      // First click (shutter open) — sharp transient at t=0
-      if (t < 0.015) {
-        sample += Math.exp(-t * 300) * Math.sin(t * 4000) * 0.6;
-        sample += Math.exp(-t * 200) * (Math.random() * 2 - 1) * 0.3;
-      }
-
-      // Mechanical resonance
-      if (t > 0.005 && t < 0.06) {
-        sample += Math.exp(-(t - 0.005) * 100) * Math.sin((t - 0.005) * 2200) * 0.15;
-      }
-
-      // Second click (shutter close) — at t=0.1
-      const t2 = t - 0.1;
-      if (t2 > 0 && t2 < 0.015) {
-        sample += Math.exp(-t2 * 350) * Math.sin(t2 * 3500) * 0.45;
-        sample += Math.exp(-t2 * 250) * (Math.random() * 2 - 1) * 0.2;
-      }
-
-      data[i] = sample;
-    }
-
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    const gain = ctx.createGain();
-    gain.gain.value = 0.8;
-    source.connect(gain);
-    gain.connect(ctx.destination);
-    source.start();
-    source.onended = () => ctx.close();
+    const audio = new Audio("/sounds/camera-shutter.mp3");
+    audio.volume = 0.6;
+    audio.play().catch(() => {});
   } catch {}
 }
 
@@ -91,7 +54,6 @@ export function FeedbackWidget() {
   const [attachment, setAttachment] = useState<string | null>(null);
   const [attachmentName, setAttachmentName] = useState("");
   const [capturing, setCapturing] = useState(false);
-  const [formVisible, setFormVisible] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const widgetRef = useRef<HTMLDivElement>(null);
@@ -101,73 +63,64 @@ export function FeedbackWidget() {
   const captureScreenshot = useCallback(async () => {
     setCapturing(true);
 
-    // Step 1: Fade out the form and button
-    setFormVisible(false);
-    // Hide overlay
+    // Step 1: Hide widget, button, and overlay completely
+    if (widgetRef.current) widgetRef.current.style.visibility = "hidden";
+    if (btnRef.current) btnRef.current.style.visibility = "hidden";
     const overlay = document.querySelector("[data-feedback-overlay]") as HTMLElement;
-    if (overlay) overlay.style.opacity = "0";
+    if (overlay) overlay.style.visibility = "hidden";
 
-    // Wait for fade out
-    await new Promise(r => setTimeout(r, 300));
-
-    // Fully hide elements so they don't appear in capture
-    if (widgetRef.current) widgetRef.current.style.display = "none";
-    if (btnRef.current) btnRef.current.style.display = "none";
-    if (overlay) overlay.style.display = "none";
-
-    // Small delay for paint
-    await new Promise(r => setTimeout(r, 50));
+    // Wait for paint
+    await new Promise(r => setTimeout(r, 100));
 
     try {
       const html2canvas = (await import("html2canvas")).default;
 
-      // Save scroll position, scroll to top-left of current view for accurate capture
-      const savedScrollX = window.scrollX;
-      const savedScrollY = window.scrollY;
+      // Capture: create a wrapper div at the scroll position to capture only visible area
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
 
-      // Capture only the visible viewport by targeting document.body
-      // with scrollX/Y offset and viewport dimensions
       const canvas = await html2canvas(document.body, {
         useCORS: true,
         allowTaint: true,
         scale: 1,
         logging: false,
-        x: savedScrollX,
-        y: savedScrollY,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        scrollX: -savedScrollX,
-        scrollY: -savedScrollY,
-        windowWidth: document.body.scrollWidth,
-        windowHeight: document.body.scrollHeight,
+        width: vw,
+        height: vh,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: vw,
+        windowHeight: vh,
+        onclone: (clonedDoc: Document) => {
+          // In the cloned document, scroll to match the original position
+          // and hide the widget elements
+          const clonedBody = clonedDoc.body;
+          clonedBody.style.margin = "0";
+          clonedBody.style.transform = `translate(${-window.scrollX}px, ${-window.scrollY}px)`;
+          clonedBody.style.width = `${document.body.scrollWidth}px`;
+          clonedBody.style.height = `${document.body.scrollHeight}px`;
+        },
       });
 
-      // The canvas should now be viewport-sized, but crop if needed
-      const croppedCanvas = document.createElement("canvas");
-      croppedCanvas.width = window.innerWidth;
-      croppedCanvas.height = window.innerHeight;
-      const ctx = croppedCanvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(canvas, 0, 0, window.innerWidth, window.innerHeight, 0, 0, window.innerWidth, window.innerHeight);
-      }
-
-      // Step 2: Flash effect + sound
+      // Step 2: Flash + sound
       playShutterSound();
-
-      // Show flash overlay
       if (flashRef.current) {
-        flashRef.current.style.opacity = "1";
-        setTimeout(() => {
-          if (flashRef.current) flashRef.current.style.opacity = "0";
-        }, 100);
+        flashRef.current.style.transition = "none";
+        flashRef.current.style.opacity = "0.9";
+        requestAnimationFrame(() => {
+          if (flashRef.current) {
+            flashRef.current.style.transition = "opacity 0.3s ease-out";
+            flashRef.current.style.opacity = "0";
+          }
+        });
       }
 
-      // Convert to webp (use croppedCanvas for clean viewport-only output)
-      const dataUrl = croppedCanvas.toDataURL("image/webp", 0.75);
+      // Convert to webp
+      const dataUrl = canvas.toDataURL("image/webp", 0.75);
       setAttachment(dataUrl);
       setAttachmentName("screenshot.webp");
     } catch {
-      // Fallback
       try {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
@@ -185,17 +138,11 @@ export function FeedbackWidget() {
       } catch {}
     }
 
-    // Step 3: Restore elements
-    if (widgetRef.current) widgetRef.current.style.display = "";
-    if (btnRef.current) btnRef.current.style.display = "";
-    if (overlay) {
-      overlay.style.display = "";
-      overlay.style.opacity = "";
-    }
+    // Step 3: Restore visibility
+    if (widgetRef.current) widgetRef.current.style.visibility = "";
+    if (btnRef.current) btnRef.current.style.visibility = "";
+    if (overlay) overlay.style.visibility = "";
 
-    // Wait for flash to finish, then fade form back in
-    await new Promise(r => setTimeout(r, 250));
-    setFormVisible(true);
     setCapturing(false);
   }, []);
 
@@ -264,11 +211,10 @@ export function FeedbackWidget() {
           background: "white",
           opacity: 0,
           pointerEvents: "none",
-          transition: "opacity 0.1s ease-out",
         }}
       />
 
-      {/* Floating button */}
+      {/* Floating button — always rendered, no conditional mount/unmount */}
       <button
         ref={btnRef}
         onClick={() => setOpen(!open)}
@@ -300,18 +246,18 @@ export function FeedbackWidget() {
         </svg>
       </button>
 
-      {/* Panel overlay */}
-      {open && (
-        <div
-          data-feedback-overlay=""
-          onClick={() => setOpen(false)}
-          style={{
-            position: "fixed", inset: 0, zIndex: 51,
-            background: "rgba(0,0,0,0.3)",
-            transition: "opacity 0.25s",
-          }}
-        />
-      )}
+      {/* Panel overlay — always rendered, opacity controlled */}
+      <div
+        data-feedback-overlay=""
+        onClick={() => setOpen(false)}
+        style={{
+          position: "fixed", inset: 0, zIndex: 51,
+          background: "rgba(0,0,0,0.3)",
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? "auto" : "none",
+          transition: "opacity 0.25s",
+        }}
+      />
 
       {/* Slide-up panel */}
       <div
@@ -329,9 +275,9 @@ export function FeedbackWidget() {
           border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: 6,
           padding: 24,
-          transform: open && formVisible ? "translateY(0) scale(1)" : "translateY(20px) scale(0.95)",
-          opacity: open && formVisible ? 1 : 0,
-          pointerEvents: open && formVisible ? "auto" : "none",
+          transform: open ? "translateY(0) scale(1)" : "translateY(20px) scale(0.95)",
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? "auto" : "none",
           transition: "transform 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.25s",
           direction: "rtl",
         }}
