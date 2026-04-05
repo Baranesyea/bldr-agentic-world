@@ -177,7 +177,7 @@ export default function AdminUsersPage() {
     }).catch(() => {});
   }, []);
 
-  // Load from localStorage
+  // Load users from localStorage + database members
   useEffect(() => {
     const stored = loadUsers();
 
@@ -204,7 +204,32 @@ export default function AdminUsersPage() {
       }
     } catch {}
 
-    setUsers(stored);
+    // Merge with database members
+    fetch("/api/members").then(r => r.json()).then(data => {
+      if (!Array.isArray(data)) return;
+      const merged = [...stored];
+      const existingEmails = new Set(merged.map(u => u.email.toLowerCase()));
+
+      for (const m of data) {
+        if (existingEmails.has(m.email.toLowerCase())) continue;
+        merged.push({
+          id: m.id,
+          email: m.email,
+          fullName: m.fullName || m.email.split("@")[0],
+          phone: "",
+          role: "member",
+          status: m.type === "paid" ? "paying" : "trial",
+          amount: m.pricePaid || 0,
+          joinedAt: m.createdAt || new Date().toISOString(),
+          lastPaymentDate: null,
+          subscriptionStart: null,
+          payments: [],
+        });
+      }
+      setUsers(merged);
+    }).catch(() => {
+      setUsers(stored);
+    });
   }, []);
 
   /* ─── Stats ─── */
