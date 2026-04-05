@@ -60,27 +60,43 @@ export default function FreeLoginPage() {
       return;
     }
 
-    const res = await fetch("/api/flogin/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, fullName: email.split("@")[0] }),
-    });
+    // First try to sign in directly (user might already have this password)
+    const { error: directSignIn } = await supabase.auth.signInWithPassword({ email, password });
 
-    const data = await res.json();
+    if (!directSignIn) {
+      // Login succeeded — check member access
+      const memberRes = await fetch(`/api/members/check?email=${encodeURIComponent(email)}`);
+      const memberData = await memberRes.json();
+      if (!memberData.active) {
+        setError("המייל הזה לא נמצא במערכת. פנה למנהל לקבלת גישה.");
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
+    } else {
+      // Direct sign in failed — register or update password via API
+      const res = await fetch("/api/flogin/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, fullName: email.split("@")[0] }),
+      });
 
-    if (!res.ok) {
-      setError(data.error || "שגיאה בהרשמה");
-      setLoading(false);
-      return;
-    }
+      const data = await res.json();
 
-    // Auto-login
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (!res.ok) {
+        setError(data.error || "שגיאה בהתחברות");
+        setLoading(false);
+        return;
+      }
 
-    if (signInError) {
-      setError("ההרשמה הצליחה אבל ההתחברות נכשלה. נסה להתחבר מעמוד ההתחברות.");
-      setLoading(false);
-      return;
+      // Now sign in with the new password
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (signInError) {
+        setError("יצירת החשבון הצליחה אבל ההתחברות נכשלה. נסה שוב.");
+        setLoading(false);
+        return;
+      }
     }
 
     setSuccess(true);
