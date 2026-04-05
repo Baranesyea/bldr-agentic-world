@@ -66,6 +66,7 @@ const adminNav = [
   { label: "בתי ספר", href: "/admin/schools", icon: GraduationIcon },
   { label: "ייבוא משתמשים", href: "/admin/import-users", icon: ImportIcon },
   { label: "תבניות אימייל", href: "/admin/email-templates", icon: LinkIcon },
+  { label: "הרשמה חופשית", href: "/admin/flogin", icon: UsersIcon },
   { label: "אנליטיקס", href: "/admin/analytics", icon: DashboardIcon },
 ];
 
