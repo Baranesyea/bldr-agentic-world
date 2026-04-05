@@ -38,16 +38,31 @@ export default function LoginPage() {
     setError("");
     setSuccess("");
     setLoading(true);
+
+    // Check if user signed up with Google only
+    try {
+      const res = await fetch(`/api/auth/check-provider?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      if (data.provider === "google_only") {
+        setError("החשבון הזה מחובר דרך Google. לחץ על ׳המשך עם Google׳ כדי להתחבר.");
+        setLoading(false);
+        return;
+      }
+      if (data.provider === null) {
+        setError("לא נמצא חשבון עם המייל הזה.");
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // Continue with reset if check fails
+    }
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
     });
     setLoading(false);
     if (error) {
-      if (error.message.includes("invalid") || error.message.includes("Invalid")) {
-        setError("המייל הזה מחובר דרך Google. לחץ על 'המשך עם Google' כדי להתחבר.");
-      } else {
-        setError(error.message);
-      }
+      setError(error.message);
       return;
     }
     setSuccess("נשלח אימייל עם קישור לאיפוס הסיסמה");

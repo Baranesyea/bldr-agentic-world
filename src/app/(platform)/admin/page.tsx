@@ -23,6 +23,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/content-ideas": <LightbulbIcon size={28} />,
   "/admin/subscribers": <UsersIcon size={28} />,
   "/admin/tasks": <LightbulbIcon size={28} />,
+  "/admin/email-templates": <LinkIcon size={28} />,
 };
 
 const sections = [
@@ -110,6 +111,11 @@ const sections = [
     title: "משימות",
     description: "ניהול משימות לביצוע — הוספה, מעקב ואישור ביצוע",
     href: "/admin/tasks",
+  },
+  {
+    title: "תבניות אימייל",
+    description: "עיצוב מיילים ממותגים עם משתנים דינמיים — ברוכים הבאים, איפוס סיסמה, עדכונים ועוד",
+    href: "/admin/email-templates",
   },
 ];
 

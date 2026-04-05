@@ -485,3 +485,18 @@ export const importBatches = pgTable("import_batches", {
   expiryMode: expiryModeEnum("expiry_mode"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// ============================================
+// Layer 6: Email Templates
+// ============================================
+export const emailTemplates = pgTable("email_templates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  name: varchar("name", { length: 200 }).notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  bodyHtml: text("body_html").notNull(),
+  variables: jsonb("variables").default([]).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

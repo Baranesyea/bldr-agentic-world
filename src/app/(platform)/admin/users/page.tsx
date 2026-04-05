@@ -735,6 +735,35 @@ export default function AdminUsersPage() {
                                   <button
                                     onClick={async (e) => {
                                       e.stopPropagation();
+                                      if (!confirm(`לשלוח מייל איפוס סיסמה ל-${user.email}?`)) return;
+                                      try {
+                                        const res = await fetch("/api/auth/reset-user-password", {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ email: user.email }),
+                                        });
+                                        const data = await res.json();
+                                        if (!res.ok) {
+                                          alert(data.error || "שגיאה בשליחת איפוס סיסמה");
+                                        } else {
+                                          alert("מייל איפוס סיסמה נשלח בהצלחה!");
+                                        }
+                                      } catch {
+                                        alert("שגיאה בשליחת איפוס סיסמה");
+                                      }
+                                    }}
+                                    style={{
+                                      padding: "6px 14px", borderRadius: 6,
+                                      border: "1px solid rgba(255,165,0,0.3)",
+                                      background: "rgba(255,165,0,0.08)", color: "#FFA500",
+                                      fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                    }}
+                                  >
+                                    אפס סיסמה
+                                  </button>
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
                                       if (!confirm(`למחוק את ${user.fullName || user.email}?`)) return;
                                       await fetch("/api/account/delete", {
                                         method: "POST",
