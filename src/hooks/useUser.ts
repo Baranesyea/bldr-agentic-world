@@ -106,19 +106,20 @@ export function useUser() {
         if (error) console.error("Profile fetch error:", error);
         else {
           const profile = data as Profile;
-          // Ensure avatar: try DB value, Google metadata, or server-side fetch
-          const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+          // Always fetch avatar from our API (bypasses Supabase RLS)
           if (!profile.avatar_url) {
+            try {
+              const res = await fetch(`/api/users/by-email?email=${encodeURIComponent(user.email!)}`);
+              const d = await res.json();
+              if (d.avatarUrl) profile.avatar_url = d.avatarUrl;
+            } catch {}
+          }
+          // Still no avatar? Try Google metadata
+          if (!profile.avatar_url) {
+            const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
             if (googleAvatar) {
               profile.avatar_url = googleAvatar;
               supabase.from("profiles").update({ avatar_url: googleAvatar }).eq("id", user.id).then();
-            } else {
-              // Supabase RLS may hide avatar_url — fetch via our API
-              try {
-                const res = await fetch(`/api/users/by-email?email=${encodeURIComponent(user.email!)}`);
-                const d = await res.json();
-                if (d.avatarUrl) profile.avatar_url = d.avatarUrl;
-              } catch {}
             }
           }
           setProfile(profile);
