@@ -410,7 +410,7 @@ export function OnboardingTour() {
     if (deferredPrompt) {
       // Chrome/Edge — trigger native install prompt
       setInstallStatus("installing");
-      const prompt = deferredPrompt as { prompt: () => void; userChoice: Promise<{ outcome: string }> };
+      const prompt = deferredPrompt as unknown as { prompt: () => void; userChoice: Promise<{ outcome: string }> };
       prompt.prompt();
       const result = await prompt.userChoice;
       if (result.outcome === "accepted") {
