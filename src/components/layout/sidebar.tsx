@@ -218,6 +218,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       return (
         <button
           ref={isTour ? tourBtnRef : undefined}
+          data-nav={item.href}
           onClick={handleClick}
           onMouseEnter={(e) => {
             if (isWA) {
