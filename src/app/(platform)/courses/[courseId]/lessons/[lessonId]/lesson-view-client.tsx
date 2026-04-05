@@ -126,6 +126,8 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   const [noteText, setNoteText] = useState("");
   const [savedNotes, setSavedNotes] = useState<LessonNote[]>([]);
   const [videoTimer, setVideoTimer] = useState(0);
+  const videoDurationRef = useRef(0);
+  const videoEndedFiredRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [autoCompleted, setAutoCompleted] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -221,12 +223,19 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
       const src = iframe.src || "";
       if (src.includes("vimeo")) {
         iframe.contentWindow.postMessage('{"method":"getCurrentTime"}', "*");
+        iframe.contentWindow.postMessage('{"method":"getDuration"}', "*");
       } else if (src.includes("youtube")) {
         iframe.contentWindow.postMessage('{"event":"listening"}', "*");
       }
     }, 500);
     return () => clearInterval(interval);
   }, [isPlaying]);
+
+  // Reset ended flag when lesson changes
+  useEffect(() => {
+    videoEndedFiredRef.current = false;
+    videoDurationRef.current = 0;
+  }, [currentLesson?.id]);
 
   // Listen for video end events from Vimeo/YouTube iframes
   useEffect(() => {
@@ -247,7 +256,17 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           }
           // Vimeo getCurrentTime response
           if (data.method === "getCurrentTime" && data.value != null) {
-            setVideoTimer(Math.floor(data.value));
+            const t = Math.floor(data.value);
+            setVideoTimer(t);
+            // Fallback end detection: if we know duration and time is near end
+            if (videoDurationRef.current > 0 && t >= videoDurationRef.current - 2 && !videoEndedFiredRef.current) {
+              videoEndedFiredRef.current = true;
+              handleVideoEnded();
+            }
+          }
+          // Vimeo getDuration response
+          if (data.method === "getDuration" && data.value != null) {
+            videoDurationRef.current = Math.floor(data.value);
           }
         }
         if (typeof event.data === "object" && event.data?.event === "onStateChange") {
