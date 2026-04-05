@@ -8,6 +8,12 @@ import { bulkSetUserCourseAccess } from "@/lib/data/user-course-access";
 import { applyMapping, validateMapping } from "@/lib/user-import";
 import type { FieldMapping } from "@/lib/user-import";
 
+async function getAdminUserId(): Promise<string> {
+  const { users } = await import("@/lib/schema");
+  const [admin] = await db.select().from(users).where(eq(users.role, "admin")).limit(1);
+  return admin?.id || "";
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -20,9 +26,9 @@ export async function POST(req: NextRequest) {
     const importedBy = formData.get("importedBy") as string;
     const sendInvite = formData.get("sendInvite") !== "false";
 
-    if (!file || !mappingJson || !importedBy) {
+    if (!file || !mappingJson) {
       return NextResponse.json(
-        { error: "file, mapping, and importedBy are required" },
+        { error: "file and mapping are required" },
         { status: 400 }
       );
     }
@@ -46,7 +52,7 @@ export async function POST(req: NextRequest) {
       .insert(importBatches)
       .values({
         schoolId: schoolId || null,
-        importedBy,
+        importedBy: importedBy || (await getAdminUserId()),
         fileName: file.name,
         totalRows: users.length + skippedRows,
         fieldMapping: mapping,
