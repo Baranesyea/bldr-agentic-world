@@ -36,20 +36,46 @@ function MoodFace({ type, selected, onClick }: { type: number; selected: boolean
   );
 }
 
-// Camera shutter sound (tiny base64 WAV click)
+// Camera shutter sound — two-part mechanical click
 function playShutterSound() {
   try {
     const ctx = new AudioContext();
-    const duration = 0.08;
-    const buffer = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
+    const sampleRate = ctx.sampleRate;
+    const duration = 0.25;
+    const buffer = ctx.createBuffer(1, sampleRate * duration, sampleRate);
     const data = buffer.getChannelData(0);
+
     for (let i = 0; i < data.length; i++) {
-      const t = i / ctx.sampleRate;
-      data[i] = Math.exp(-t * 80) * (Math.random() * 2 - 1) * 0.3;
+      const t = i / sampleRate;
+      let sample = 0;
+
+      // First click (shutter open) — sharp transient at t=0
+      if (t < 0.015) {
+        sample += Math.exp(-t * 300) * Math.sin(t * 4000) * 0.6;
+        sample += Math.exp(-t * 200) * (Math.random() * 2 - 1) * 0.3;
+      }
+
+      // Mechanical resonance
+      if (t > 0.005 && t < 0.06) {
+        sample += Math.exp(-(t - 0.005) * 100) * Math.sin((t - 0.005) * 2200) * 0.15;
+      }
+
+      // Second click (shutter close) — at t=0.1
+      const t2 = t - 0.1;
+      if (t2 > 0 && t2 < 0.015) {
+        sample += Math.exp(-t2 * 350) * Math.sin(t2 * 3500) * 0.45;
+        sample += Math.exp(-t2 * 250) * (Math.random() * 2 - 1) * 0.2;
+      }
+
+      data[i] = sample;
     }
+
     const source = ctx.createBufferSource();
     source.buffer = buffer;
-    source.connect(ctx.destination);
+    const gain = ctx.createGain();
+    gain.gain.value = 0.8;
+    source.connect(gain);
+    gain.connect(ctx.destination);
     source.start();
     source.onended = () => ctx.close();
   } catch {}
@@ -95,26 +121,34 @@ export function FeedbackWidget() {
     try {
       const html2canvas = (await import("html2canvas")).default;
 
-      // Capture the full document
-      const fullCanvas = await html2canvas(document.documentElement, {
+      // Save scroll position, scroll to top-left of current view for accurate capture
+      const savedScrollX = window.scrollX;
+      const savedScrollY = window.scrollY;
+
+      // Capture only the visible viewport by targeting document.body
+      // with scrollX/Y offset and viewport dimensions
+      const canvas = await html2canvas(document.body, {
         useCORS: true,
         allowTaint: true,
         scale: 1,
         logging: false,
+        x: savedScrollX,
+        y: savedScrollY,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        scrollX: -savedScrollX,
+        scrollY: -savedScrollY,
+        windowWidth: document.body.scrollWidth,
+        windowHeight: document.body.scrollHeight,
       });
 
-      // Crop to only the visible viewport area
-      const cropX = window.scrollX;
-      const cropY = window.scrollY;
-      const cropW = window.innerWidth;
-      const cropH = window.innerHeight;
-
+      // The canvas should now be viewport-sized, but crop if needed
       const croppedCanvas = document.createElement("canvas");
-      croppedCanvas.width = cropW;
-      croppedCanvas.height = cropH;
+      croppedCanvas.width = window.innerWidth;
+      croppedCanvas.height = window.innerHeight;
       const ctx = croppedCanvas.getContext("2d");
       if (ctx) {
-        ctx.drawImage(fullCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+        ctx.drawImage(canvas, 0, 0, window.innerWidth, window.innerHeight, 0, 0, window.innerWidth, window.innerHeight);
       }
 
       // Step 2: Flash effect + sound
@@ -128,7 +162,7 @@ export function FeedbackWidget() {
         }, 100);
       }
 
-      // Convert to webp
+      // Convert to webp (use croppedCanvas for clean viewport-only output)
       const dataUrl = croppedCanvas.toDataURL("image/webp", 0.75);
       setAttachment(dataUrl);
       setAttachmentName("screenshot.webp");
@@ -258,9 +292,7 @@ export function FeedbackWidget() {
           boxShadow: hover
             ? "0 0 20px rgba(0,0,255,0.4), 0 0 40px rgba(0,0,255,0.15)"
             : "0 0 12px rgba(0,0,255,0.15)",
-          transition: "box-shadow 0.3s, opacity 0.25s, transform 0.25s",
-          opacity: formVisible ? 1 : 0,
-          transform: formVisible ? "scale(1)" : "scale(0.8)",
+          transition: "box-shadow 0.3s",
         }}
       >
         <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="rgba(200,200,255,0.85)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
