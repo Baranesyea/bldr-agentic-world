@@ -106,12 +106,11 @@ export default function ImportUsersPage() {
       if (Array.isArray(data)) setSchools(data);
     }).catch(() => {});
     fetch("/api/courses").then(r => r.json()).then(data => {
-      if (Array.isArray(data)) {
-        setCourses(data);
-        const avail: Record<string, boolean> = {};
-        data.forEach((c: Course) => { avail[c.id] = true; });
-        setCourseAvailability(avail);
-      }
+      const list = Array.isArray(data) ? data : data?.courses || [];
+      setCourses(list);
+      const avail: Record<string, boolean> = {};
+      list.forEach((c: Course) => { avail[c.id] = true; });
+      setCourseAvailability(avail);
     }).catch(() => {});
   }, []);
 
