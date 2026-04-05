@@ -75,35 +75,12 @@ export function FeedbackWidget() {
     try {
       const html2canvas = (await import("html2canvas")).default;
 
-      // Capture: create a wrapper div at the scroll position to capture only visible area
+      const sx = window.scrollX;
+      const sy = window.scrollY;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
-      const canvas = await html2canvas(document.body, {
-        useCORS: true,
-        allowTaint: true,
-        scale: 1,
-        logging: false,
-        width: vw,
-        height: vh,
-        x: 0,
-        y: 0,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: vw,
-        windowHeight: vh,
-        onclone: (clonedDoc: Document) => {
-          // In the cloned document, scroll to match the original position
-          // and hide the widget elements
-          const clonedBody = clonedDoc.body;
-          clonedBody.style.margin = "0";
-          clonedBody.style.transform = `translate(${-window.scrollX}px, ${-window.scrollY}px)`;
-          clonedBody.style.width = `${document.body.scrollWidth}px`;
-          clonedBody.style.height = `${document.body.scrollHeight}px`;
-        },
-      });
-
-      // Step 2: Flash + sound
+      // Step 2: Flash + sound BEFORE capture (so user gets immediate feedback)
       playShutterSound();
       if (flashRef.current) {
         flashRef.current.style.transition = "none";
@@ -116,8 +93,25 @@ export function FeedbackWidget() {
         });
       }
 
-      // Convert to webp
-      const dataUrl = canvas.toDataURL("image/webp", 0.75);
+      // Capture the entire page at scale 1
+      const fullCanvas = await html2canvas(document.body, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 1,
+        logging: false,
+      });
+
+      // Crop to the visible viewport
+      const cropCanvas = document.createElement("canvas");
+      cropCanvas.width = vw;
+      cropCanvas.height = vh;
+      const ctx = cropCanvas.getContext("2d");
+      if (ctx) {
+        // The full canvas pixel position = DOM position, so scrollX/Y maps directly
+        ctx.drawImage(fullCanvas, sx, sy, vw, vh, 0, 0, vw, vh);
+      }
+
+      const dataUrl = cropCanvas.toDataURL("image/webp", 0.75);
       setAttachment(dataUrl);
       setAttachmentName("screenshot.webp");
     } catch {
