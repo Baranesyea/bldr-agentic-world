@@ -40,7 +40,8 @@ export function EntryVideo() {
 
         const tourDone = localStorage.getItem("bldr_onboarding_done") === "true";
 
-        if ((!tourDone || document.querySelector("[data-tour-active]")) && data.showAfterTour) {
+        if (!tourDone && data.showAfterTour) {
+          // First visit — ALWAYS wait for tour to finish, no matter what
           const onDismiss = () => triggerVideo(id, data.delaySec);
           window.addEventListener("bldr:tour-done-dismissed", onDismiss);
           window.addEventListener("bldr:tour-complete", onDismiss);
@@ -48,13 +49,15 @@ export function EntryVideo() {
             window.removeEventListener("bldr:tour-done-dismissed", onDismiss);
             window.removeEventListener("bldr:tour-complete", onDismiss);
           };
-        } else if (data.showAfterTour) {
+        } else if (tourDone && data.showAfterTour) {
+          // Returning user — show after delay, but not during active tour
           setTimeout(() => {
             if (!document.querySelector("[data-tour-active]")) {
               triggerVideo(id, data.delaySec);
             }
           }, 2000);
         } else {
+          // Not linked to tour
           triggerVideo(id, data.delaySec);
         }
       })
