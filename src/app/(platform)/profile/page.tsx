@@ -292,11 +292,11 @@ export default function ProfilePage() {
       <style>{`
         @media (max-width: 768px) {
           .profile-page { padding: 16px !important; }
-          .profile-page > div { padding: 16px !important; }
           .profile-name-edit { flex-direction: column !important; }
           .profile-name-edit input { width: 100% !important; }
           .profile-name-edit button { width: 100% !important; }
           .profile-info { min-width: 0 !important; }
+          .profile-save-btn { width: 100% !important; align-self: stretch !important; padding: 14px !important; }
         }
       `}</style>
       {/* Avatar & Name Section */}
@@ -590,6 +590,7 @@ export default function ProfilePage() {
             </div>
           </div>
           <button
+            className="profile-save-btn"
             onClick={() => saveProfile({
               profession: editProfession,
               learningGoal: editLearningGoal,
@@ -600,6 +601,9 @@ export default function ProfilePage() {
           >
             שמור פרטים
           </button>
+          {saved && (
+            <span style={{ fontSize: "13px", color: "#00C853", fontWeight: 600 }}>נשמר!</span>
+          )}
         </div>
       </div>
 
