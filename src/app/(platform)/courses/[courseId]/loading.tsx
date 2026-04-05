@@ -1,9 +1,9 @@
 export default function CourseLoading() {
   return (
-    <div style={{ padding: "32px 48px", maxWidth: "1200px", margin: "0 auto" }}>
+    <div style={{ padding: "16px", maxWidth: "1200px", margin: "0 auto" }}>
       {/* Hero skeleton */}
       <div style={{
-        height: "300px",
+        height: "200px",
         background: "linear-gradient(135deg, #0a0a2a, #000033)",
         borderRadius: "4px",
         marginBottom: "24px",

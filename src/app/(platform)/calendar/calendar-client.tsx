@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { CalendarIcon, PlusIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon } from "@/components/ui/icons";
 import { PricingPopup } from "@/components/ui/pricing-popup";
-import { getTouristData } from "@/hooks/useUser";
+import { getTouristData, useUser } from "@/hooks/useUser";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -86,6 +86,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
   const [prefillDate, setPrefillDate] = useState<string>("");
   const [showPricing, setShowPricing] = useState(false);
   const isTourist = typeof window !== "undefined" ? !!getTouristData() : false;
+  const { isAdmin } = useUser();
 
   // No-op placeholder removed — CRUD now goes through API calls below
 
@@ -282,9 +283,11 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
           <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#f0f0f5", margin: 0 }}>לוח שנה</h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <button onClick={() => isTourist ? setShowPricing(true) : openAddModal()} style={btnPrimary}>
-            <PlusIcon size={16} /> הוסף אירוע
-          </button>
+          {isAdmin && (
+            <button onClick={() => openAddModal()} style={btnPrimary}>
+              <PlusIcon size={16} /> הוסף אירוע
+            </button>
+          )}
         </div>
       </div>
 
@@ -374,7 +377,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                   return (
                     <div
                       key={i}
-                      onClick={() => openAddModal(cell.dateStr)}
+                      onClick={() => isAdmin && openAddModal(cell.dateStr)}
                       style={{
                         minHeight: "100px",
                         background: "rgba(255,255,255,0.03)",
@@ -466,7 +469,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                         return (
                           <div
                             key={di}
-                            onClick={() => openAddModal(wd.dateStr)}
+                            onClick={() => isAdmin && openAddModal(wd.dateStr)}
                             style={{
                               background: "rgba(255,255,255,0.03)", padding: "2px 4px", cursor: "pointer",
                               borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s",
@@ -520,7 +523,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                           {String(hour).padStart(2, "0")}:00
                         </div>
                         <div
-                          onClick={() => openAddModal(dayStr)}
+                          onClick={() => isAdmin && openAddModal(dayStr)}
                           style={{
                             background: "rgba(255,255,255,0.03)", padding: "2px 4px", cursor: "pointer",
                             borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.15s",
@@ -558,8 +561,8 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
         <DetailPanel
           event={detailEvent}
           onClose={() => setDetailEvent(null)}
-          onEdit={() => openEditModal(detailEvent)}
-          onDelete={() => handleDelete(detailEvent.id)}
+          onEdit={isAdmin ? () => openEditModal(detailEvent) : undefined}
+          onDelete={isAdmin ? () => handleDelete(detailEvent.id) : undefined}
         />
       )}
 
@@ -582,8 +585,8 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
 function DetailPanel({ event, onClose, onEdit, onDelete }: {
   event: { id: string; title: string; date: string; startTime: string; endTime: string; type: "live_lesson" | "office_hours" | "deadline" | "community" | "other"; description?: string };
   onClose: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }) {
   const color = EVENT_TYPE_COLORS[event.type];
   return (
@@ -612,8 +615,8 @@ function DetailPanel({ event, onClose, onEdit, onDelete }: {
           <p style={{ color: "rgba(240,240,245,0.85)", fontSize: "14px", marginBottom: "16px", lineHeight: 1.5 }}>{event.description}</p>
         )}
         <div style={{ display: "flex", gap: "8px", justifyContent: "flex-start" }}>
-          <button onClick={onEdit} style={btnPrimary}>עריכה</button>
-          <button onClick={onDelete} style={{ ...btnSecondary, color: "#FF3D00", borderColor: "rgba(255,61,0,0.3)" }}>מחיקה</button>
+          {onEdit && <button onClick={onEdit} style={btnPrimary}>עריכה</button>}
+          {onDelete && <button onClick={onDelete} style={{ ...btnSecondary, color: "#FF3D00", borderColor: "rgba(255,61,0,0.3)" }}>מחיקה</button>}
           <button onClick={onClose} style={btnSecondary}>סגירה</button>
         </div>
       </div>
