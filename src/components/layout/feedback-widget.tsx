@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 
 const categories = ["באג", "הצעה לשיפור", "בעיה כללית", "אחר"];
+const SUCCESS_DURATION = 8000;
 
 function MoodFace({ type, selected, onClick }: { type: number; selected: boolean; onClick: () => void }) {
   const size = 36;
@@ -36,6 +37,42 @@ function MoodFace({ type, selected, onClick }: { type: number; selected: boolean
   );
 }
 
+/* Countdown progress bar for success screen */
+function SuccessCountdown({ duration, onComplete }: { duration: number; onComplete: () => void }) {
+  const [elapsed, setElapsed] = useState(0);
+  const startRef = useRef(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const e = now - startRef.current;
+      setElapsed(e);
+      if (e >= duration) {
+        clearInterval(interval);
+        onComplete();
+      }
+    }, 50);
+    return () => clearInterval(interval);
+  }, [duration, onComplete]);
+
+  const progress = Math.min(elapsed / duration, 1);
+
+  return (
+    <div style={{
+      position: "absolute", bottom: 0, left: 0, right: 0, height: 3,
+      background: "rgba(255,255,255,0.06)", borderRadius: "0 0 6px 6px", overflow: "hidden",
+    }}>
+      <div style={{
+        height: "100%",
+        width: `${(1 - progress) * 100}%`,
+        background: "linear-gradient(90deg, #00C853, #00E676)",
+        borderRadius: "0 0 6px 6px",
+        transition: "width 0.05s linear",
+      }} />
+    </div>
+  );
+}
+
 export function FeedbackWidget() {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState("הצעה לשיפור");
@@ -46,6 +83,7 @@ export function FeedbackWidget() {
   const [attachment, setAttachment] = useState<string | null>(null);
   const [attachmentName, setAttachmentName] = useState("");
   const [capturing, setCapturing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const widgetRef = useRef<HTMLDivElement>(null);
@@ -55,14 +93,13 @@ export function FeedbackWidget() {
   const captureScreenshot = useCallback(async () => {
     setCapturing(true);
 
-    // Step 1: Hide widget, button, overlay, and flash via display:none
+    // Hide widget, button, overlay, and flash
     if (widgetRef.current) widgetRef.current.style.display = "none";
     if (btnRef.current) btnRef.current.style.display = "none";
     if (flashRef.current) flashRef.current.style.display = "none";
     const overlay = document.querySelector("[data-feedback-overlay]") as HTMLElement;
     if (overlay) overlay.style.display = "none";
 
-    // Wait for paint
     await new Promise(r => setTimeout(r, 100));
 
     try {
@@ -73,12 +110,12 @@ export function FeedbackWidget() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
-      // Preload sound so it plays instantly after capture
+      // Preload sound
       const audio = new Audio("/sounds/camera-shutter.mp3");
       audio.volume = 0.6;
       await audio.load();
 
-      // Capture the viewport: render full documentElement, crop to scroll position
+      // Capture viewport
       const canvas = await html2canvas(document.documentElement, {
         useCORS: true,
         allowTaint: true,
@@ -90,7 +127,7 @@ export function FeedbackWidget() {
         height: vh,
       });
 
-      // NOW flash + sound (after capture is done)
+      // Flash + sound after capture
       audio.play().catch(() => {});
       if (flashRef.current) {
         flashRef.current.style.transition = "none";
@@ -124,7 +161,7 @@ export function FeedbackWidget() {
       } catch {}
     }
 
-    // Step 3: Restore display
+    // Restore
     if (flashRef.current) flashRef.current.style.display = "";
     if (widgetRef.current) widgetRef.current.style.display = "";
     if (btnRef.current) btnRef.current.style.display = "";
@@ -149,7 +186,9 @@ export function FeedbackWidget() {
   };
 
   const handleSubmit = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() || submitting) return;
+    setSubmitting(true);
+
     let userName = "אורח";
     let userEmail = "";
     try {
@@ -174,21 +213,23 @@ export function FeedbackWidget() {
       });
     } catch {}
 
+    setSubmitting(false);
     setContent("");
     setMood(null);
     setCategory("הצעה לשיפור");
     setAttachment(null);
     setAttachmentName("");
     setSuccess(true);
-    setTimeout(() => {
-      setSuccess(false);
-      setOpen(false);
-    }, 2000);
   };
+
+  const handleSuccessComplete = useCallback(() => {
+    setSuccess(false);
+    setOpen(false);
+  }, []);
 
   return (
     <>
-      {/* Flash overlay for screenshot effect */}
+      {/* Flash overlay */}
       <div
         ref={flashRef}
         style={{
@@ -201,7 +242,7 @@ export function FeedbackWidget() {
         }}
       />
 
-      {/* Floating button — always rendered, no conditional mount/unmount */}
+      {/* Floating button */}
       <button
         ref={btnRef}
         onClick={() => setOpen(!open)}
@@ -233,7 +274,7 @@ export function FeedbackWidget() {
         </svg>
       </button>
 
-      {/* Panel overlay — always rendered, opacity controlled */}
+      {/* Panel overlay */}
       <div
         data-feedback-overlay=""
         onClick={() => setOpen(false)}
@@ -269,7 +310,7 @@ export function FeedbackWidget() {
           direction: "rtl",
         }}
       >
-        {/* Success overlay — sits on top of the form with crossfade */}
+        {/* Success overlay with countdown */}
         <div style={{
           position: "absolute",
           inset: 0,
@@ -288,10 +329,12 @@ export function FeedbackWidget() {
             <circle cx="12" cy="12" r="10" />
             <polyline points="8 12 11 15 16 9" />
           </svg>
-          <p style={{ color: "#fff", fontSize: 16, fontWeight: 600, margin: 0 }}>תודה! הפידבק שלך התקבל</p>
+          <p style={{ color: "#fff", fontSize: 16, fontWeight: 600, margin: "0 0 8px 0" }}>תודה! הפידבק שלך התקבל</p>
+          <p style={{ color: "rgba(240,240,245,0.4)", fontSize: 12, margin: 0 }}>נסגר אוטומטית...</p>
+          {success && <SuccessCountdown duration={SUCCESS_DURATION} onComplete={handleSuccessComplete} />}
         </div>
 
-        {/* Form content — always rendered underneath */}
+        {/* Form */}
         <div style={{ opacity: success ? 0 : 1, transition: "opacity 0.3s ease" }}>
             <h3 style={{ color: "#fff", fontSize: 18, fontWeight: 700, margin: "0 0 20px" }}>שלח פידבק</h3>
 
@@ -336,7 +379,10 @@ export function FeedbackWidget() {
                   border: "1px solid rgba(255,255,255,0.1)", marginBottom: 8,
                 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={attachment} alt="צילום" style={{ width: "100%", maxHeight: 150, objectFit: "cover", display: "block" }} />
+                  <img src={attachment} alt="צילום" style={{
+                    width: "100%", maxHeight: 200, objectFit: "contain",
+                    display: "block", background: "rgba(0,0,0,0.3)",
+                  }} />
                   <button
                     onClick={() => { setAttachment(null); setAttachmentName(""); }}
                     style={{
@@ -411,20 +457,38 @@ export function FeedbackWidget() {
             {/* Submit */}
             <button
               onClick={handleSubmit}
-              disabled={!content.trim()}
+              disabled={!content.trim() || submitting}
               style={{
                 width: "100%", padding: "12px", borderRadius: 4, border: "none",
-                background: content.trim() ? "rgba(0,0,255,0.7)" : "rgba(255,255,255,0.08)",
-                color: content.trim() ? "#fff" : "rgba(255,255,255,0.3)",
+                background: submitting ? "rgba(0,0,255,0.5)" : content.trim() ? "rgba(0,0,255,0.7)" : "rgba(255,255,255,0.08)",
+                color: content.trim() || submitting ? "#fff" : "rgba(255,255,255,0.3)",
                 fontSize: 15, fontWeight: 600,
-                cursor: content.trim() ? "pointer" : "default",
+                cursor: content.trim() && !submitting ? "pointer" : "default",
                 transition: "background 0.2s",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               }}
             >
-              שלח
+              {submitting ? (
+                <>
+                  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{
+                    animation: "feedback-spin 1s linear infinite",
+                  }}>
+                    <path d="M21 12a9 9 0 11-6.219-8.56" />
+                  </svg>
+                  שולח...
+                </>
+              ) : "שלח"}
             </button>
         </div>
       </div>
+
+      {/* Spinner animation */}
+      <style>{`
+        @keyframes feedback-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </>
   );
 }
