@@ -78,26 +78,16 @@ export function FeedbackWidget() {
       audio.volume = 0.6;
       await audio.load();
 
-      // Capture only the visible viewport using onclone to shift content
-      const canvas = await html2canvas(document.body, {
+      // Capture the viewport: render full documentElement, crop to scroll position
+      const canvas = await html2canvas(document.documentElement, {
         useCORS: true,
         allowTaint: true,
         scale: 1,
         logging: false,
+        x: sx,
+        y: sy,
         width: vw,
         height: vh,
-        windowWidth: vw,
-        windowHeight: vh,
-        onclone: (clonedDoc: Document) => {
-          // Constrain the clone to viewport size and shift content up by scroll amount
-          clonedDoc.documentElement.style.overflow = "hidden";
-          clonedDoc.documentElement.style.width = vw + "px";
-          clonedDoc.documentElement.style.height = vh + "px";
-          clonedDoc.body.style.position = "relative";
-          clonedDoc.body.style.top = `-${sy}px`;
-          clonedDoc.body.style.left = `-${sx}px`;
-          clonedDoc.body.style.width = `${document.body.scrollWidth}px`;
-        },
       });
 
       // NOW flash + sound (after capture is done)
