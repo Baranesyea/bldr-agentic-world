@@ -500,3 +500,22 @@ export const emailTemplates = pgTable("email_templates", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// ============================================
+// Layer 7: Email Logs
+// ============================================
+export const emailLogs = pgTable("email_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  resendId: varchar("resend_id", { length: 100 }), // Resend's email ID for tracking
+  toEmail: varchar("to_email", { length: 500 }).notNull(),
+  fromEmail: varchar("from_email", { length: 500 }),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  templateSlug: varchar("template_slug", { length: 100 }), // which template was used
+  status: varchar("status", { length: 50 }).default("sent").notNull(), // sent, delivered, opened, clicked, bounced, complained
+  openedAt: timestamp("opened_at"),
+  clickedAt: timestamp("clicked_at"),
+  deliveredAt: timestamp("delivered_at"),
+  bouncedAt: timestamp("bounced_at"),
+  metadata: jsonb("metadata").default({}), // extra info like variables used
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

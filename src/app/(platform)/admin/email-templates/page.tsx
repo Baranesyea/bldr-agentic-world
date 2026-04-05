@@ -20,6 +20,22 @@ interface EmailTemplate {
   createdAt: string;
 }
 
+interface EmailLog {
+  id: string;
+  resendId: string | null;
+  toEmail: string;
+  fromEmail: string | null;
+  subject: string;
+  templateSlug: string | null;
+  status: string;
+  openedAt: string | null;
+  clickedAt: string | null;
+  deliveredAt: string | null;
+  bouncedAt: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
 const DEFAULT_TEMPLATES: Partial<EmailTemplate>[] = [
   {
     slug: "welcome",
@@ -240,6 +256,9 @@ export default function EmailTemplatesPage() {
   const [sendingTest, setSendingTest] = useState(false);
   const [testVars, setTestVars] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState("");
+  const [tab, setTab] = useState<"templates" | "logs">("templates");
+  const [logs, setLogs] = useState<EmailLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
 
   const fetchTemplates = useCallback(async () => {
     try {
@@ -252,9 +271,23 @@ export default function EmailTemplatesPage() {
     setLoading(false);
   }, []);
 
+  const fetchLogs = useCallback(async () => {
+    setLogsLoading(true);
+    try {
+      const res = await fetch("/api/email-logs");
+      const data = await res.json();
+      if (Array.isArray(data)) setLogs(data);
+    } catch {}
+    setLogsLoading(false);
+  }, []);
+
   useEffect(() => {
     fetchTemplates();
   }, [fetchTemplates]);
+
+  useEffect(() => {
+    if (tab === "logs" && logs.length === 0) fetchLogs();
+  }, [tab, logs.length, fetchLogs]);
 
   const seedDefaults = async () => {
     for (const t of DEFAULT_TEMPLATES) {
@@ -607,41 +640,94 @@ export default function EmailTemplatesPage() {
     );
   }
 
+  const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
+    sent: { bg: "rgba(68,136,255,0.1)", color: "#4488FF" },
+    delivered: { bg: "rgba(0,200,83,0.1)", color: "#00C853" },
+    opened: { bg: "rgba(156,39,176,0.1)", color: "#CE93D8" },
+    clicked: { bg: "rgba(0,200,83,0.15)", color: "#69F0AE" },
+    bounced: { bg: "rgba(255,59,48,0.1)", color: "#ff6b6b" },
+    complained: { bg: "rgba(255,59,48,0.15)", color: "#ff4444" },
+  };
+
+  const STATUS_LABELS: Record<string, string> = {
+    sent: "נשלח",
+    delivered: "הגיע",
+    opened: "נפתח",
+    clicked: "נלחץ",
+    bounced: "חזר",
+    complained: "דווח כספאם",
+  };
+
+  const formatDate = (d: string | null) => {
+    if (!d) return "—";
+    return new Date(d).toLocaleString("he-IL", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+  };
+
   // ─── List view ───
   return (
     <div style={{ padding: 32, maxWidth: 900, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <h1 style={{ fontSize: 32, fontWeight: 700, color: "#fff", margin: 0 }}>תבניות אימייל</h1>
         <div style={{ display: "flex", gap: 8 }}>
-          {templates.length === 0 && (
+          {tab === "templates" && templates.length === 0 && (
             <button onClick={seedDefaults} style={BTN}>
               יצירת תבניות ברירת מחדל
             </button>
           )}
-          <button
-            onClick={() => {
-              setEditing({
-                id: "",
-                slug: "",
-                name: "",
-                subject: "",
-                bodyHtml: DEFAULT_TEMPLATES[0]!.bodyHtml!,
-                variables: [],
-                isActive: true,
-                updatedAt: "",
-                createdAt: "",
-              });
-              setTestVars({});
-            }}
-            style={BTN}
-          >
-            + תבנית חדשה
-          </button>
+          {tab === "templates" && (
+            <button
+              onClick={() => {
+                setEditing({
+                  id: "",
+                  slug: "",
+                  name: "",
+                  subject: "",
+                  bodyHtml: DEFAULT_TEMPLATES[0]!.bodyHtml!,
+                  variables: [],
+                  isActive: true,
+                  updatedAt: "",
+                  createdAt: "",
+                });
+                setTestVars({});
+              }}
+              style={BTN}
+            >
+              + תבנית חדשה
+            </button>
+          )}
+          {tab === "logs" && (
+            <button onClick={fetchLogs} style={BTN_SECONDARY}>
+              רענן
+            </button>
+          )}
         </div>
       </div>
-      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: 32, fontSize: 14 }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: 24, fontSize: 14 }}>
         עצב, ערוך ושלח מיילים ממותגים עם משתנים דינמיים.
       </p>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 0, marginBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        {([["templates", "תבניות"], ["logs", "לוג שליחות"]] as const).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            style={{
+              padding: "10px 24px",
+              background: "none",
+              border: "none",
+              borderBottom: tab === key ? "2px solid #4444ff" : "2px solid transparent",
+              color: tab === key ? "#f0f0f5" : "rgba(240,240,245,0.5)",
+              fontSize: 14,
+              fontWeight: tab === key ? 600 : 400,
+              cursor: "pointer",
+              transition: "all 0.15s",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       {msg && (
         <div style={{
@@ -653,89 +739,146 @@ export default function EmailTemplatesPage() {
         </div>
       )}
 
-      {templates.length === 0 ? (
-        <div style={{
-          ...CARD,
-          textAlign: "center",
-          padding: "60px 28px",
-        }}>
-          <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 15, marginBottom: 16 }}>
-            אין תבניות עדיין
-          </p>
-          <p style={{ color: "rgba(240,240,245,0.4)", fontSize: 13, marginBottom: 24 }}>
-            לחץ על "יצירת תבניות ברירת מחדל" ליצירת 4 תבניות מוכנות: ברוכים הבאים, איפוס סיסמה, מנוי עומד להיגמר ועדכון מערכת.
-          </p>
-          <button onClick={seedDefaults} style={BTN}>
-            יצירת תבניות ברירת מחדל
-          </button>
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {templates.map((t) => (
-            <div
-              key={t.id}
-              style={{
-                ...CARD,
-                marginBottom: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                cursor: "pointer",
-                transition: "border-color 0.2s",
-              }}
-              onClick={() => openEdit(t)}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,255,0.3)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 8,
-                  background: `${SLUG_COLORS[t.slug] || "#4488FF"}15`,
-                  border: `1px solid ${SLUG_COLORS[t.slug] || "#4488FF"}30`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 18,
-                }}>
-                  {t.slug === "welcome" ? "👋" : t.slug === "password-reset" ? "🔑" : t.slug === "subscription-expiring" ? "⏰" : "📢"}
-                </div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "#f0f0f5" }}>{t.name}</div>
-                  <div style={{ fontSize: 12, color: "rgba(240,240,245,0.4)", marginTop: 2, direction: "ltr", textAlign: "right" }}>
-                    {t.slug} · {(t.variables as Variable[]).length} משתנים
+      {/* ─── Templates Tab ─── */}
+      {tab === "templates" && (
+        <>
+          {templates.length === 0 ? (
+            <div style={{
+              ...CARD,
+              textAlign: "center",
+              padding: "60px 28px",
+            }}>
+              <p style={{ color: "rgba(240,240,245,0.5)", fontSize: 15, marginBottom: 16 }}>
+                אין תבניות עדיין
+              </p>
+              <p style={{ color: "rgba(240,240,245,0.4)", fontSize: 13, marginBottom: 24 }}>
+                לחץ על &quot;יצירת תבניות ברירת מחדל&quot; ליצירת 4 תבניות מוכנות: ברוכים הבאים, איפוס סיסמה, מנוי עומד להיגמר ועדכון מערכת.
+              </p>
+              <button onClick={seedDefaults} style={BTN}>
+                יצירת תבניות ברירת מחדל
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {templates.map((t) => (
+                <div
+                  key={t.id}
+                  style={{
+                    ...CARD,
+                    marginBottom: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    cursor: "pointer",
+                    transition: "border-color 0.2s",
+                  }}
+                  onClick={() => openEdit(t)}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,255,0.3)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 8,
+                      background: `${SLUG_COLORS[t.slug] || "#4488FF"}15`,
+                      border: `1px solid ${SLUG_COLORS[t.slug] || "#4488FF"}30`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 18,
+                    }}>
+                      {t.slug === "welcome" ? "👋" : t.slug === "password-reset" ? "🔑" : t.slug === "subscription-expiring" ? "⏰" : "📢"}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: "#f0f0f5" }}>{t.name}</div>
+                      <div style={{ fontSize: 12, color: "rgba(240,240,245,0.4)", marginTop: 2, direction: "ltr", textAlign: "right" }}>
+                        {t.slug} · {(t.variables as Variable[]).length} משתנים
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{
+                      fontSize: 11,
+                      padding: "3px 10px",
+                      borderRadius: 20,
+                      background: t.isActive ? "rgba(0,200,83,0.1)" : "rgba(255,59,48,0.1)",
+                      color: t.isActive ? "#00C853" : "#ff6b6b",
+                      border: `1px solid ${t.isActive ? "rgba(0,200,83,0.2)" : "rgba(255,59,48,0.2)"}`,
+                    }}>
+                      {t.isActive ? "פעיל" : "מושבת"}
+                    </span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
+                      style={{
+                        background: "none",
+                        border: "1px solid rgba(255,59,48,0.2)",
+                        borderRadius: 4,
+                        color: "#ff6b6b",
+                        fontSize: 12,
+                        padding: "4px 10px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      מחק
+                    </button>
                   </div>
                 </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{
-                  fontSize: 11,
-                  padding: "3px 10px",
-                  borderRadius: 20,
-                  background: t.isActive ? "rgba(0,200,83,0.1)" : "rgba(255,59,48,0.1)",
-                  color: t.isActive ? "#00C853" : "#ff6b6b",
-                  border: `1px solid ${t.isActive ? "rgba(0,200,83,0.2)" : "rgba(255,59,48,0.2)"}`,
-                }}>
-                  {t.isActive ? "פעיל" : "מושבת"}
-                </span>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
-                  style={{
-                    background: "none",
-                    border: "1px solid rgba(255,59,48,0.2)",
-                    borderRadius: 4,
-                    color: "#ff6b6b",
-                    fontSize: 12,
-                    padding: "4px 10px",
-                    cursor: "pointer",
-                  }}
-                >
-                  מחק
-                </button>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
+        </>
+      )}
+
+      {/* ─── Logs Tab ─── */}
+      {tab === "logs" && (
+        <div style={{ ...CARD, padding: 0, overflow: "hidden" }}>
+          {logsLoading ? (
+            <div style={{ padding: 40, textAlign: "center", color: "rgba(240,240,245,0.5)" }}>טוען...</div>
+          ) : logs.length === 0 ? (
+            <div style={{ padding: 40, textAlign: "center", color: "rgba(240,240,245,0.5)" }}>אין שליחות עדיין</div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                    <th style={{ padding: "12px 16px", textAlign: "right", color: "rgba(240,240,245,0.5)", fontWeight: 500, fontSize: 12 }}>נמען</th>
+                    <th style={{ padding: "12px 16px", textAlign: "right", color: "rgba(240,240,245,0.5)", fontWeight: 500, fontSize: 12 }}>נושא</th>
+                    <th style={{ padding: "12px 16px", textAlign: "right", color: "rgba(240,240,245,0.5)", fontWeight: 500, fontSize: 12 }}>תבנית</th>
+                    <th style={{ padding: "12px 16px", textAlign: "center", color: "rgba(240,240,245,0.5)", fontWeight: 500, fontSize: 12 }}>סטטוס</th>
+                    <th style={{ padding: "12px 16px", textAlign: "right", color: "rgba(240,240,245,0.5)", fontWeight: 500, fontSize: 12 }}>נפתח</th>
+                    <th style={{ padding: "12px 16px", textAlign: "right", color: "rgba(240,240,245,0.5)", fontWeight: 500, fontSize: 12 }}>נשלח</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs.map((log) => {
+                    const sc = STATUS_COLORS[log.status] || STATUS_COLORS.sent;
+                    return (
+                      <tr key={log.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        <td style={{ padding: "10px 16px", color: "#f0f0f5", direction: "ltr", textAlign: "right" }}>{log.toEmail}</td>
+                        <td style={{ padding: "10px 16px", color: "rgba(240,240,245,0.7)", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{log.subject}</td>
+                        <td style={{ padding: "10px 16px", color: "rgba(240,240,245,0.5)" }}>{log.templateSlug || "—"}</td>
+                        <td style={{ padding: "10px 16px", textAlign: "center" }}>
+                          <span style={{
+                            fontSize: 11, padding: "2px 10px", borderRadius: 20,
+                            background: sc.bg, color: sc.color,
+                          }}>
+                            {STATUS_LABELS[log.status] || log.status}
+                          </span>
+                        </td>
+                        <td style={{ padding: "10px 16px", color: log.openedAt ? "#CE93D8" : "rgba(240,240,245,0.3)", fontSize: 12 }}>
+                          {formatDate(log.openedAt)}
+                        </td>
+                        <td style={{ padding: "10px 16px", color: "rgba(240,240,245,0.5)", fontSize: 12 }}>
+                          {formatDate(log.createdAt)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>

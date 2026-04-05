@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { emailTemplates } from "@/lib/schema";
+import { emailTemplates, emailLogs } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
@@ -51,6 +51,21 @@ export async function POST(req: NextRequest) {
       const err = await res.json();
       return NextResponse.json({ error: err.message || "Failed to send" }, { status: 500 });
     }
+
+    const resendData = await res.json();
+
+    // Log the email
+    try {
+      await db.insert(emailLogs).values({
+        resendId: resendData.id || null,
+        toEmail,
+        fromEmail: process.env.EMAIL_FROM || "BLDR <noreply@bldr.co.il>",
+        subject,
+        templateSlug: template.slug,
+        status: "sent",
+        metadata: { variables: vars, source: "admin_test" },
+      });
+    } catch {}
 
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {

@@ -152,6 +152,7 @@ export default function AdminUsersPage() {
 
   // User detail panel state
   const [detailUser, setDetailUser] = useState<User | null>(null);
+  const [userEmailLogs, setUserEmailLogs] = useState<Array<{ id: string; subject: string; status: string; templateSlug: string | null; openedAt: string | null; createdAt: string }>>([]);
   const [userSchools, setUserSchools] = useState<string[]>([]);
   const [userBlockedCourses, setUserBlockedCourses] = useState<string[]>([]);
   const [savingDetail, setSavingDetail] = useState(false);
@@ -715,6 +716,12 @@ export default function AdminUsersPage() {
                                       setDetailUser(user);
                                       setUserSchools([]);
                                       setUserBlockedCourses([]);
+                                      setUserEmailLogs([]);
+                                      // Load email logs
+                                      fetch(`/api/email-logs?email=${encodeURIComponent(user.email)}`)
+                                        .then(r => r.json())
+                                        .then(data => { if (Array.isArray(data)) setUserEmailLogs(data); })
+                                        .catch(() => {});
                                       // Load all access data in one call
                                       fetch(`/api/users/by-email?email=${encodeURIComponent(user.email)}`)
                                         .then(r => r.json())
@@ -905,6 +912,49 @@ export default function AdminUsersPage() {
                         {c.title}
                       </span>
                     </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Email History */}
+            {userEmailLogs.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: "rgba(240,240,245,0.8)", marginBottom: 12 }}>
+                  היסטוריית מיילים
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {userEmailLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      style={{
+                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                        padding: "8px 12px", borderRadius: 4,
+                        background: "rgba(255,255,255,0.02)",
+                        border: "1px solid rgba(255,255,255,0.04)",
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, color: "#f0f0f5" }}>{log.subject}</div>
+                        <div style={{ fontSize: 11, color: "rgba(240,240,245,0.4)", marginTop: 2 }}>
+                          {new Date(log.createdAt).toLocaleString("he-IL", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {log.openedAt && (
+                          <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: "rgba(156,39,176,0.1)", color: "#CE93D8" }}>
+                            נפתח
+                          </span>
+                        )}
+                        <span style={{
+                          fontSize: 10, padding: "2px 8px", borderRadius: 20,
+                          background: log.status === "delivered" || log.status === "opened" ? "rgba(0,200,83,0.1)" : log.status === "bounced" ? "rgba(255,59,48,0.1)" : "rgba(68,136,255,0.1)",
+                          color: log.status === "delivered" || log.status === "opened" ? "#00C853" : log.status === "bounced" ? "#ff6b6b" : "#4488FF",
+                        }}>
+                          {{ sent: "נשלח", delivered: "הגיע", opened: "נפתח", clicked: "נלחץ", bounced: "חזר", complained: "ספאם" }[log.status] || log.status}
+                        </span>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
