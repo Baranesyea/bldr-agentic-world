@@ -140,8 +140,11 @@ export default function WebhooksPage() {
           וובהוקים
         </h1>
       </div>
-      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "24px", fontSize: "14px" }}>
+      <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "12px", fontSize: "14px" }}>
         ניהול וובהוקים ומעקב אחרי שליחות.
+      </p>
+      <p style={{ color: "rgba(240,240,245,0.4)", marginBottom: "24px", fontSize: "13px" }}>
+        הוובהוק של WhatsApp לביקורות מנוהל גם מ-<a href="/admin/reviews" style={{ color: "#4488FF", textDecoration: "none" }}>עמוד הביקורות</a>.
       </p>
 
       <div style={{ display: "flex", gap: "4px", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: "24px" }}>

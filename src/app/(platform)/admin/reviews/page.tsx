@@ -298,6 +298,8 @@ export default function ReviewsAdminPage() {
             <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f0f0f5", margin: "0 0 16px" }}>וובהוק (WhatsApp)</h3>
             <p style={{ fontSize: 13, color: "rgba(240,240,245,0.4)", marginBottom: 16 }}>
               כשמשתמש מסכים לשלוח סרטון, נשלחת הודעה לוובהוק שלך (למשל Make/Zapier) ששולח הודעת WhatsApp.
+              <br />
+              אפשר לנהל את אותו וובהוק גם מ-<a href="/admin/webhooks" style={{ color: "#4488FF", textDecoration: "none" }}>עמוד הוובהוקים</a>.
             </p>
 
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
