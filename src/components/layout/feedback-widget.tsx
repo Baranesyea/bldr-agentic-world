@@ -78,14 +78,26 @@ export function FeedbackWidget() {
       audio.volume = 0.6;
       await audio.load();
 
-      // Capture the entire page at scale 1 (no flash yet!)
-      const fullCanvas = await html2canvas(document.body, {
+      // Capture only the visible viewport using onclone to shift content
+      const canvas = await html2canvas(document.body, {
         useCORS: true,
         allowTaint: true,
         scale: 1,
         logging: false,
+        width: vw,
+        height: vh,
         windowWidth: vw,
         windowHeight: vh,
+        onclone: (clonedDoc: Document) => {
+          // Constrain the clone to viewport size and shift content up by scroll amount
+          clonedDoc.documentElement.style.overflow = "hidden";
+          clonedDoc.documentElement.style.width = vw + "px";
+          clonedDoc.documentElement.style.height = vh + "px";
+          clonedDoc.body.style.position = "relative";
+          clonedDoc.body.style.top = `-${sy}px`;
+          clonedDoc.body.style.left = `-${sx}px`;
+          clonedDoc.body.style.width = `${document.body.scrollWidth}px`;
+        },
       });
 
       // NOW flash + sound (after capture is done)
@@ -101,16 +113,7 @@ export function FeedbackWidget() {
         });
       }
 
-      // Crop to the visible viewport
-      const cropCanvas = document.createElement("canvas");
-      cropCanvas.width = vw;
-      cropCanvas.height = vh;
-      const ctx = cropCanvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(fullCanvas, sx, sy, vw, vh, 0, 0, vw, vh);
-      }
-
-      const dataUrl = cropCanvas.toDataURL("image/webp", 0.75);
+      const dataUrl = canvas.toDataURL("image/webp", 0.75);
       setAttachment(dataUrl);
       setAttachmentName("screenshot.webp");
     } catch {
