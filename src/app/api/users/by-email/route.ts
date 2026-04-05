@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
       email: user.email,
       fullName: user.full_name,
       avatarUrl: user.avatar_url || null,
+      role: user.role || "member",
       schoolIds: memberships.map((m) => (m as unknown as { school_id: string }).school_id),
       blockedCourseIds: blockedCourses.map((c) => (c as unknown as { course_id: string }).course_id),
     });

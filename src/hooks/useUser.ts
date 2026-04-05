@@ -98,23 +98,37 @@ export function useUser() {
 
       if (user) {
         clearStaleUserData(user.id);
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-        if (error) console.error("Profile fetch error:", error);
-        else {
-          const profile = data as Profile;
-          // Always fetch avatar from our API (bypasses Supabase RLS)
-          if (!profile.avatar_url) {
-            try {
-              const res = await fetch(`/api/users/by-email?email=${encodeURIComponent(user.email!)}`);
-              const d = await res.json();
-              if (d.avatarUrl) profile.avatar_url = d.avatarUrl;
-            } catch {}
+
+        // Fetch profile from our API (reliable, no RLS issues)
+        let profile: Profile | null = null;
+        try {
+          const apiRes = await fetch(`/api/users/by-email?email=${encodeURIComponent(user.email!)}`);
+          const apiData = await apiRes.json();
+          if (apiData.id) {
+            profile = {
+              id: apiData.id,
+              email: apiData.email,
+              full_name: apiData.fullName || "",
+              avatar_url: apiData.avatarUrl || null,
+              bio: null,
+              role: apiData.role || "member",
+              created_at: "",
+            } as Profile;
           }
-          // Still no avatar? Try Google metadata
+        } catch {}
+
+        // Fallback to Supabase if our API failed
+        if (!profile) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+          if (data) profile = data as Profile;
+        }
+
+        if (profile) {
+          // Try Google metadata if still no avatar
           if (!profile.avatar_url) {
             const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
             if (googleAvatar) {
@@ -122,23 +136,19 @@ export function useUser() {
               supabase.from("profiles").update({ avatar_url: googleAvatar }).eq("id", user.id).then();
             }
           }
+
           setProfile(profile);
           setCachedProfile(profile);
-          // Sync to bldr_user_profile so dashboard/profile page have data immediately
+
+          // Sync to bldr_user_profile for components that read from localStorage
           try {
-            const existing = JSON.parse(localStorage.getItem("bldr_user_profile") || "{}");
-            const needsUpdate = !existing.email || existing.email !== profile.email;
-            if (needsUpdate) {
-              localStorage.setItem("bldr_user_profile", JSON.stringify({
-                ...existing,
-                name: profile.full_name || existing.name || "",
-                email: profile.email || existing.email || "",
-                avatarUrl: profile.avatar_url || existing.avatarUrl || "",
-              }));
-            } else if (!existing.avatarUrl && profile.avatar_url) {
-              existing.avatarUrl = profile.avatar_url;
-              localStorage.setItem("bldr_user_profile", JSON.stringify(existing));
-            }
+            localStorage.setItem("bldr_user_profile", JSON.stringify({
+              name: profile.full_name || "",
+              email: profile.email || "",
+              avatarUrl: profile.avatar_url || "",
+              role: profile.role || "",
+              avatarGenerated: false,
+            }));
           } catch {}
         }
       }
