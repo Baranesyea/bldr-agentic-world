@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/api", "/invite", "/watch", "/privacy", "/create-password", "/trial-expired", "/_next"];
+const PUBLIC_PATHS = ["/login", "/flogin", "/api", "/invite", "/watch", "/privacy", "/create-password", "/trial-expired", "/_next"];
 const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 const MEMBER_CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
