@@ -160,6 +160,14 @@ export default function AdminUsersPage() {
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
   const [editingNameValue, setEditingNameValue] = useState("");
 
+  // Auto-format phone numbers once
+  useEffect(() => {
+    if (localStorage.getItem("bldr_phones_formatted")) return;
+    fetch("/api/members/format-phones", { method: "POST" }).then(() => {
+      localStorage.setItem("bldr_phones_formatted", "true");
+    }).catch(() => {});
+  }, []);
+
   const saveUserName = async (user: User) => {
     const newName = editingNameValue.trim();
     if (!newName || newName === user.fullName) { setEditingNameId(null); return; }
