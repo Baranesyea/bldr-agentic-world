@@ -24,6 +24,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "הסיסמה חייבת להכיל לפחות 6 תווים" }, { status: 400 });
     }
 
+    // Check if email exists in members table
+    const existingMember = await db.select().from(members).where(eq(members.email, email.toLowerCase().trim()));
+    if (existingMember.length === 0) {
+      return NextResponse.json({ error: "המייל הזה לא נמצא במערכת. פנה למנהל לקבלת גישה." }, { status: 403 });
+    }
+
     // Calculate access expiry
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + (settings.accessDays || 7));
