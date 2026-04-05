@@ -218,8 +218,7 @@ export default function AdminUsersPage() {
 
   /* ─── Filter & Sort ─── */
   const filtered = useMemo(() => {
-    // Exclude deleted users
-    let list = users.filter((u) => !deletedEmails.has(u.email.toLowerCase()));
+    let list = [...users];
 
     if (filterTab === "paying") list = list.filter((u) => u.status === "paying");
     else if (filterTab === "trial") list = list.filter((u) => u.status === "trial");
@@ -246,7 +245,7 @@ export default function AdminUsersPage() {
     });
 
     return list;
-  }, [users, filterTab, search, sortKey, sortAsc, deletedEmails]);
+  }, [users, filterTab, search, sortKey, sortAsc]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
@@ -499,6 +498,7 @@ export default function AdminUsersPage() {
               <tbody>
                 {filtered.map((user, idx) => {
                   const isExpanded = expandedId === user.id;
+                  const isDeleted = deletedEmails.has(user.email.toLowerCase());
                   const statusKey = user.role === "tourist" ? "tourist" : user.status;
                   const statusInfo = STATUS_CONFIG[statusKey] || STATUS_CONFIG.trial;
                   const totalPaid = user.payments.reduce((s, p) => s + p.amount, 0);
@@ -511,6 +511,7 @@ export default function AdminUsersPage() {
                           borderBottom: "1px solid rgba(255,255,255,0.04)",
                           cursor: "pointer",
                           transition: "background 0.15s",
+                          opacity: isDeleted ? 0.4 : 1,
                           background: isExpanded ? "rgba(100,100,255,0.03)" : "transparent",
                         }}
                         onMouseEnter={(e) => { if (!isExpanded) e.currentTarget.style.background = "rgba(255,255,255,0.025)"; }}
