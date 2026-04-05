@@ -8,10 +8,14 @@ import { bulkSetUserCourseAccess } from "@/lib/data/user-course-access";
 import { applyMapping, validateMapping } from "@/lib/user-import";
 import type { FieldMapping } from "@/lib/user-import";
 
-async function getAdminUserId(): Promise<string> {
-  const { users } = await import("@/lib/schema");
-  const [admin] = await db.select().from(users).where(eq(users.role, "admin")).limit(1);
-  return admin?.id || "";
+async function getAnyUserId(): Promise<string | null> {
+  try {
+    const { users } = await import("@/lib/schema");
+    const [user] = await db.select({ id: users.id }).from(users).limit(1);
+    return user?.id || null;
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -48,11 +52,16 @@ export async function POST(req: NextRequest) {
     const { users, skippedRows } = applyMapping(buffer, mapping);
 
     // Create import batch record
+    const resolvedImportedBy = importedBy || await getAnyUserId();
+    if (!resolvedImportedBy) {
+      return NextResponse.json({ error: "No users found in system" }, { status: 400 });
+    }
+
     const [batch] = await db
       .insert(importBatches)
       .values({
         schoolId: schoolId || null,
-        importedBy: importedBy || (await getAdminUserId()),
+        importedBy: resolvedImportedBy,
         fileName: file.name,
         totalRows: users.length + skippedRows,
         fieldMapping: mapping,
