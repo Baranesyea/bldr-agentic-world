@@ -379,9 +379,20 @@ export function OnboardingTour() {
   }, [active, currentStep, soundEnabled, steps]);
 
   const [showBookmark, setShowBookmark] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
+  const [installStatus, setInstallStatus] = useState<"idle" | "installing" | "done">("idle");
+
+  // Capture PWA install prompt
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
 
   const startTour = () => {
-    // Stop welcome audio if playing
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     setShowWelcome(false);
     setShowBookmark(true);
@@ -395,14 +406,37 @@ export function OnboardingTour() {
     setTimeout(() => updateSpotlight(0), 1000);
   };
 
-  const handleBookmark = () => {
-    // Trigger browser bookmark dialog (Ctrl+D / Cmd+D)
-    const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
-    alert(isMac
-      ? "לחץ ⌘+D (Command+D) כדי להוסיף למועדפים"
-      : "לחץ Ctrl+D כדי להוסיף למועדפים"
-    );
-    continueAfterBookmark();
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      // Chrome/Edge — trigger native install prompt
+      setInstallStatus("installing");
+      const prompt = deferredPrompt as { prompt: () => void; userChoice: Promise<{ outcome: string }> };
+      prompt.prompt();
+      const result = await prompt.userChoice;
+      if (result.outcome === "accepted") {
+        setInstallStatus("done");
+        setTimeout(continueAfterBookmark, 1500);
+      } else {
+        setInstallStatus("idle");
+        continueAfterBookmark();
+      }
+      setDeferredPrompt(null);
+    } else {
+      // Safari or already installed — show manual instructions
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isSafariMac = /Macintosh/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
+      if (isIOS) {
+        setInstallStatus("done");
+        // Show iOS instructions inline instead of alert
+      } else if (isSafariMac) {
+        setInstallStatus("done");
+      } else {
+        // Probably already installed or unsupported
+        setInstallStatus("done");
+      }
+      setTimeout(continueAfterBookmark, 2000);
+    }
   };
 
   const skipTour = () => {
@@ -740,55 +774,70 @@ export function OnboardingTour() {
         }}>
           <SiriGlowCard borderRadius={16} borderWidth={2} glowIntensity={0.4} style={{ maxWidth: 400, width: "90%" }}>
             <div style={{ padding: "40px 32px", textAlign: "center" }}>
-              <div style={{ fontSize: 48, marginBottom: 20 }}>⭐</div>
-              <h2 style={{
-                fontSize: 22, fontWeight: 700, color: "#f0f0f5",
-                marginBottom: 12, lineHeight: 1.4,
-              }}>
-                לפני שנתחיל
-              </h2>
-              <p style={{
-                fontSize: 15, color: "rgba(240,240,245,0.7)",
-                lineHeight: 1.7, marginBottom: 32,
-              }}>
-                הוסף את העמוד הזה למועדפים, ככה תמיד יהיה לך קל לחזור לכאן
-              </p>
-              <button
-                onClick={handleBookmark}
-                style={{
-                  background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 4,
-                  padding: "13px 40px",
-                  fontSize: 16,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  boxShadow: "0 0 30px rgba(0,0,255,0.3), 0 4px 16px rgba(0,0,0,0.4)",
-                  transition: "all 0.2s",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  margin: "0 auto 16px",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-              >
-                ⭐ הוסף למועדפים
-              </button>
-              <button
-                onClick={continueAfterBookmark}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "rgba(240,240,245,0.5)",
-                  fontSize: 13,
-                  cursor: "pointer",
-                }}
-              >
-                דלג, אני אוסיף אחר כך
-              </button>
+              {installStatus === "done" ? (
+                <>
+                  <div style={{ fontSize: 48, marginBottom: 20 }}>✅</div>
+                  <h2 style={{ fontSize: 22, fontWeight: 700, color: "#f0f0f5", marginBottom: 12 }}>
+                    מעולה!
+                  </h2>
+                  <p style={{ fontSize: 15, color: "rgba(240,240,245,0.7)", lineHeight: 1.7 }}>
+                    האפליקציה נוספה בהצלחה
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 48, marginBottom: 20 }}>📲</div>
+                  <h2 style={{
+                    fontSize: 22, fontWeight: 700, color: "#f0f0f5",
+                    marginBottom: 12, lineHeight: 1.4,
+                  }}>
+                    לפני שנתחיל
+                  </h2>
+                  <p style={{
+                    fontSize: 15, color: "rgba(240,240,245,0.7)",
+                    lineHeight: 1.7, marginBottom: 32,
+                  }}>
+                    הורד את האפליקציה למחשב או לטלפון, ככה תמיד יהיה לך קל לחזור לכאן
+                  </p>
+                  <button
+                    onClick={handleInstallApp}
+                    disabled={installStatus === "installing"}
+                    style={{
+                      background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 4,
+                      padding: "13px 40px",
+                      fontSize: 16,
+                      fontWeight: 700,
+                      cursor: installStatus === "installing" ? "not-allowed" : "pointer",
+                      boxShadow: "0 0 30px rgba(0,0,255,0.3), 0 4px 16px rgba(0,0,0,0.4)",
+                      transition: "all 0.2s",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                      margin: "0 auto 16px",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                  >
+                    {installStatus === "installing" ? "מתקין..." : "📲 הורד אפליקציה"}
+                  </button>
+                  <button
+                    onClick={continueAfterBookmark}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "rgba(240,240,245,0.5)",
+                      fontSize: 13,
+                      cursor: "pointer",
+                    }}
+                  >
+                    דלג, אני אוריד אחר כך
+                  </button>
+                </>
+              )}
             </div>
           </SiriGlowCard>
         </div>,
