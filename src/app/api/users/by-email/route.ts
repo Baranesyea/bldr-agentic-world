@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   try {
     const postgres = (await import("postgres")).default;
     const sql = postgres(process.env.DATABASE_URL!);
-    const [user] = await sql`SELECT id, email, full_name, role FROM profiles WHERE email = ${email.toLowerCase().trim()}`;
+    const [user] = await sql`SELECT id, email, full_name, avatar_url, role FROM profiles WHERE email = ${email.toLowerCase().trim()}`;
     await sql.end();
     if (!user) return NextResponse.json({ error: "not found" }, { status: 404 });
 
@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
       id: user.id,
       email: user.email,
       fullName: user.full_name,
+      avatarUrl: user.avatar_url || null,
       schoolIds: memberships.map((m) => (m as unknown as { school_id: string }).school_id),
       blockedCourseIds: blockedCourses.map((c) => (c as unknown as { course_id: string }).course_id),
     });

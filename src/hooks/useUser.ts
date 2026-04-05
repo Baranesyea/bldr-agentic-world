@@ -106,15 +106,20 @@ export function useUser() {
         if (error) console.error("Profile fetch error:", error);
         else {
           const profile = data as Profile;
-          // Pull Google avatar if profile has no avatar set
-          if (!profile.avatar_url && user.user_metadata?.avatar_url) {
-            profile.avatar_url = user.user_metadata.avatar_url;
-            // Persist to DB so it's available server-side too
-            supabase
-              .from("profiles")
-              .update({ avatar_url: user.user_metadata.avatar_url })
-              .eq("id", user.id)
-              .then();
+          // Ensure avatar: try DB value, Google metadata, or server-side fetch
+          const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+          if (!profile.avatar_url) {
+            if (googleAvatar) {
+              profile.avatar_url = googleAvatar;
+              supabase.from("profiles").update({ avatar_url: googleAvatar }).eq("id", user.id).then();
+            } else {
+              // Supabase RLS may hide avatar_url — fetch via our API
+              try {
+                const res = await fetch(`/api/users/by-email?email=${encodeURIComponent(user.email!)}`);
+                const d = await res.json();
+                if (d.avatarUrl) profile.avatar_url = d.avatarUrl;
+              } catch {}
+            }
           }
           setProfile(profile);
           setCachedProfile(profile);
