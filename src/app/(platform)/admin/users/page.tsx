@@ -582,10 +582,20 @@ export default function AdminUsersPage() {
           <button
             onClick={handleBulkAssignSchool}
             disabled={!bulkSchoolId || bulkAssigning}
-            style={{ ...BTN, padding: "8px 16px", fontSize: 13, opacity: !bulkSchoolId || bulkAssigning ? 0.5 : 1 }}
+            style={{ ...BTN, padding: "8px 16px", fontSize: 13, opacity: !bulkSchoolId || bulkAssigning ? 0.5 : 1, display: "flex", alignItems: "center", gap: 8 }}
           >
-            {bulkAssigning ? "משייך..." : "שייך לבית ספר"}
+            {bulkAssigning && (
+              <span style={{
+                width: 14, height: 14, border: "2px solid rgba(255,255,255,0.3)",
+                borderTopColor: "#fff", borderRadius: "50%",
+                animation: "spin 0.6s linear infinite", display: "inline-block",
+              }} />
+            )}
+            {bulkAssigning ? `משייך ${selectedIds.size} משתמשים...` : "שייך לבית ספר"}
           </button>
+          {bulkAssigning && (
+            <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+          )}
           <button
             onClick={() => setSelectedIds(new Set())}
             style={{ ...BTN, background: "rgba(255,255,255,0.06)", padding: "8px 14px", fontSize: 13 }}

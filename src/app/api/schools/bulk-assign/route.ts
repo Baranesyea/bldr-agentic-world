@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { members, users } from "@/lib/schema";
-import { eq } from "drizzle-orm";
-import { addMemberToSchool } from "@/lib/data/schools";
+import { members, users, schoolMemberships } from "@/lib/schema";
+import { eq, inArray } from "drizzle-orm";
 
-/**
- * Bulk assign a school to multiple users by their emails.
- * Works for both users with and without a `users` table entry —
- * for those without, it updates the members.schoolId field so the
- * membership is created when they first log in.
- */
 export async function POST(req: NextRequest) {
   try {
     const { emails, schoolId, accessExpiresAt, expiryMode } = await req.json();
@@ -21,43 +14,62 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const normalizedEmails = emails.map((e: string) => e.toLowerCase().trim());
     const expiry = accessExpiresAt ? new Date(accessExpiresAt) : null;
-    let linked = 0;
-    let pending = 0;
+    const mode = expiryMode || "full_lock";
 
-    for (const email of emails) {
-      const normalizedEmail = email.toLowerCase().trim();
+    // 1. Find all users that exist in users table (batch query)
+    const existingUsers = normalizedEmails.length > 0
+      ? await db
+          .select({ id: users.id, email: users.email })
+          .from(users)
+          .where(inArray(users.email, normalizedEmails))
+      : [];
 
-      // Try to find user in users table (has logged in)
-      const [userRow] = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.email, normalizedEmail));
+    const userEmailSet = new Set(existingUsers.map((u) => u.email.toLowerCase()));
 
-      if (userRow) {
-        await addMemberToSchool({
-          userId: userRow.id,
-          schoolId,
-          accessExpiresAt: expiry,
-          expiryMode: expiryMode || "full_lock",
-        });
-        linked++;
-      } else {
-        // User hasn't logged in yet — update members table so it's picked up on first login
+    // 2. Bulk upsert school memberships for existing users
+    if (existingUsers.length > 0) {
+      for (const u of existingUsers) {
         await db
-          .update(members)
-          .set({
+          .insert(schoolMemberships)
+          .values({
+            userId: u.id,
             schoolId,
+            role: "student",
             accessExpiresAt: expiry,
-            expiryMode: expiryMode || "full_lock",
-            updatedAt: new Date(),
+            expiryMode: mode,
           })
-          .where(eq(members.email, normalizedEmail));
-        pending++;
+          .onConflictDoUpdate({
+            target: [schoolMemberships.userId, schoolMemberships.schoolId],
+            set: {
+              role: "student",
+              accessExpiresAt: expiry,
+              expiryMode: mode,
+            },
+          });
       }
     }
 
-    return NextResponse.json({ linked, pending, total: emails.length });
+    // 3. Bulk update members table for those without users entry
+    const pendingEmails = normalizedEmails.filter((e: string) => !userEmailSet.has(e));
+    if (pendingEmails.length > 0) {
+      await db
+        .update(members)
+        .set({
+          schoolId,
+          accessExpiresAt: expiry,
+          expiryMode: mode as "full_lock" | "partial_lock",
+          updatedAt: new Date(),
+        })
+        .where(inArray(members.email, pendingEmails));
+    }
+
+    return NextResponse.json({
+      linked: existingUsers.length,
+      pending: pendingEmails.length,
+      total: normalizedEmails.length,
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
