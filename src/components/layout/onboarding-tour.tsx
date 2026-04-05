@@ -409,20 +409,20 @@ export function OnboardingTour() {
   const isIOS = typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isSafari = typeof navigator !== "undefined" && /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
 
+  const canInstall = () => !!deferredPromptRef.current;
+
   const handleInstallApp = async () => {
     if (deferredPromptRef.current) {
-      // Chrome/Edge — trigger native install prompt
       setInstallStatus("installing");
       const prompt = deferredPromptRef.current as unknown as { prompt: () => void; userChoice: Promise<{ outcome: string }> };
       prompt.prompt();
       const result = await prompt.userChoice;
-      setInstallStatus("done");
+      if (result.outcome === "accepted") {
+        setInstallStatus("done");
+      } else {
+        continueAfterBookmark();
+      }
       deferredPromptRef.current = null;
-      setTimeout(continueAfterBookmark, 1500);
-    } else {
-      // No prompt available — skip gracefully
-      setInstallStatus("done");
-      setTimeout(continueAfterBookmark, 1500);
     }
   };
 
@@ -766,11 +766,29 @@ export function OnboardingTour() {
                 <>
                   <div style={{ fontSize: 48, marginBottom: 20 }}>✅</div>
                   <h2 style={{ fontSize: 22, fontWeight: 700, color: "#f0f0f5", marginBottom: 12 }}>
-                    מעולה!
+                    האפליקציה הותקנה!
                   </h2>
-                  <p style={{ fontSize: 15, color: "rgba(240,240,245,0.7)", lineHeight: 1.7 }}>
-                    האפליקציה נוספה בהצלחה
+                  <p style={{ fontSize: 15, color: "rgba(240,240,245,0.7)", lineHeight: 1.7, marginBottom: 24 }}>
+                    תמצא אותה ב-Dock או בשולחן העבודה
                   </p>
+                  <button
+                    onClick={continueAfterBookmark}
+                    style={{
+                      background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 4,
+                      padding: "13px 40px",
+                      fontSize: 16,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      boxShadow: "0 0 30px rgba(0,0,255,0.3), 0 4px 16px rgba(0,0,0,0.4)",
+                      margin: "0 auto",
+                      display: "block",
+                    }}
+                  >
+                    המשך לסיור
+                  </button>
                 </>
               ) : (
                 <>
@@ -781,17 +799,43 @@ export function OnboardingTour() {
                   }}>
                     לפני שנתחיל
                   </h2>
-                  <p style={{
-                    fontSize: 15, color: "rgba(240,240,245,0.7)",
-                    lineHeight: 1.7, marginBottom: 32,
-                  }}>
-                    {isIOS
-                      ? "הוסף את האפליקציה למסך הבית — לחץ על כפתור השיתוף (⬆) ואז ״הוסף למסך הבית״"
-                      : isSafari
-                        ? "הוסף את האפליקציה ל-Dock — לחץ על File ← Add to Dock"
-                        : "הורד את האפליקציה למחשב או לטלפון, ככה תמיד יהיה לך קל לחזור לכאן"}
-                  </p>
-                  {!isIOS && !isSafari && (
+                  {isIOS ? (
+                    <>
+                      <p style={{ fontSize: 15, color: "rgba(240,240,245,0.7)", lineHeight: 1.7, marginBottom: 24 }}>
+                        הוסף את האפליקציה למסך הבית שלך:
+                      </p>
+                      <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "16px 20px", marginBottom: 24, textAlign: "right" }}>
+                        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.8)", margin: "0 0 8px", lineHeight: 1.6 }}>1. לחץ על כפתור השיתוף ⬆ למטה</p>
+                        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.8)", margin: 0, lineHeight: 1.6 }}>2. בחר ״הוסף למסך הבית״</p>
+                      </div>
+                    </>
+                  ) : isSafari ? (
+                    <>
+                      <p style={{ fontSize: 15, color: "rgba(240,240,245,0.7)", lineHeight: 1.7, marginBottom: 24 }}>
+                        הוסף את האפליקציה ל-Dock שלך:
+                      </p>
+                      <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "16px 20px", marginBottom: 24, textAlign: "right" }}>
+                        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.8)", margin: "0 0 8px", lineHeight: 1.6 }}>1. לחץ על <strong>File</strong> בתפריט למעלה</p>
+                        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.8)", margin: 0, lineHeight: 1.6 }}>2. בחר <strong>Add to Dock</strong></p>
+                      </div>
+                    </>
+                  ) : canInstall() ? (
+                    <p style={{ fontSize: 15, color: "rgba(240,240,245,0.7)", lineHeight: 1.7, marginBottom: 32 }}>
+                      הורד את האפליקציה למחשב או לטלפון, ככה תמיד יהיה לך קל לחזור לכאן
+                    </p>
+                  ) : (
+                    <>
+                      <p style={{ fontSize: 15, color: "rgba(240,240,245,0.7)", lineHeight: 1.7, marginBottom: 24 }}>
+                        הוסף קיצור דרך לאפליקציה:
+                      </p>
+                      <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "16px 20px", marginBottom: 24, textAlign: "right" }}>
+                        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.8)", margin: "0 0 8px", lineHeight: 1.6 }}>1. לחץ על ⋮ (שלוש הנקודות) בפינה הימנית של הדפדפן</p>
+                        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.8)", margin: "0 0 8px", lineHeight: 1.6 }}>2. בחר <strong>״שמור ושתף״</strong> או <strong>״Install BLDR״</strong></p>
+                        <p style={{ fontSize: 14, color: "rgba(240,240,245,0.8)", margin: 0, lineHeight: 1.6 }}>3. לחץ <strong>התקן</strong></p>
+                      </div>
+                    </>
+                  )}
+                  {canInstall() && (
                     <button
                       onClick={handleInstallApp}
                       disabled={installStatus === "installing"}
@@ -821,14 +865,20 @@ export function OnboardingTour() {
                   <button
                     onClick={continueAfterBookmark}
                     style={{
-                      background: "none",
+                      background: canInstall() ? "none" : "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
                       border: "none",
-                      color: "rgba(240,240,245,0.5)",
-                      fontSize: 13,
+                      color: canInstall() ? "rgba(240,240,245,0.5)" : "#fff",
+                      fontSize: canInstall() ? 13 : 16,
+                      fontWeight: canInstall() ? 400 : 700,
                       cursor: "pointer",
+                      padding: canInstall() ? "0" : "13px 40px",
+                      borderRadius: 4,
+                      boxShadow: canInstall() ? "none" : "0 0 30px rgba(0,0,255,0.3)",
+                      display: "block",
+                      margin: "0 auto",
                     }}
                   >
-                    {isIOS || isSafari ? "המשך לסיור" : "דלג, אני אוריד אחר כך"}
+                    {canInstall() ? "דלג, אני אוריד אחר כך" : "המשך לסיור"}
                   </button>
                 </>
               )}
