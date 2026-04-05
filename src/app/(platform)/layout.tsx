@@ -137,7 +137,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
               </svg>
             )}
           </button>
-          <img src="/logo.png" alt="BLDR" style={{ height: 38, objectFit: "contain" }} />
+          <img src="/logo.png" alt="BLDR" style={{ height: 56, objectFit: "contain" }} />
           <div style={{ width: 40 }} /> {/* spacer for centering logo */}
         </div>
       )}

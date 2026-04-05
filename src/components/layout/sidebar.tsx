@@ -207,7 +207,17 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
         } else {
           try {
             const s = JSON.parse(localStorage.getItem("bldr_whatsapp_settings") || "{}");
-            if (s.url) window.open(s.url, "_blank");
+            if (s.url) {
+              window.open(s.url, "_blank");
+            } else {
+              // Fallback: fetch from API
+              fetch("/api/whatsapp-settings").then(r => r.json()).then(data => {
+                if (data.url) {
+                  localStorage.setItem("bldr_whatsapp_settings", JSON.stringify(data));
+                  window.open(data.url, "_blank");
+                }
+              }).catch(() => {});
+            }
           } catch {}
         }
       };
@@ -298,6 +308,10 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       }
       .tour-btn-highlight {
         animation: tourBtnPulse 1.5s ease-in-out infinite !important;
+      }
+      @media (max-width: 768px) {
+        [data-nav="#tour"] { display: none !important; }
+        .sidebar-notif-popup { right: 16px !important; left: 16px !important; width: auto !important; bottom: auto !important; top: 60px !important; }
       }
     `}</style>
     {loggingOut && <LoadingSpinner text="מתנתק..." />}
@@ -487,6 +501,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
             `}</style>
             <div onClick={() => setShowNotifications(false)} style={{ position: "fixed", inset: 0, zIndex: 98 }} />
             <div
+              className="sidebar-notif-popup"
               onMouseLeave={() => {
                 notifLeaveTimerRef.current = setTimeout(() => setShowNotifications(false), 500);
               }}

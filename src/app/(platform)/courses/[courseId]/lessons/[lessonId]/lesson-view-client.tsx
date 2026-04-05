@@ -432,7 +432,10 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           .lesson-layout { flex-direction: column !important; }
           .lesson-sidebar { display: none !important; }
           .lesson-main { padding: 12px !important; order: 1 !important; }
+          .lesson-main > div { max-width: 100% !important; overflow-x: hidden !important; }
           .lesson-notes-sidebar { width: 100% !important; min-width: 100% !important; height: auto !important; max-height: none !important; position: relative !important; border-right: none !important; border-top: 1px solid rgba(255,255,255,0.06) !important; order: 2 !important; }
+          .lesson-notes-sidebar > button { display: none !important; }
+          .lesson-notes-sidebar { overflow-y: visible !important; }
         }
       `}</style>
 

@@ -260,7 +260,20 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
   };
 
   return (
-    <div style={{ padding: "32px", maxWidth: "1400px", margin: "0 auto" }}>
+    <div className="calendar-page" style={{ padding: "32px", maxWidth: "1400px", margin: "0 auto" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .calendar-page { padding: 12px !important; }
+          .calendar-page h1 { font-size: 22px !important; }
+          .cal-events-sidebar { display: none !important; }
+          .cal-grid-7 { grid-template-columns: repeat(7, 1fr) !important; font-size: 11px !important; }
+          .cal-grid-7 > div { min-height: 48px !important; padding: 2px !important; }
+          .cal-grid-7 > div span { width: 22px !important; height: 22px !important; font-size: 11px !important; }
+          .cal-event-dot { font-size: 9px !important; padding: 1px 3px !important; }
+          .cal-week-grid { display: none !important; }
+          .cal-view-btns { display: none !important; }
+        }
+      `}</style>
       {showPricing && <PricingPopup onClose={() => setShowPricing(false)} />}
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px", flexWrap: "wrap", gap: "12px" }}>
@@ -286,11 +299,11 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
           </span>
           <button onClick={navigatePrev} style={navBtn}><ChevronLeftIcon size={18} /></button>
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div className="cal-view-btns" style={{ display: "flex", gap: "8px" }}>
           {viewMode === "month" && (month !== now.getMonth() || year !== now.getFullYear()) && (
             <button onClick={goToday} style={btnSecondary}>היום</button>
           )}
-          {(["month", "week", "day"] as const).map(mode => (
+          {(["month", "week", "day"] as const).map((mode: "month" | "week" | "day") => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
@@ -308,7 +321,7 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
       {/* Main layout: sidebar + calendar */}
       <div style={{ display: "flex", gap: "20px", direction: "rtl", alignItems: "stretch" }}>
         {/* Sidebar - upcoming events */}
-        <div style={{ width: "240px", flexShrink: 0, paddingTop: 0 }}>
+        <div className="cal-events-sidebar" style={{ width: "240px", flexShrink: 0, paddingTop: 0 }}>
           <h3 style={{ fontSize: "13px", fontWeight: 600, color: "rgba(240,240,245,0.9)", marginBottom: "12px", marginTop: 0, padding: "10px 4px", lineHeight: "1", boxSizing: "border-box", textAlign: "center" }}>אירועים קרובים</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {upcomingEvents.length === 0 && (
@@ -347,14 +360,14 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
           {/* MONTH VIEW */}
           {viewMode === "month" && (
             <>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1px", marginBottom: "1px" }}>
+              <div className="cal-grid-7" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1px", marginBottom: "1px" }}>
                 {HEBREW_DAY_NAMES.map(name => (
                   <div key={name} style={{ padding: "10px 4px", textAlign: "center", fontSize: "13px", fontWeight: 600, color: "rgba(240,240,245,0.9)" }}>
                     {name}
                   </div>
                 ))}
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1px", background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden" }}>
+              <div className="cal-grid-7" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "1px", background: "rgba(255,255,255,0.06)", borderRadius: "4px", overflow: "hidden" }}>
                 {cells.map((cell, i) => {
                   const isToday = cell.dateStr === today;
                   const dayEvents = eventsForDate(cell.dateStr);

@@ -128,7 +128,13 @@ export default function QAPageClient({
   };
 
   return (
-    <div style={{ padding: "32px", maxWidth: "900px", margin: "0 auto" }}>
+    <div className="qa-page" style={{ padding: "32px", maxWidth: "900px", margin: "0 auto" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .qa-page { padding: 16px !important; overflow-x: hidden !important; }
+          .qa-page input, .qa-page select { min-width: 0 !important; width: 100% !important; }
+        }
+      `}</style>
       <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#f0f0f5", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
         <QuestionIcon size={24} /> שאלות ותשובות
       </h1>
