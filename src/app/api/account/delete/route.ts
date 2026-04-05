@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { db } from "@/lib/db";
 import { members } from "@/lib/schema";
 import { eq } from "drizzle-orm";
@@ -31,6 +32,23 @@ export async function POST(req: NextRequest) {
     await sql`UPDATE profiles SET bio = 'DELETED', full_name = '[deleted]' WHERE email = ${email}`;
 
     await sql.end();
+
+    // Invalidate all sessions for this user via Supabase Admin API
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (serviceRoleKey) {
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
+
+      // Find the auth user by email and sign them out globally
+      const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
+      const authUser = users.find((u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase().trim());
+      if (authUser) {
+        await supabaseAdmin.auth.admin.signOut(authUser.id, "global");
+      }
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {

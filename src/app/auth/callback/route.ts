@@ -43,6 +43,21 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(loginUrl.toString());
       }
 
+      // Track Google login event
+      try {
+        const { db } = await import("@/lib/db");
+        const { analyticsEvents } = await import("@/lib/schema");
+        await db.insert(analyticsEvents).values({
+          userEmail: data.session.user.email,
+          eventType: "login",
+          eventData: { method: "google" },
+          deviceType: null,
+          userAgent: request.headers.get("user-agent") || "",
+          sessionId: null,
+          pageUrl: "/auth/callback",
+        });
+      } catch {}
+
       // Sync Google avatar to profiles table if not already set
       const user = data.session.user;
       const googleAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;

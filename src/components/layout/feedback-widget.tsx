@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 
 const categories = ["באג", "הצעה לשיפור", "בעיה כללית", "אחר"];
 
@@ -36,6 +36,25 @@ function MoodFace({ type, selected, onClick }: { type: number; selected: boolean
   );
 }
 
+// Camera shutter sound (tiny base64 WAV click)
+function playShutterSound() {
+  try {
+    const ctx = new AudioContext();
+    const duration = 0.08;
+    const buffer = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / ctx.sampleRate;
+      data[i] = Math.exp(-t * 80) * (Math.random() * 2 - 1) * 0.3;
+    }
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start();
+    source.onended = () => ctx.close();
+  } catch {}
+}
+
 export function FeedbackWidget() {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState("הצעה לשיפור");
@@ -46,38 +65,75 @@ export function FeedbackWidget() {
   const [attachment, setAttachment] = useState<string | null>(null);
   const [attachmentName, setAttachmentName] = useState("");
   const [capturing, setCapturing] = useState(false);
+  const [formVisible, setFormVisible] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const widgetRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
+  const flashRef = useRef<HTMLDivElement>(null);
 
-  const captureScreenshot = async () => {
+  const captureScreenshot = useCallback(async () => {
     setCapturing(true);
-    try {
-      // Hide the feedback widget and button before capturing
-      if (widgetRef.current) widgetRef.current.style.display = "none";
-      if (btnRef.current) btnRef.current.style.display = "none";
-      // Hide the overlay too
-      const overlay = document.querySelector("[data-feedback-overlay]") as HTMLElement;
-      if (overlay) overlay.style.display = "none";
 
+    // Step 1: Fade out the form and button
+    setFormVisible(false);
+    // Hide overlay
+    const overlay = document.querySelector("[data-feedback-overlay]") as HTMLElement;
+    if (overlay) overlay.style.opacity = "0";
+
+    // Wait for fade out
+    await new Promise(r => setTimeout(r, 300));
+
+    // Fully hide elements so they don't appear in capture
+    if (widgetRef.current) widgetRef.current.style.display = "none";
+    if (btnRef.current) btnRef.current.style.display = "none";
+    if (overlay) overlay.style.display = "none";
+
+    // Small delay for paint
+    await new Promise(r => setTimeout(r, 50));
+
+    try {
       const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(document.body, {
+
+      // Capture the full document
+      const fullCanvas = await html2canvas(document.documentElement, {
         useCORS: true,
         allowTaint: true,
-        scale: 0.5,
+        scale: 1,
         logging: false,
       });
 
-      // Restore visibility
-      if (widgetRef.current) widgetRef.current.style.display = "";
-      if (btnRef.current) btnRef.current.style.display = "";
-      if (overlay) overlay.style.display = "";
-      const dataUrl = canvas.toDataURL("image/png", 0.7);
+      // Crop to only the visible viewport area
+      const cropX = window.scrollX;
+      const cropY = window.scrollY;
+      const cropW = window.innerWidth;
+      const cropH = window.innerHeight;
+
+      const croppedCanvas = document.createElement("canvas");
+      croppedCanvas.width = cropW;
+      croppedCanvas.height = cropH;
+      const ctx = croppedCanvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(fullCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+      }
+
+      // Step 2: Flash effect + sound
+      playShutterSound();
+
+      // Show flash overlay
+      if (flashRef.current) {
+        flashRef.current.style.opacity = "1";
+        setTimeout(() => {
+          if (flashRef.current) flashRef.current.style.opacity = "0";
+        }, 100);
+      }
+
+      // Convert to webp
+      const dataUrl = croppedCanvas.toDataURL("image/webp", 0.75);
       setAttachment(dataUrl);
-      setAttachmentName("screenshot.png");
+      setAttachmentName("screenshot.webp");
     } catch {
-      // Fallback if html2canvas not available
+      // Fallback
       try {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
@@ -90,12 +146,24 @@ export function FeedbackWidget() {
           ctx.font = "16px sans-serif";
           ctx.fillText("צילום מסך לא זמין - נא צרף תמונה ידנית", 20, 40);
         }
-        setAttachment(canvas.toDataURL("image/png"));
-        setAttachmentName("screenshot-fallback.png");
+        setAttachment(canvas.toDataURL("image/webp", 0.75));
+        setAttachmentName("screenshot-fallback.webp");
       } catch {}
     }
+
+    // Step 3: Restore elements
+    if (widgetRef.current) widgetRef.current.style.display = "";
+    if (btnRef.current) btnRef.current.style.display = "";
+    if (overlay) {
+      overlay.style.display = "";
+      overlay.style.opacity = "";
+    }
+
+    // Wait for flash to finish, then fade form back in
+    await new Promise(r => setTimeout(r, 250));
+    setFormVisible(true);
     setCapturing(false);
-  };
+  }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -152,6 +220,20 @@ export function FeedbackWidget() {
 
   return (
     <>
+      {/* Flash overlay for screenshot effect */}
+      <div
+        ref={flashRef}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 9999,
+          background: "white",
+          opacity: 0,
+          pointerEvents: "none",
+          transition: "opacity 0.1s ease-out",
+        }}
+      />
+
       {/* Floating button */}
       <button
         ref={btnRef}
@@ -176,7 +258,9 @@ export function FeedbackWidget() {
           boxShadow: hover
             ? "0 0 20px rgba(0,0,255,0.4), 0 0 40px rgba(0,0,255,0.15)"
             : "0 0 12px rgba(0,0,255,0.15)",
-          transition: "box-shadow 0.3s",
+          transition: "box-shadow 0.3s, opacity 0.25s, transform 0.25s",
+          opacity: formVisible ? 1 : 0,
+          transform: formVisible ? "scale(1)" : "scale(0.8)",
         }}
       >
         <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="rgba(200,200,255,0.85)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -189,7 +273,11 @@ export function FeedbackWidget() {
         <div
           data-feedback-overlay=""
           onClick={() => setOpen(false)}
-          style={{ position: "fixed", inset: 0, zIndex: 51, background: "rgba(0,0,0,0.3)" }}
+          style={{
+            position: "fixed", inset: 0, zIndex: 51,
+            background: "rgba(0,0,0,0.3)",
+            transition: "opacity 0.25s",
+          }}
         />
       )}
 
@@ -209,9 +297,9 @@ export function FeedbackWidget() {
           border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: 6,
           padding: 24,
-          transform: open ? "translateY(0) scale(1)" : "translateY(20px) scale(0.95)",
-          opacity: open ? 1 : 0,
-          pointerEvents: open ? "auto" : "none",
+          transform: open && formVisible ? "translateY(0) scale(1)" : "translateY(20px) scale(0.95)",
+          opacity: open && formVisible ? 1 : 0,
+          pointerEvents: open && formVisible ? "auto" : "none",
           transition: "transform 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.25s",
           direction: "rtl",
         }}

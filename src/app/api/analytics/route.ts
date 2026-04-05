@@ -71,9 +71,13 @@ export async function GET(request: NextRequest) {
         .orderBy(desc(analyticsEvents.createdAt))
         .limit(1000);
 
-      // Aggregate stats
-      const loginCount = events.filter(e => e.eventType === "login").length;
-      const lastLogin = events.find(e => e.eventType === "login")?.createdAt;
+      // Aggregate stats — count both "login" and "session_start" as visits
+      const visitEvents = events.filter(e => e.eventType === "login" || e.eventType === "session_start");
+      const loginCount = new Set(visitEvents.map(e => {
+        // Deduplicate by session: if same sessionId, count once
+        return e.sessionId || e.createdAt?.toString();
+      })).size;
+      const lastLogin = visitEvents[0]?.createdAt;
       const devices = [...new Set(events.map(e => e.deviceType).filter(Boolean))];
       const videoProgressEvents = events.filter(e => e.eventType === "video_progress");
       const totalVideoSeconds = videoProgressEvents.reduce((sum, e) => {
@@ -125,6 +129,28 @@ export async function GET(request: NextRequest) {
           totalMinutes: Math.round(c.totalSeconds / 60),
         })),
       });
+    }
+
+    // Session timeline — all events for a specific session
+    const sessionId = searchParams.get("sessionId");
+    if (view === "session" && sessionId) {
+      const sessionEvents = await db
+        .select()
+        .from(analyticsEvents)
+        .where(eq(analyticsEvents.sessionId, sessionId))
+        .orderBy(analyticsEvents.createdAt)
+        .limit(500);
+
+      const timeline = sessionEvents.map(e => ({
+        id: e.id,
+        type: e.eventType,
+        data: e.eventData,
+        page: e.pageUrl,
+        device: e.deviceType,
+        time: e.createdAt,
+      }));
+
+      return NextResponse.json({ view: "session", sessionId, timeline });
     }
 
     if (view === "users") {
