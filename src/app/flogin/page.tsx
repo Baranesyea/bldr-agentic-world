@@ -22,6 +22,11 @@ export default function FreeLoginPage() {
   const [loading, setLoading] = useState(false);
   const [showSpinner, setShowSpinner] = useState(true);
   const [pageEnabled, setPageEnabled] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth <= 768);
+  }, []);
 
   useEffect(() => {
     fetch("/api/flogin/settings")
@@ -236,18 +241,20 @@ export default function FreeLoginPage() {
           </div>
         </div>
 
-        {/* LEFT HALF — Spline 3D Robot */}
-        <div className="login-hero-left" style={{ flex: 1, position: "relative", overflow: "hidden", background: "#050510", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <GradientDots duration={20} colorCycleDuration={8} dotSize={6} spacing={12} backgroundColor="#050510" style={{ zIndex: 0 }} />
-          <div style={{ position: "absolute", inset: 0, zIndex: 1, animation: "robotFadeIn 2s ease-out forwards", opacity: 0 }}>
-            <SplineScene scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode" className="w-full h-full" />
+        {/* LEFT HALF — Spline 3D Robot (desktop only) */}
+        {!isMobile && (
+          <div className="login-hero-left" style={{ flex: 1, position: "relative", overflow: "hidden", background: "#050510", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <GradientDots duration={20} colorCycleDuration={8} dotSize={6} spacing={12} backgroundColor="#050510" style={{ zIndex: 0 }} />
+            <div style={{ position: "absolute", inset: 0, zIndex: 1, animation: "robotFadeIn 2s ease-out forwards", opacity: 0 }}>
+              <SplineScene scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode" className="w-full h-full" />
+            </div>
+            <div style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
+              <ParticleTextEffect words={["Welcome to", "Agentic World", "AI Agents", "Agentic Workflows", "Agentic Marketing"]} style={{ position: "absolute", inset: 0, opacity: 0.6 }} />
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "40%", background: "linear-gradient(to bottom, transparent 0%, #050510 100%)" }} />
+            </div>
+            <Spotlight className="z-10" size={400} />
           </div>
-          <div style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
-            <ParticleTextEffect words={["Welcome to", "Agentic World", "AI Agents", "Agentic Workflows", "Agentic Marketing"]} style={{ position: "absolute", inset: 0, opacity: 0.6 }} />
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "40%", background: "linear-gradient(to bottom, transparent 0%, #050510 100%)" }} />
-          </div>
-          <Spotlight className="z-10" size={400} />
-        </div>
+        )}
       </div>
 
       <style>{`

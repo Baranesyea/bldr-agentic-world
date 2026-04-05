@@ -22,8 +22,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [fullName, setFullName] = useState("");
   const [showSpinner, setShowSpinner] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   const supabase = createClient();
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth <= 768);
+  }, []);
 
   // Check for error from Google OAuth redirect
   useEffect(() => {
@@ -547,62 +552,56 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* LEFT HALF — Spline 3D Robot */}
-        <div
-          className="login-hero-left"
-          style={{
-            flex: 1,
-            position: "relative",
-            overflow: "hidden",
-            background: "#050510",
-            minHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {/* Layer 0: Gradient dots */}
-          <GradientDots
-            duration={20}
-            colorCycleDuration={8}
-            dotSize={6}
-            spacing={12}
-            backgroundColor="#050510"
-            style={{ zIndex: 0 }}
-          />
-
-          {/* Layer 1: Spline 3D Robot with fade-in */}
-          <div style={{
-            position: "absolute", inset: 0, zIndex: 1,
-            animation: "robotFadeIn 2s ease-out forwards",
-            opacity: 0,
-          }}>
-            <SplineScene
-              scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-              className="w-full h-full"
+        {/* LEFT HALF — Spline 3D Robot (desktop only) */}
+        {!isMobile && (
+          <div
+            className="login-hero-left"
+            style={{
+              flex: 1,
+              position: "relative",
+              overflow: "hidden",
+              background: "#050510",
+              minHeight: "100vh",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <GradientDots
+              duration={20}
+              colorCycleDuration={8}
+              dotSize={6}
+              spacing={12}
+              backgroundColor="#050510"
+              style={{ zIndex: 0 }}
             />
-          </div>
-
-          {/* Layer 2: Particle text — IN FRONT of robot */}
-          <div style={{
-            position: "absolute", inset: 0,
-            zIndex: 3, pointerEvents: "none",
-          }}>
-            <ParticleTextEffect
-              words={["Welcome to", "Agentic World", "AI Agents", "Agentic Workflows", "Agentic Marketing"]}
-              style={{ position: "absolute", inset: 0, opacity: 0.6 }}
-            />
-            {/* Bottom fade */}
             <div style={{
-              position: "absolute", bottom: 0, left: 0, right: 0, height: "40%",
-              background: "linear-gradient(to bottom, transparent 0%, #050510 100%)",
-            }} />
+              position: "absolute", inset: 0, zIndex: 1,
+              animation: "robotFadeIn 2s ease-out forwards",
+              opacity: 0,
+            }}>
+              <SplineScene
+                scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+                className="w-full h-full"
+              />
+            </div>
+            <div style={{
+              position: "absolute", inset: 0,
+              zIndex: 3, pointerEvents: "none",
+            }}>
+              <ParticleTextEffect
+                words={["Welcome to", "Agentic World", "AI Agents", "Agentic Workflows", "Agentic Marketing"]}
+                style={{ position: "absolute", inset: 0, opacity: 0.6 }}
+              />
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0, height: "40%",
+                background: "linear-gradient(to bottom, transparent 0%, #050510 100%)",
+              }} />
+            </div>
+            <Spotlight className="z-10" size={400} />
           </div>
-
-          {/* Layer 3: Spotlight */}
-          <Spotlight className="z-10" size={400} />
-        </div>
+        )}
       </div>
 
       <style>{`
