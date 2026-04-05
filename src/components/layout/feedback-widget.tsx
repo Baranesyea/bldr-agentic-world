@@ -94,6 +94,15 @@ export function FeedbackWidget() {
     setCapturing(true);
 
     try {
+      // Hide feedback UI before capture
+      if (widgetRef.current) widgetRef.current.style.opacity = "0";
+      if (btnRef.current) btnRef.current.style.opacity = "0";
+      const overlay = document.querySelector("[data-feedback-overlay]") as HTMLElement;
+      if (overlay) overlay.style.opacity = "0";
+
+      // Wait for paint
+      await new Promise(r => setTimeout(r, 100));
+
       // Use Screen Capture API — captures actual pixels from the screen
       const mediaStream = await navigator.mediaDevices.getDisplayMedia({
         video: { displaySurface: "browser" } as MediaTrackConstraints,
@@ -149,8 +158,13 @@ export function FeedbackWidget() {
       setAttachmentName("screenshot.webp");
     } catch {
       // User denied permission or API not available — silent fail
-      // They can still attach a file manually
     }
+
+    // Restore UI
+    if (widgetRef.current) widgetRef.current.style.opacity = "";
+    if (btnRef.current) btnRef.current.style.opacity = "";
+    const overlayEl = document.querySelector("[data-feedback-overlay]") as HTMLElement;
+    if (overlayEl) overlayEl.style.opacity = "";
 
     setCapturing(false);
   }, []);
