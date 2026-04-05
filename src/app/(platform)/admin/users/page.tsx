@@ -372,9 +372,14 @@ export default function AdminUsersPage() {
             ניהול כל המשתמשים — מנויים, ניסיון ומנהלים
           </p>
         </div>
-        <button style={BTN} onClick={() => setShowAddModal(true)}>
-          + הוסף מנוי
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button style={{ ...BTN, background: "rgba(255,255,255,0.06)" }} onClick={() => window.location.href = "/admin/import-users"}>
+            ייבוא משתמשים
+          </button>
+          <button style={BTN} onClick={() => setShowAddModal(true)}>
+            + הוסף מנוי
+          </button>
+        </div>
       </div>
 
       {/* Stats Bar */}
