@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface EntryVideoSettings {
   enabled: boolean;
@@ -12,17 +12,17 @@ interface EntryVideoSettings {
 export function EntryVideo() {
   const [show, setShow] = useState(false);
   const [vimeoId, setVimeoId] = useState<string | null>(null);
+  const triggeredRef = useRef(false);
 
-  const triggerVideo = useCallback((s: EntryVideoSettings) => {
-    const id = s.vimeoUrl.match(/vimeo\.com\/(\d+)/)?.[1];
-    if (!id) return;
-    setVimeoId(id);
-
+  const triggerVideo = useCallback((id: string, delaySec: number) => {
+    if (triggeredRef.current) return;
     const shown = sessionStorage.getItem("bldr_entry_video_shown");
     if (shown) return;
+    triggeredRef.current = true;
 
-    const delay = (s.delaySec || 0) * 1000;
+    const delay = (delaySec || 0) * 1000;
     setTimeout(() => {
+      setVimeoId(id);
       setShow(true);
       sessionStorage.setItem("bldr_entry_video_shown", "true");
     }, delay);
@@ -36,30 +36,30 @@ export function EntryVideo() {
 
         const id = data.vimeoUrl.match(/vimeo\.com\/(\d+)/)?.[1];
         if (!id) return;
-        setVimeoId(id);
 
-        const isFirstVisit = !localStorage.getItem("bldr_onboarding_done");
+        const tourDone = localStorage.getItem("bldr_onboarding_done") === "true";
 
-        if (isFirstVisit && data.showAfterTour) {
-          // Listen for both tour complete AND tour skip
-          const handler = () => {
-            setTimeout(() => triggerVideo(data), 2000);
+        if (!tourDone && data.showAfterTour) {
+          // First visit with tour — wait for tour to finish or be skipped
+          const onTourDone = () => {
+            triggerVideo(id, data.delaySec);
           };
-          window.addEventListener("bldr:tour-complete", handler);
-          // Also listen for tour-active becoming false (skip)
-          const skipHandler = (e: Event) => {
-            const detail = (e as CustomEvent).detail;
-            if (detail === false) {
-              setTimeout(() => triggerVideo(data), 3000);
-            }
+          window.addEventListener("bldr:tour-complete", onTourDone);
+
+          // Also catch when user skips via the done screen dismiss
+          const onShowDoneDismiss = () => {
+            // Small delay to let the done screen close
+            setTimeout(() => triggerVideo(id, data.delaySec), 500);
           };
-          window.addEventListener("bldr:tour-active", skipHandler);
+          window.addEventListener("bldr:tour-done-dismissed", onShowDoneDismiss);
+
           return () => {
-            window.removeEventListener("bldr:tour-complete", handler);
-            window.removeEventListener("bldr:tour-active", skipHandler);
+            window.removeEventListener("bldr:tour-complete", onTourDone);
+            window.removeEventListener("bldr:tour-done-dismissed", onShowDoneDismiss);
           };
         } else {
-          triggerVideo(data);
+          // Returning user or not linked to tour
+          triggerVideo(id, data.delaySec);
         }
       })
       .catch(() => {});

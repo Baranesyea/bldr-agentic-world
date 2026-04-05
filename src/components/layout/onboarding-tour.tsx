@@ -364,8 +364,16 @@ export function OnboardingTour() {
     if (soundEnabled && step.audioUrl) {
       setAudioPlaying(true);
       setShowNextButton(false);
+      // Safety timeout — always show button after 3 seconds no matter what
+      const safetyTimer = setTimeout(() => {
+        if (!cancelled) {
+          setAudioPlaying(false);
+          setShowNextButton(true);
+        }
+      }, 3000);
       resolveAudioUrl(step.audioUrl).then((resolvedUrl) => {
         if (cancelled || !resolvedUrl) {
+          clearTimeout(safetyTimer);
           setAudioPlaying(false);
           setShowNextButton(true);
           return;
@@ -373,17 +381,24 @@ export function OnboardingTour() {
         const audio = new Audio(resolvedUrl);
         audioRef.current = audio;
         audio.onended = () => {
+          clearTimeout(safetyTimer);
           setAudioPlaying(false);
           setShowNextButton(true);
         };
         audio.onerror = () => {
+          clearTimeout(safetyTimer);
           setAudioPlaying(false);
           setShowNextButton(true);
         };
         audio.play().catch(() => {
+          clearTimeout(safetyTimer);
           setAudioPlaying(false);
           setShowNextButton(true);
         });
+      }).catch(() => {
+        clearTimeout(safetyTimer);
+        setAudioPlaying(false);
+        setShowNextButton(true);
       });
     } else {
       setAudioPlaying(false);
@@ -425,6 +440,8 @@ export function OnboardingTour() {
     setShowDone(false);
     localStorage.setItem("bldr_onboarding_done", "true");
     window.dispatchEvent(new CustomEvent("bldr:tour-active", { detail: false }));
+    window.dispatchEvent(new CustomEvent("bldr:tour-complete"));
+    window.dispatchEvent(new CustomEvent("bldr:tour-done-dismissed"));
   };
 
   const nextStep = () => {
@@ -994,7 +1011,7 @@ export function OnboardingTour() {
           ═══════════════════════════════════════ */}
       {showDone && createPortal(
         <div
-          onClick={() => setShowDone(false)}
+          onClick={() => { setShowDone(false); window.dispatchEvent(new CustomEvent("bldr:tour-done-dismissed")); }}
           style={{
           position: "fixed", inset: 0, zIndex: 99995,
           display: "flex", alignItems: "center", justifyContent: "center",
@@ -1052,7 +1069,7 @@ export function OnboardingTour() {
               והסיור זמין לך תמיד מהתפריט.
             </p>
             <button
-              onClick={() => setShowDone(false)}
+              onClick={() => { setShowDone(false); window.dispatchEvent(new CustomEvent("bldr:tour-done-dismissed")); }}
               style={{
                 marginTop: 8,
                 background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
