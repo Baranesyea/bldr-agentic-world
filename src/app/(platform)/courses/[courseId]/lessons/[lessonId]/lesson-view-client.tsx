@@ -429,10 +429,10 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           to { opacity: 1; transform: translateY(0); }
         }
         @media (max-width: 768px) {
-          .lesson-layout { flex-direction: column-reverse !important; }
-          .lesson-sidebar { width: 100% !important; min-width: 100% !important; height: auto !important; max-height: 50vh !important; position: relative !important; border-left: none !important; border-top: 1px solid rgba(255,255,255,0.06) !important; }
-          .lesson-main { padding: 16px !important; }
-          .lesson-below-video { padding: 16px !important; }
+          .lesson-layout { flex-direction: column !important; }
+          .lesson-sidebar { display: none !important; }
+          .lesson-main { padding: 12px !important; order: 1 !important; }
+          .lesson-notes-sidebar { width: 100% !important; min-width: 100% !important; height: auto !important; max-height: none !important; position: relative !important; border-right: none !important; border-top: 1px solid rgba(255,255,255,0.06) !important; order: 2 !important; }
         }
       `}</style>
 
@@ -911,7 +911,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
         </div>
 
         {/* ── LEFT SIDEBAR: Notes + Discussion ── */}
-        <div style={{
+        <div className="lesson-notes-sidebar" style={{
           width: notesCollapsed ? "40px" : "300px",
           minWidth: notesCollapsed ? "40px" : "300px",
           borderRight: "1px solid rgba(255,255,255,0.06)",
