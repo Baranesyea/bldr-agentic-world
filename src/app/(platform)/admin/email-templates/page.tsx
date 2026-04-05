@@ -47,9 +47,9 @@ const DEFAULT_TEMPLATES: Partial<EmailTemplate>[] = [
     ],
     bodyHtml: `<!DOCTYPE html>
 <html dir="rtl" lang="he">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap" rel="stylesheet"></head>
-<body style="margin:0;padding:0;background:#050510;font-family:'Heebo',Helvetica,Arial,sans-serif;">
-<div style="max-width:600px;margin:0 auto;padding:40px 24px;">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#050510;font-family:'Segoe UI',Tahoma,Helvetica,Arial,sans-serif;direction:rtl;text-align:right;">
+<div style="max-width:600px;margin:0 auto;padding:40px 24px;direction:rtl;text-align:right;">
   <div style="text-align:center;margin-bottom:32px;">
     <h1 style="color:#fff;font-size:28px;margin:0;">BLDR</h1>
     <p style="color:rgba(240,240,245,0.5);font-size:13px;margin:4px 0 0;">Agentic World</p>
@@ -85,9 +85,9 @@ const DEFAULT_TEMPLATES: Partial<EmailTemplate>[] = [
     ],
     bodyHtml: `<!DOCTYPE html>
 <html dir="rtl" lang="he">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap" rel="stylesheet"></head>
-<body style="margin:0;padding:0;background:#050510;font-family:'Heebo',Helvetica,Arial,sans-serif;">
-<div style="max-width:600px;margin:0 auto;padding:40px 24px;">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#050510;font-family:'Segoe UI',Tahoma,Helvetica,Arial,sans-serif;direction:rtl;text-align:right;">
+<div style="max-width:600px;margin:0 auto;padding:40px 24px;direction:rtl;text-align:right;">
   <div style="text-align:center;margin-bottom:32px;">
     <h1 style="color:#fff;font-size:28px;margin:0;">BLDR</h1>
     <p style="color:rgba(240,240,245,0.5);font-size:13px;margin:4px 0 0;">Agentic World</p>
@@ -124,9 +124,9 @@ const DEFAULT_TEMPLATES: Partial<EmailTemplate>[] = [
     ],
     bodyHtml: `<!DOCTYPE html>
 <html dir="rtl" lang="he">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap" rel="stylesheet"></head>
-<body style="margin:0;padding:0;background:#050510;font-family:'Heebo',Helvetica,Arial,sans-serif;">
-<div style="max-width:600px;margin:0 auto;padding:40px 24px;">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#050510;font-family:'Segoe UI',Tahoma,Helvetica,Arial,sans-serif;direction:rtl;text-align:right;">
+<div style="max-width:600px;margin:0 auto;padding:40px 24px;direction:rtl;text-align:right;">
   <div style="text-align:center;margin-bottom:32px;">
     <h1 style="color:#fff;font-size:28px;margin:0;">BLDR</h1>
     <p style="color:rgba(240,240,245,0.5);font-size:13px;margin:4px 0 0;">Agentic World</p>
@@ -165,9 +165,9 @@ const DEFAULT_TEMPLATES: Partial<EmailTemplate>[] = [
     ],
     bodyHtml: `<!DOCTYPE html>
 <html dir="rtl" lang="he">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap" rel="stylesheet"></head>
-<body style="margin:0;padding:0;background:#050510;font-family:'Heebo',Helvetica,Arial,sans-serif;">
-<div style="max-width:600px;margin:0 auto;padding:40px 24px;">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#050510;font-family:'Segoe UI',Tahoma,Helvetica,Arial,sans-serif;direction:rtl;text-align:right;">
+<div style="max-width:600px;margin:0 auto;padding:40px 24px;direction:rtl;text-align:right;">
   <div style="text-align:center;margin-bottom:32px;">
     <h1 style="color:#fff;font-size:28px;margin:0;">BLDR</h1>
     <p style="color:rgba(240,240,245,0.5);font-size:13px;margin:4px 0 0;">Agentic World</p>
