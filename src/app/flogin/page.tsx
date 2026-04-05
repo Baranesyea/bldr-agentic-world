@@ -213,7 +213,7 @@ export default function FreeLoginPage() {
                 marginTop: 0,
                 marginBottom: 24,
               }}>
-                כמה פרטים ואתם בפנים!
+                התחברות
               </h2>
 
               {/* Error */}
@@ -246,7 +246,7 @@ export default function FreeLoginPage() {
                 <div style={{ position: "relative" }}>
                   <input
                     type={showPassword ? "text" : "password"}
-                    placeholder="בחר סיסמה"
+                    placeholder="סיסמה"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onFocus={() => setFocusedInput("password")}
@@ -325,15 +325,15 @@ export default function FreeLoginPage() {
                       <span style={{ width: 18, height: 18, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} />
                       נרשם...
                     </span>
-                  ) : "קדימה, נתחיל!"}
+                  ) : "התחבר"}
                 </button>
               </form>
 
               <div style={{ textAlign: "center", marginTop: 20 }}>
                 <p style={{ fontSize: 13, color: "rgba(240,240,245,0.5)", margin: 0 }}>
-                  כבר יש לך חשבון?{" "}
+                  שכחת סיסמה?{" "}
                   <a href="/login" style={{ color: "#f0f0f5", fontWeight: 700, textDecoration: "none" }}>
-                    התחבר
+                    לחץ כאן
                   </a>
                 </p>
               </div>

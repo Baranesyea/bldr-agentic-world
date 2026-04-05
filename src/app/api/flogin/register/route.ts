@@ -53,19 +53,25 @@ export async function POST(req: NextRequest) {
     );
 
     if (existingUser) {
-      return NextResponse.json({ error: "כתובת המייל כבר רשומה במערכת" }, { status: 400 });
-    }
+      // User already exists — update their password
+      const { error: updateError } = await supabase.auth.admin.updateUserById(existingUser.id, {
+        password,
+      });
+      if (updateError) {
+        return NextResponse.json({ error: updateError.message }, { status: 400 });
+      }
+    } else {
+      // Create new auth user (no email confirmation required)
+      const { error: authError } = await supabase.auth.admin.createUser({
+        email: email.toLowerCase().trim(),
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: fullName },
+      });
 
-    // Create auth user (no email confirmation required)
-    const { error: authError } = await supabase.auth.admin.createUser({
-      email: email.toLowerCase().trim(),
-      password,
-      email_confirm: true, // Auto-confirm
-      user_metadata: { full_name: fullName },
-    });
-
-    if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 400 });
+      if (authError) {
+        return NextResponse.json({ error: authError.message }, { status: 400 });
+      }
     }
 
     // Update member record with access expiry
