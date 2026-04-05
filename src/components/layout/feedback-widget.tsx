@@ -93,69 +93,54 @@ export function FeedbackWidget() {
   const captureScreenshot = useCallback(async () => {
     setCapturing(true);
 
-    // No need to hide real elements — we capture from a clean clone
+    // Play sound immediately for instant feedback
+    const audio = new Audio("/sounds/camera-shutter.mp3");
+    audio.volume = 0.6;
+    audio.play().catch(() => {});
+
+    // Flash immediately
+    if (flashRef.current) {
+      flashRef.current.style.transition = "none";
+      flashRef.current.style.opacity = "0.9";
+      requestAnimationFrame(() => {
+        if (flashRef.current) {
+          flashRef.current.style.transition = "opacity 0.3s ease-out";
+          flashRef.current.style.opacity = "0";
+        }
+      });
+    }
+
+    // Hide feedback UI elements
+    if (widgetRef.current) widgetRef.current.style.opacity = "0";
+    if (btnRef.current) btnRef.current.style.opacity = "0";
+    const overlay = document.querySelector("[data-feedback-overlay]") as HTMLElement;
+    if (overlay) overlay.style.opacity = "0";
+
+    await new Promise(r => setTimeout(r, 150));
 
     try {
       const html2canvas = (await import("html2canvas")).default;
 
-      const sy = window.scrollY;
-      const sx = window.scrollX;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
-      // Preload sound
-      const audio = new Audio("/sounds/camera-shutter.mp3");
-      audio.volume = 0.6;
-      await audio.load();
-
-      // Create a temporary wrapper that shows only the viewport
-      // This avoids all the scroll/crop issues with html2canvas
-      const wrapper = document.createElement("div");
-      wrapper.style.cssText = `
-        position: fixed; top: 0; left: 0;
-        width: ${vw}px; height: ${vh}px;
-        overflow: hidden; z-index: -1;
-        pointer-events: none;
-      `;
-      // Clone the body content into the wrapper, shifted by scroll
-      const clone = document.body.cloneNode(true) as HTMLElement;
-      clone.style.position = "absolute";
-      clone.style.top = `-${sy}px`;
-      clone.style.left = `-${sx}px`;
-      clone.style.width = `${document.body.scrollWidth}px`;
-      clone.style.margin = "0";
-      // Remove feedback elements from clone
-      clone.querySelectorAll("[data-feedback-overlay], [data-feedback-widget]").forEach(el => el.remove());
-      wrapper.appendChild(clone);
-      document.body.appendChild(wrapper);
-
-      // Small delay for render
-      await new Promise(r => setTimeout(r, 50));
-
-      const canvas = await html2canvas(wrapper, {
+      // Simplest possible capture: let html2canvas handle everything
+      // Pass scrollX/scrollY as 0 to disable its scroll compensation
+      // Then use x/y to crop from the actual scroll position
+      const canvas = await html2canvas(document.body, {
         useCORS: true,
         allowTaint: true,
         scale: 1,
         logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        x: window.scrollX,
+        y: window.scrollY,
         width: vw,
         height: vh,
+        windowWidth: document.body.scrollWidth,
+        windowHeight: document.body.scrollHeight,
       });
-
-      // Clean up
-      document.body.removeChild(wrapper);
-
-      // Flash + sound after capture
-      audio.play().catch(() => {});
-      if (flashRef.current) {
-        flashRef.current.style.transition = "none";
-        flashRef.current.style.opacity = "0.9";
-        requestAnimationFrame(() => {
-          if (flashRef.current) {
-            flashRef.current.style.transition = "opacity 0.3s ease-out";
-            flashRef.current.style.opacity = "0";
-          }
-        });
-      }
 
       const dataUrl = canvas.toDataURL("image/webp", 0.75);
       setAttachment(dataUrl);
@@ -178,7 +163,10 @@ export function FeedbackWidget() {
       } catch {}
     }
 
-    // Nothing to restore — capture used a temporary clone
+    // Restore UI elements
+    if (widgetRef.current) widgetRef.current.style.opacity = "";
+    if (btnRef.current) btnRef.current.style.opacity = "";
+    if (overlay) overlay.style.opacity = "";
 
     setCapturing(false);
   }, []);
