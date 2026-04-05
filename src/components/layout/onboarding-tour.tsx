@@ -302,7 +302,15 @@ export function OnboardingTour() {
       } else if (attempts < 10) {
         setTimeout(() => tryFind(attempts + 1), 100);
       } else {
-        setSpotlightRect(null);
+        // Element not found — skip to next step or end tour
+        if (stepIndex < steps.length - 1) {
+          setCurrentStep(stepIndex + 1);
+        } else {
+          setActive(false);
+          setSpotlightRect(null);
+          localStorage.setItem("bldr_onboarding_done", "true");
+          window.dispatchEvent(new CustomEvent("bldr:tour-active", { detail: false }));
+        }
       }
     };
     if (immediate) {
