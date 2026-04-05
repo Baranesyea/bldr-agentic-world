@@ -379,14 +379,14 @@ export function OnboardingTour() {
   }, [active, currentStep, soundEnabled, steps]);
 
   const [showBookmark, setShowBookmark] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
+  const deferredPromptRef = useRef<Event | null>(null);
   const [installStatus, setInstallStatus] = useState<"idle" | "installing" | "done">("idle");
 
-  // Capture PWA install prompt
+  // Capture PWA install prompt — store in ref so we never lose it
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      deferredPromptRef.current = e;
     };
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
@@ -406,36 +406,23 @@ export function OnboardingTour() {
     setTimeout(() => updateSpotlight(0), 1000);
   };
 
+  const isIOS = typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isSafari = typeof navigator !== "undefined" && /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
   const handleInstallApp = async () => {
-    if (deferredPrompt) {
+    if (deferredPromptRef.current) {
       // Chrome/Edge — trigger native install prompt
       setInstallStatus("installing");
-      const prompt = deferredPrompt as unknown as { prompt: () => void; userChoice: Promise<{ outcome: string }> };
+      const prompt = deferredPromptRef.current as unknown as { prompt: () => void; userChoice: Promise<{ outcome: string }> };
       prompt.prompt();
       const result = await prompt.userChoice;
-      if (result.outcome === "accepted") {
-        setInstallStatus("done");
-        setTimeout(continueAfterBookmark, 1500);
-      } else {
-        setInstallStatus("idle");
-        continueAfterBookmark();
-      }
-      setDeferredPrompt(null);
+      setInstallStatus("done");
+      deferredPromptRef.current = null;
+      setTimeout(continueAfterBookmark, 1500);
     } else {
-      // Safari or already installed — show manual instructions
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isSafariMac = /Macintosh/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-
-      if (isIOS) {
-        setInstallStatus("done");
-        // Show iOS instructions inline instead of alert
-      } else if (isSafariMac) {
-        setInstallStatus("done");
-      } else {
-        // Probably already installed or unsupported
-        setInstallStatus("done");
-      }
-      setTimeout(continueAfterBookmark, 2000);
+      // No prompt available — skip gracefully
+      setInstallStatus("done");
+      setTimeout(continueAfterBookmark, 1500);
     }
   };
 
@@ -797,33 +784,39 @@ export function OnboardingTour() {
                     fontSize: 15, color: "rgba(240,240,245,0.7)",
                     lineHeight: 1.7, marginBottom: 32,
                   }}>
-                    הורד את האפליקציה למחשב או לטלפון, ככה תמיד יהיה לך קל לחזור לכאן
+                    {isIOS
+                      ? "הוסף את האפליקציה למסך הבית — לחץ על כפתור השיתוף (⬆) ואז ״הוסף למסך הבית״"
+                      : isSafari
+                        ? "הוסף את האפליקציה ל-Dock — לחץ על File ← Add to Dock"
+                        : "הורד את האפליקציה למחשב או לטלפון, ככה תמיד יהיה לך קל לחזור לכאן"}
                   </p>
-                  <button
-                    onClick={handleInstallApp}
-                    disabled={installStatus === "installing"}
-                    style={{
-                      background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 4,
-                      padding: "13px 40px",
-                      fontSize: 16,
-                      fontWeight: 700,
-                      cursor: installStatus === "installing" ? "not-allowed" : "pointer",
-                      boxShadow: "0 0 30px rgba(0,0,255,0.3), 0 4px 16px rgba(0,0,0,0.4)",
-                      transition: "all 0.2s",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 8,
-                      margin: "0 auto 16px",
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-                  >
-                    {installStatus === "installing" ? "מתקין..." : "📲 הורד אפליקציה"}
-                  </button>
+                  {!isIOS && !isSafari && (
+                    <button
+                      onClick={handleInstallApp}
+                      disabled={installStatus === "installing"}
+                      style={{
+                        background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 4,
+                        padding: "13px 40px",
+                        fontSize: 16,
+                        fontWeight: 700,
+                        cursor: installStatus === "installing" ? "not-allowed" : "pointer",
+                        boxShadow: "0 0 30px rgba(0,0,255,0.3), 0 4px 16px rgba(0,0,0,0.4)",
+                        transition: "all 0.2s",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 8,
+                        margin: "0 auto 16px",
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                    >
+                      {installStatus === "installing" ? "מתקין..." : "📲 הורד אפליקציה"}
+                    </button>
+                  )}
                   <button
                     onClick={continueAfterBookmark}
                     style={{
@@ -834,7 +827,7 @@ export function OnboardingTour() {
                       cursor: "pointer",
                     }}
                   >
-                    דלג, אני אוריד אחר כך
+                    {isIOS || isSafari ? "המשך לסיור" : "דלג, אני אוריד אחר כך"}
                   </button>
                 </>
               )}
