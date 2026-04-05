@@ -675,16 +675,37 @@ export default function ImportUsersPage() {
                 </button>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <button onClick={() => setStep(5)} style={BTN_SECONDARY}>חזרה</button>
-                <button
-                  onClick={handleImport}
-                  disabled={importing}
-                  style={{ ...BTN, opacity: importing ? 0.6 : 1 }}
-                >
-                  {importing ? "מייבא..." : `ייבוא ${totalRows} משתמשים`}
-                </button>
-              </div>
+              {importing ? (
+                <div style={{ textAlign: "center", padding: "40px 0" }}>
+                  <style>{`@keyframes importSpin { to { transform: rotate(360deg); } }`}</style>
+                  <div style={{
+                    width: 40, height: 40, margin: "0 auto 16px",
+                    border: "3px solid rgba(255,255,255,0.1)",
+                    borderTopColor: "#0000FF",
+                    borderRadius: "50%",
+                    animation: "importSpin 0.8s linear infinite",
+                  }} />
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#f0f0f5", marginBottom: 8 }}>
+                    מייבא {totalRows} משתמשים...
+                  </div>
+                  <div style={{ fontSize: 13, color: "rgba(240,240,245,0.5)" }}>
+                    {sendInvite ? "יוצר חשבונות ושולח הזמנות" : "יוצר חשבונות בלי שליחת הזמנה"}
+                  </div>
+                  <div style={{ fontSize: 12, color: "rgba(240,240,245,0.3)", marginTop: 12 }}>
+                    זה עלול לקחת כמה שניות...
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <button onClick={() => setStep(5)} style={BTN_SECONDARY}>חזרה</button>
+                  <button
+                    onClick={handleImport}
+                    style={BTN}
+                  >
+                    {`ייבוא ${totalRows} משתמשים`}
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
