@@ -53,16 +53,17 @@ export async function POST(req: NextRequest) {
     );
 
     if (existingUser) {
-      // User already exists — update their password
+      // User already exists — update password and confirm email
       const { error: updateError } = await supabase.auth.admin.updateUserById(existingUser.id, {
         password,
+        email_confirm: true,
       });
       if (updateError) {
         return NextResponse.json({ error: updateError.message }, { status: 400 });
       }
     } else {
-      // Create new auth user (no email confirmation required)
-      const { error: authError } = await supabase.auth.admin.createUser({
+      // Create new auth user
+      const { data: newUser, error: authError } = await supabase.auth.admin.createUser({
         email: email.toLowerCase().trim(),
         password,
         email_confirm: true,
@@ -71,6 +72,13 @@ export async function POST(req: NextRequest) {
 
       if (authError) {
         return NextResponse.json({ error: authError.message }, { status: 400 });
+      }
+
+      // Force confirm email in case email_confirm didn't work
+      if (newUser?.user?.id) {
+        await supabase.auth.admin.updateUserById(newUser.user.id, {
+          email_confirm: true,
+        });
       }
     }
 
