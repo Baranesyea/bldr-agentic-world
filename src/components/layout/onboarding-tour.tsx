@@ -427,10 +427,12 @@ export function OnboardingTour() {
   };
 
   const skipTour = () => {
-    // Stop any playing audio
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     setShowWelcome(false);
+    setShowBookmark(false);
     setActive(false);
+    setSpotlightRect(null);
+    setShowDone(false);
     localStorage.setItem("bldr_onboarding_done", "true");
     window.dispatchEvent(new CustomEvent("bldr:tour-active", { detail: false }));
   };
@@ -439,14 +441,13 @@ export function OnboardingTour() {
     if (currentStep < steps.length - 1) {
       setCurrentStep((p) => p + 1);
     } else {
-      // Tour complete
+      // Tour complete — clear everything
       setActive(false);
+      setSpotlightRect(null);
       localStorage.setItem("bldr_onboarding_done", "true");
       setShowDone(true);
-      // Release sidebar lock, then signal highlight
       window.dispatchEvent(new CustomEvent("bldr:tour-active", { detail: false }));
       window.dispatchEvent(new CustomEvent("bldr:tour-complete"));
-      setTimeout(() => setShowDone(false), 4000);
     }
   };
 
@@ -1096,6 +1097,26 @@ export function OnboardingTour() {
               <br />
               והסיור זמין לך תמיד מהתפריט.
             </p>
+            <button
+              onClick={() => setShowDone(false)}
+              style={{
+                marginTop: 8,
+                background: "linear-gradient(135deg, #0000FF 0%, #0033FF 100%)",
+                color: "#fff",
+                border: "none",
+                borderRadius: 4,
+                padding: "12px 40px",
+                fontSize: 16,
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "0 0 20px rgba(0,0,255,0.3)",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+            >
+              כניסה למערכת
+            </button>
           </div>
         </div>,
         document.body
