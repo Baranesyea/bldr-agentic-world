@@ -55,11 +55,12 @@ export function FeedbackWidget() {
   const captureScreenshot = useCallback(async () => {
     setCapturing(true);
 
-    // Step 1: Hide widget, button, and overlay completely
-    if (widgetRef.current) widgetRef.current.style.visibility = "hidden";
-    if (btnRef.current) btnRef.current.style.visibility = "hidden";
+    // Step 1: Hide widget, button, overlay, and flash via display:none
+    if (widgetRef.current) widgetRef.current.style.display = "none";
+    if (btnRef.current) btnRef.current.style.display = "none";
+    if (flashRef.current) flashRef.current.style.display = "none";
     const overlay = document.querySelector("[data-feedback-overlay]") as HTMLElement;
-    if (overlay) overlay.style.visibility = "hidden";
+    if (overlay) overlay.style.display = "none";
 
     // Wait for paint
     await new Promise(r => setTimeout(r, 100));
@@ -83,6 +84,8 @@ export function FeedbackWidget() {
         allowTaint: true,
         scale: 1,
         logging: false,
+        windowWidth: vw,
+        windowHeight: vh,
       });
 
       // NOW flash + sound (after capture is done)
@@ -128,10 +131,11 @@ export function FeedbackWidget() {
       } catch {}
     }
 
-    // Step 3: Restore visibility
-    if (widgetRef.current) widgetRef.current.style.visibility = "";
-    if (btnRef.current) btnRef.current.style.visibility = "";
-    if (overlay) overlay.style.visibility = "";
+    // Step 3: Restore display
+    if (flashRef.current) flashRef.current.style.display = "";
+    if (widgetRef.current) widgetRef.current.style.display = "";
+    if (btnRef.current) btnRef.current.style.display = "";
+    if (overlay) overlay.style.display = "";
 
     setCapturing(false);
   }, []);
