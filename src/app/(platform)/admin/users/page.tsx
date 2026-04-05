@@ -161,9 +161,11 @@ export default function AdminUsersPage() {
     fetch("/api/schools").then(r => r.json()).then(data => {
       if (Array.isArray(data)) setSchools(data);
     }).catch(() => {});
-    fetch("/api/account/deleted").then(r => r.json()).then(data => {
+    // Get inactive members (not deleted_accounts, since users can be re-added)
+    fetch("/api/members").then(r => r.json()).then(data => {
       if (Array.isArray(data)) {
-        setDeletedEmails(new Set(data.map((d: { email: string }) => d.email.toLowerCase())));
+        const inactive = data.filter((m: { status: string }) => m.status === "inactive");
+        setDeletedEmails(new Set(inactive.map((m: { email: string }) => m.email.toLowerCase())));
       }
     }).catch(() => {});
     fetch("/api/courses").then(r => r.json()).then(data => {
@@ -244,7 +246,7 @@ export default function AdminUsersPage() {
     });
 
     return list;
-  }, [users, filterTab, search, sortKey, sortAsc]);
+  }, [users, filterTab, search, sortKey, sortAsc, deletedEmails]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
