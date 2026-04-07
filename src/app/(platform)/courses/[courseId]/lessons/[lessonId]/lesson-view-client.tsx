@@ -130,6 +130,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   const [videoTimer, setVideoTimer] = useState(0);
   const videoDurationRef = useRef(0);
   const videoEndedFiredRef = useRef(false);
+  const durationSavedRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [autoCompleted, setAutoCompleted] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -163,8 +164,17 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   useEffect(() => {
     if (!currentLesson) return;
 
-    // Get user email and load progress from DB
+    // Get user email and load progress — merge DB + localStorage
     (async () => {
+      let dbLessons: string[] = [];
+      let localLessons: string[] = [];
+
+      // Load localStorage
+      try {
+        localLessons = JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]");
+      } catch {}
+
+      // Load from DB
       try {
         if (!userEmailRef.current) {
           const supabase = createClient();
@@ -173,34 +183,29 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
         }
         if (userEmailRef.current) {
           const res = await fetch(`/api/progress?email=${encodeURIComponent(userEmailRef.current)}`);
-          const { completedLessons: dbLessons } = await res.json();
-          if (Array.isArray(dbLessons) && dbLessons.length > 0) {
-            setCompletedLessons(dbLessons);
-            localStorage.setItem("bldr_completed_lessons", JSON.stringify(dbLessons));
-          } else {
-            // Fallback to localStorage + migrate to DB
-            const stored = JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]");
-            setCompletedLessons(stored);
-            // Migrate localStorage progress to DB
-            if (stored.length > 0) {
-              for (const lid of stored) {
-                fetch("/api/progress", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ email: userEmailRef.current, lessonId: lid, completed: true }),
-                }).catch(() => {});
-              }
-            }
+          const json = await res.json();
+          if (Array.isArray(json.completedLessons)) {
+            dbLessons = json.completedLessons;
           }
-        } else {
-          const stored = JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]");
-          setCompletedLessons(stored);
         }
-      } catch {
-        try {
-          const stored = JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]");
-          setCompletedLessons(stored);
-        } catch {}
+      } catch {}
+
+      // Merge both sources (union)
+      const merged = [...new Set([...dbLessons, ...localLessons])];
+      setCompletedLessons(merged);
+      localStorage.setItem("bldr_completed_lessons", JSON.stringify(merged));
+
+      // Sync any localStorage-only lessons to DB
+      if (userEmailRef.current) {
+        const dbSet = new Set(dbLessons);
+        const toSync = localLessons.filter((id) => !dbSet.has(id));
+        for (const lid of toSync) {
+          fetch("/api/progress", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: userEmailRef.current, lessonId: lid, completed: true }),
+          }).catch(() => {});
+        }
       }
     })();
 
@@ -328,6 +333,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   useEffect(() => {
     videoEndedFiredRef.current = false;
     videoDurationRef.current = 0;
+    durationSavedRef.current = false;
   }, [currentLesson?.id]);
 
   // Listen for video end events from Vimeo/YouTube iframes
@@ -359,7 +365,17 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           }
           // Vimeo getDuration response
           if (data.method === "getDuration" && data.value != null) {
-            videoDurationRef.current = Math.floor(data.value);
+            const dur = Math.floor(data.value);
+            videoDurationRef.current = dur;
+            // Auto-save duration to DB if not saved yet
+            if (dur > 5 && !durationSavedRef.current && currentLesson) {
+              durationSavedRef.current = true;
+              fetch("/api/lessons/duration", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ lessonId: currentLesson.id, duration: dur }),
+              }).catch(() => {});
+            }
           }
         }
         if (typeof event.data === "object" && event.data?.event === "onStateChange") {

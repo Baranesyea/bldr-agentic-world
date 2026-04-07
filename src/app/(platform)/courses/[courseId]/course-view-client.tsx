@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PlayIcon, LockIcon, CheckIcon, ChevronDownIcon, ClockIcon, ArrowLeftIcon } from "@/components/ui/icons";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
 import { resolveImageUrl } from "@/lib/image-store";
+import { createClient } from "@/lib/supabase";
 
 function ResolvedImg({ src, alt, style }: { src: string; alt: string; style: React.CSSProperties }) {
   const [resolved, setResolved] = React.useState("");
@@ -67,9 +68,28 @@ export default function CourseViewClient({ course }: { course: Course }) {
   useEffect(() => {
     // Open first chapter by default
     if (course.chapters?.[0]) setOpenChapters([course.chapters[0].id]);
-    try {
-      setCompletedLessons(JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]"));
-    } catch {}
+
+    // Load progress from DB, fallback to localStorage
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.auth.getSession();
+        const email = data.session?.user?.email;
+        if (email) {
+          const res = await fetch(`/api/progress?email=${encodeURIComponent(email)}`);
+          const { completedLessons: dbLessons } = await res.json();
+          if (Array.isArray(dbLessons) && dbLessons.length > 0) {
+            setCompletedLessons(dbLessons);
+            localStorage.setItem("bldr_completed_lessons", JSON.stringify(dbLessons));
+            return;
+          }
+        }
+      } catch {}
+      // Fallback to localStorage
+      try {
+        setCompletedLessons(JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]"));
+      } catch {}
+    })();
   }, [course]);
 
   const toggle = (id: string) => {
