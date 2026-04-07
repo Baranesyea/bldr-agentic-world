@@ -17,6 +17,7 @@ import {
 import VideoPlayer from "@/components/ui/video-player";
 import { ShareButton } from "@/components/ui/share-button";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { createClient } from "@/lib/supabase";
 
 // ── Types ──
 interface CourseLesson {
@@ -97,6 +98,7 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   const { trackEvent, trackVideoProgress } = useAnalytics();
   const videoProgressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasTrackedPlayRef = useRef(false);
+  const userEmailRef = useRef<string | null>(null);
 
   // Flatten all lessons for navigation
   const allLessons = useMemo(() => {
@@ -157,13 +159,51 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
     }
   }, [currentChapterId]);
 
-  // Load completed lessons + notes + settings from localStorage
+  // Load completed lessons from DB (with localStorage fallback) + notes + settings
   useEffect(() => {
     if (!currentLesson) return;
-    try {
-      const stored = JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]");
-      setCompletedLessons(stored);
-    } catch {}
+
+    // Get user email and load progress from DB
+    (async () => {
+      try {
+        if (!userEmailRef.current) {
+          const supabase = createClient();
+          const { data } = await supabase.auth.getSession();
+          userEmailRef.current = data.session?.user?.email || null;
+        }
+        if (userEmailRef.current) {
+          const res = await fetch(`/api/progress?email=${encodeURIComponent(userEmailRef.current)}`);
+          const { completedLessons: dbLessons } = await res.json();
+          if (Array.isArray(dbLessons) && dbLessons.length > 0) {
+            setCompletedLessons(dbLessons);
+            localStorage.setItem("bldr_completed_lessons", JSON.stringify(dbLessons));
+          } else {
+            // Fallback to localStorage + migrate to DB
+            const stored = JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]");
+            setCompletedLessons(stored);
+            // Migrate localStorage progress to DB
+            if (stored.length > 0) {
+              for (const lid of stored) {
+                fetch("/api/progress", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email: userEmailRef.current, lessonId: lid, completed: true }),
+                }).catch(() => {});
+              }
+            }
+          }
+        } else {
+          const stored = JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]");
+          setCompletedLessons(stored);
+        }
+      } catch {
+        try {
+          const stored = JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]");
+          setCompletedLessons(stored);
+        } catch {}
+      }
+    })();
+
     try {
       const all: LessonNote[] = JSON.parse(localStorage.getItem("bldr_notes") || "[]");
       setSavedNotes(all.filter((n) => n.lessonId === currentLesson.id));
@@ -340,6 +380,14 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
         if (prev.includes(id)) return prev;
         const next = [...prev, id];
         localStorage.setItem("bldr_completed_lessons", JSON.stringify(next));
+        // Sync to DB
+        if (userEmailRef.current) {
+          fetch("/api/progress", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: userEmailRef.current, lessonId: id, completed: true }),
+          }).catch(() => {});
+        }
         return next;
       });
     },
@@ -349,8 +397,17 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
   const toggleCompleted = useCallback(
     (id: string) => {
       setCompletedLessons((prev) => {
-        const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+        const wasCompleted = prev.includes(id);
+        const next = wasCompleted ? prev.filter((x) => x !== id) : [...prev, id];
         localStorage.setItem("bldr_completed_lessons", JSON.stringify(next));
+        // Sync to DB
+        if (userEmailRef.current) {
+          fetch("/api/progress", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: userEmailRef.current, lessonId: id, completed: !wasCompleted }),
+          }).catch(() => {});
+        }
         return next;
       });
     },

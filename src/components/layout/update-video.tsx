@@ -2,56 +2,53 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 
-interface EntryVideoSettings {
+interface UpdateVideoSettings {
   enabled: boolean;
   vimeoUrl: string;
   delaySec: number;
-  showAfterTour: boolean;
+  version: string;
 }
 
-export function EntryVideo() {
+export function UpdateVideo() {
   const [show, setShow] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [vimeoId, setVimeoId] = useState<string | null>(null);
   const triggeredRef = useRef(false);
 
-  const triggerVideo = useCallback((id: string, delaySec: number) => {
+  const triggerVideo = useCallback((id: string, delaySec: number, version: string) => {
     if (triggeredRef.current) return;
-    const shown = localStorage.getItem("bldr_entry_video_shown");
-    if (shown) return;
+    // Check if user already saw this version
+    const seenVersion = localStorage.getItem("bldr_update_video_seen");
+    if (seenVersion === version) return;
     triggeredRef.current = true;
 
     const delay = (delaySec || 0) * 1000;
     setTimeout(() => {
       setVimeoId(id);
       setShow(true);
-      localStorage.setItem("bldr_entry_video_shown", "true");
+      localStorage.setItem("bldr_update_video_seen", version);
     }, delay);
   }, []);
 
   useEffect(() => {
-    fetch("/api/entry-video")
+    // Only show to returning users (tour already completed, not first visit)
+    const tourDone = localStorage.getItem("bldr_onboarding_done") === "true";
+    if (!tourDone) return; // First visit — skip update video
+
+    // Don't show if entry video hasn't been shown yet (still first visit flow)
+    const entryShown = localStorage.getItem("bldr_entry_video_shown");
+    if (!entryShown) return;
+
+    fetch("/api/update-video")
       .then((r) => r.json())
-      .then((data: EntryVideoSettings) => {
-        if (!data.enabled || !data.vimeoUrl) return;
+      .then((data: UpdateVideoSettings) => {
+        if (!data.enabled || !data.vimeoUrl || !data.version) return;
 
         const id = data.vimeoUrl.match(/vimeo\.com\/(\d+)/)?.[1];
         if (!id) return;
 
-        const tourDone = localStorage.getItem("bldr_onboarding_done") === "true";
-
-        if (!tourDone) {
-          // First visit — wait for tour to finish, then show entry video once
-          const onDismiss = () => triggerVideo(id, data.delaySec);
-          window.addEventListener("bldr:tour-done-dismissed", onDismiss);
-          window.addEventListener("bldr:tour-complete", onDismiss);
-          return () => {
-            window.removeEventListener("bldr:tour-done-dismissed", onDismiss);
-            window.removeEventListener("bldr:tour-complete", onDismiss);
-          };
-        }
-        // Returning users: entry video does NOT show again.
-        // Use the update video system for announcements to returning users.
+        // Add delay so it doesn't clash with page load
+        setTimeout(() => triggerVideo(id, data.delaySec, data.version), 2000);
       })
       .catch(() => {});
   }, [triggerVideo]);
@@ -78,6 +75,16 @@ export function EntryVideo() {
         direction: "rtl",
       }}
     >
+      {/* Badge */}
+      <div style={{
+        position: "fixed", top: 20, right: 20,
+        background: "rgba(0,0,255,0.15)", border: "1px solid rgba(100,100,255,0.3)",
+        borderRadius: 8, padding: "6px 14px", zIndex: 100000,
+        color: "#8888ff", fontSize: 13, fontWeight: 600,
+      }}>
+        🆕 עדכון חדש
+      </div>
+
       {/* Close button */}
       <button
         onClick={close}

@@ -151,6 +151,9 @@ export default function AdminUsersPage() {
   const [allCourses, setAllCourses] = useState<{ id: string; title: string }[]>([]);
   const [userAccessMap, setUserAccessMap] = useState<Record<string, { schoolIds: string[]; blockedCourseIds: string[] }>>({});
 
+  // User progress state
+  const [userProgressMap, setUserProgressMap] = useState<Record<string, { totalCompleted: number; courses: { courseTitle: string; completedLessons: number }[] }>>({});
+
   // User detail panel state
   const [detailUser, setDetailUser] = useState<User | null>(null);
   const [userEmailLogs, setUserEmailLogs] = useState<Array<{ id: string; subject: string; status: string; templateSlug: string | null; openedAt: string | null; createdAt: string }>>([]);
@@ -679,7 +682,20 @@ export default function AdminUsersPage() {
                   return (
                     <React.Fragment key={user.id}>
                       <tr
-                        onClick={() => setExpandedId(isExpanded ? null : user.id)}
+                        onClick={() => {
+                          const newId = isExpanded ? null : user.id;
+                          setExpandedId(newId);
+                          // Load progress when expanding
+                          if (newId && !userProgressMap[user.email]) {
+                            fetch(`/api/progress/by-email?email=${encodeURIComponent(user.email)}`)
+                              .then(r => r.json())
+                              .then(data => {
+                                if (data && typeof data.totalCompleted === "number") {
+                                  setUserProgressMap(prev => ({ ...prev, [user.email]: data }));
+                                }
+                              }).catch(() => {});
+                          }
+                        }}
                         style={{
                           borderBottom: "1px solid rgba(255,255,255,0.04)",
                           cursor: "pointer",
@@ -901,6 +917,40 @@ export default function AdminUsersPage() {
                                     ))}
                                   </div>
                                 )}
+                              </div>
+
+                              {/* Learning Progress */}
+                              <div style={{ marginBottom: 20 }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(240,240,245,0.7)", marginBottom: 12 }}>
+                                  התקדמות בלימודים
+                                </div>
+                                {(() => {
+                                  const progress = userProgressMap[user.email];
+                                  if (!progress) return <div style={{ color: "rgba(240,240,245,0.5)", fontSize: 13 }}>טוען...</div>;
+                                  if (progress.totalCompleted === 0) return <div style={{ color: "rgba(240,240,245,0.5)", fontSize: 13 }}>עדיין לא צפה בשיעורים</div>;
+                                  return (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                      <div style={{ fontSize: 14, color: "#fff", fontWeight: 600 }}>
+                                        סה״כ {progress.totalCompleted} שיעורים הושלמו
+                                      </div>
+                                      {progress.courses.map((c: { courseTitle: string; completedLessons: number }) => (
+                                        <div key={c.courseTitle} style={{
+                                          display: "flex", justifyContent: "space-between", alignItems: "center",
+                                          padding: "8px 14px", background: "rgba(255,255,255,0.02)",
+                                          borderRadius: 4, border: "1px solid rgba(255,255,255,0.04)",
+                                        }}>
+                                          <span style={{ color: "#f0f0f5", fontSize: 13 }}>{c.courseTitle}</span>
+                                          <span style={{
+                                            background: "rgba(74,222,128,0.12)", color: "#4ade80",
+                                            padding: "2px 10px", borderRadius: 4, fontSize: 12, fontWeight: 600,
+                                          }}>
+                                            {c.completedLessons} שיעורים
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                })()}
                               </div>
 
                               {/* Change Status */}

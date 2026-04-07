@@ -16,6 +16,9 @@ export function WhatsAppCTA() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // Desktop only
+    if (window.innerWidth <= 768) return;
+
     const clicked = localStorage.getItem(STORAGE_KEY);
     if (clicked) return;
 

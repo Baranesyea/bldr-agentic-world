@@ -33,23 +33,23 @@ const BTN: React.CSSProperties = {
   cursor: "pointer",
 };
 
-export default function EntryVideoPage() {
+export default function UpdateVideoPage() {
   const [enabled, setEnabled] = useState(false);
   const [vimeoUrl, setVimeoUrl] = useState("");
-  const [delaySec, setDelaySec] = useState(5);
-  const [showAfterTour, setShowAfterTour] = useState(true);
+  const [delaySec, setDelaySec] = useState(3);
+  const [version, setVersion] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
-    fetch("/api/entry-video")
+    fetch("/api/update-video")
       .then((r) => r.json())
       .then((data) => {
         setEnabled(data.enabled || false);
         setVimeoUrl(data.vimeoUrl || "");
-        setDelaySec(data.delaySec ?? 5);
-        setShowAfterTour(data.showAfterTour !== false);
+        setDelaySec(data.delaySec ?? 3);
+        setVersion(data.version || "");
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -57,19 +57,21 @@ export default function EntryVideoPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    const res = await fetch("/api/entry-video", {
+    // Generate new version on save so all users see the new video
+    const newVersion = new Date().toISOString();
+    const res = await fetch("/api/update-video", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled, vimeoUrl, delaySec, showAfterTour }),
+      body: JSON.stringify({ enabled, vimeoUrl, delaySec, version: newVersion }),
     });
     setSaving(false);
     if (res.ok) {
-      setMsg("נשמר!");
-      setTimeout(() => setMsg(""), 3000);
+      setVersion(newVersion);
+      setMsg("נשמר! הוידאו יוצג לכל המשתמשים בכניסה הבאה שלהם.");
+      setTimeout(() => setMsg(""), 5000);
     }
   };
 
-  // Extract Vimeo ID for preview
   const getVimeoId = (url: string) => {
     const match = url.match(/vimeo\.com\/(\d+)/);
     return match ? match[1] : null;
@@ -86,12 +88,13 @@ export default function EntryVideoPage() {
   return (
     <div style={{ padding: 32, maxWidth: 600, margin: "0 auto" }}>
       <h1 style={{ fontSize: 32, fontWeight: 700, color: "#fff", marginBottom: 8 }}>
-        וידאו כניסה
+        וידאו עדכון
       </h1>
       <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: 32, fontSize: 14 }}>
-        וידאו פתיחה שמוצג למשתמשים חדשים בכניסה ראשונה בלבד (אחרי סיום הסיור).
+        וידאו שקופץ למשתמשים חוזרים בכניסה למערכת.
+        מתאים לעדכונים על תכנים חדשים, שינויים ופיצ׳רים.
         <br />
-        לעדכונים למשתמשים חוזרים — השתמש ב<a href="/admin/update-video" style={{ color: "#6666FF" }}>וידאו עדכון</a>.
+        <strong style={{ color: "rgba(240,240,245,0.9)" }}>לא מוצג בהתחברות ראשונה</strong> — רק למשתמשים שכבר סיימו את הסיור.
       </p>
 
       {msg && (
@@ -117,7 +120,7 @@ export default function EntryVideoPage() {
           <div>
             <div style={{ fontSize: 15, fontWeight: 600, color: "#f0f0f5" }}>פעיל</div>
             <div style={{ fontSize: 12, color: "rgba(240,240,245,0.4)", marginTop: 4 }}>
-              {enabled ? "הוידאו יוצג למשתמשים" : "הוידאו מושבת"}
+              {enabled ? "הוידאו יוצג למשתמשים חוזרים" : "הוידאו מושבת"}
             </div>
           </div>
           <button
@@ -152,7 +155,7 @@ export default function EntryVideoPage() {
         {/* Delay */}
         <div style={{ marginBottom: 20 }}>
           <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>
-            השהיה אחרי התחברות (שניות)
+            השהיה אחרי כניסה (שניות)
           </label>
           <input
             type="number"
@@ -162,39 +165,20 @@ export default function EntryVideoPage() {
             onChange={(e) => setDelaySec(parseInt(e.target.value) || 0)}
             style={{ ...INPUT, width: 120 }}
           />
-          <p style={{ fontSize: 12, color: "rgba(240,240,245,0.4)", marginTop: 4 }}>
-            כמה שניות לחכות אחרי התחברות לפני שמציגים את הוידאו
-          </p>
         </div>
 
-        {/* Show after tour toggle */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "16px 0", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 20,
-        }}>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: "#f0f0f5" }}>קשר לסיור</div>
-            <div style={{ fontSize: 12, color: "rgba(240,240,245,0.4)", marginTop: 4 }}>
-              {showAfterTour
-                ? "בכניסה ראשונה — הוידאו יוצג רק אחרי סיום הסיור"
-                : "הוידאו יוצג תמיד לפי ההשהיה, גם בכניסה ראשונה"}
-            </div>
+        {/* Current version info */}
+        {version && (
+          <div style={{
+            background: "rgba(100,100,255,0.05)", border: "1px solid rgba(100,100,255,0.15)",
+            borderRadius: 4, padding: "10px 14px", marginBottom: 20, fontSize: 12,
+            color: "rgba(240,240,245,0.6)",
+          }}>
+            גרסה נוכחית: {new Date(version).toLocaleString("he-IL")}
+            <br />
+            כשתשמור — גרסה חדשה תיווצר וכל המשתמשים יראו את הוידאו שוב.
           </div>
-          <button
-            onClick={() => setShowAfterTour(!showAfterTour)}
-            style={{
-              width: 52, height: 28, borderRadius: 14, border: "none", cursor: "pointer",
-              background: showAfterTour ? "#00C853" : "rgba(255,255,255,0.1)",
-              position: "relative", transition: "background 0.2s",
-            }}
-          >
-            <div style={{
-              width: 22, height: 22, borderRadius: "50%", background: "#fff",
-              position: "absolute", top: 3,
-              right: showAfterTour ? 3 : 27, transition: "right 0.2s",
-            }} />
-          </button>
-        </div>
+        )}
 
         {/* Preview */}
         {vimeoUrl && getVimeoId(vimeoUrl) && (
@@ -214,7 +198,7 @@ export default function EntryVideoPage() {
         )}
 
         <button onClick={handleSave} disabled={saving} style={BTN}>
-          {saving ? "שומר..." : "שמור הגדרות"}
+          {saving ? "שומר..." : "שמור ופרסם עדכון"}
         </button>
       </div>
     </div>

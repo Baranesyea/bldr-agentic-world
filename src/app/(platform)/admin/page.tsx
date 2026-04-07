@@ -26,6 +26,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/email-templates": <LinkIcon size={28} />,
   "/admin/reviews": <FeedbackIcon size={28} />,
   "/admin/entry-video": <ImportIcon size={28} />,
+  "/admin/update-video": <ImportIcon size={28} />,
   "/admin/flogin": <UsersIcon size={28} />,
 };
 
@@ -127,8 +128,13 @@ const sections = [
   },
   {
     title: "וידאו כניסה",
-    description: "וידאו שקופץ אחרי התחברות — עדכונים, הודעות חשובות או ברכת פתיחה מ-Vimeo",
+    description: "וידאו פתיחה שמוצג למשתמשים חדשים אחרי סיום הסיור — פעם אחת בלבד",
     href: "/admin/entry-video",
+  },
+  {
+    title: "וידאו עדכון",
+    description: "וידאו שקופץ למשתמשים חוזרים — מתאים לעדכונים, פיצ׳רים חדשים ותכנים חדשים",
+    href: "/admin/update-video",
   },
   {
     title: "הרשמה חופשית",
