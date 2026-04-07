@@ -980,6 +980,24 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file || !file.type.startsWith("image/")) return;
+                      // Upload file directly via FormData (no size limits)
+                      const fileName = `thumb_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      formData.append("fileName", fileName);
+                      try {
+                        const uploadRes = await fetch("/api/upload-image", { method: "POST", body: formData });
+                        if (uploadRes.ok) {
+                          const { url } = await uploadRes.json();
+                          if (url) {
+                            setThumbnailUrl(url);
+                            setCustomThumbUrl("");
+                            registerThumbInMedia(url, file.name || "Course Thumbnail");
+                            return;
+                          }
+                        }
+                      } catch {}
+                      // Fallback: read as data URL and use storeImageIfDataUrl
                       const reader = new FileReader();
                       reader.onload = async () => {
                         const ref = await storeImageIfDataUrl(reader.result as string, "thumb-upload");

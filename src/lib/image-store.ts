@@ -95,20 +95,28 @@ export async function storeImageIfDataUrl(dataUrl: string, prefix: string = "img
 
   // Compress images to reduce size
   const compressed = await compressImage(dataUrl);
+  const fileName = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-  // Try cloud upload
+  // Try cloud upload via FormData (avoids JSON body size limits)
   try {
-    const res = await fetch("/api/upload-image", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        dataUrl: compressed,
-        fileName: `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.url) return data.url;
+    // Convert data URL to Blob
+    const match = compressed.match(/^data:([^;]+);base64,(.+)$/);
+    if (match) {
+      const byteString = atob(match[2]);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+      const blob = new Blob([ab], { type: match[1] });
+
+      const formData = new FormData();
+      formData.append("file", blob, `${fileName}.jpg`);
+      formData.append("fileName", fileName);
+
+      const res = await fetch("/api/upload-image", { method: "POST", body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) return data.url;
+      }
     }
   } catch {}
 
