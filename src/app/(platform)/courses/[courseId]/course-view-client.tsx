@@ -63,7 +63,12 @@ interface Course {
 export default function CourseViewClient({ course }: { course: Course }) {
   const courseId = course.id;
   const [openChapters, setOpenChapters] = useState<string[]>([]);
-  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [completedLessons, setCompletedLessons] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try { return JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]"); } catch {}
+    }
+    return [];
+  });
 
   useEffect(() => {
     // Open first chapter by default

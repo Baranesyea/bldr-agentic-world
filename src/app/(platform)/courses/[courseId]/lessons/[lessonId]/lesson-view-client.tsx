@@ -122,8 +122,13 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
     return course.chapters.find((ch) => ch.lessons.some((l) => l.id === currentLesson.id))?.id || "";
   }, [course, currentLesson]);
 
-  // State
-  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  // State — initialize from localStorage synchronously so progress shows immediately
+  const [completedLessons, setCompletedLessons] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try { return JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]"); } catch {}
+    }
+    return [];
+  });
   const [openChapters, setOpenChapters] = useState<string[]>([]);
   const [noteText, setNoteText] = useState("");
   const [savedNotes, setSavedNotes] = useState<LessonNote[]>([]);
