@@ -55,25 +55,61 @@ export async function deleteImage(id: string): Promise<void> {
 }
 
 /**
+ * Compress an image data URL to max 1280px width, JPEG quality 0.8
+ * to keep it under API body limits.
+ */
+async function compressImage(dataUrl: string, maxWidth = 1280, quality = 0.8): Promise<string> {
+  if (typeof document === "undefined") return dataUrl;
+  // Skip non-image data URLs (e.g. audio)
+  if (!dataUrl.startsWith("data:image/")) return dataUrl;
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let w = img.naturalWidth;
+      let h = img.naturalHeight;
+      if (w > maxWidth) {
+        h = Math.round((h * maxWidth) / w);
+        w = maxWidth;
+      }
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { resolve(dataUrl); return; }
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+/**
  * Upload a data URL image to cloud storage and return the public URL.
+ * Compresses images before upload to stay under API limits.
  * Falls back to IndexedDB if cloud upload fails.
- * If the URL is already an external URL (not data:), just return it as-is.
  */
 export async function storeImageIfDataUrl(dataUrl: string, prefix: string = "img"): Promise<string> {
   if (!dataUrl || !dataUrl.startsWith("data:")) return dataUrl;
 
-  // Try cloud upload first
+  // Compress images to reduce size
+  const compressed = await compressImage(dataUrl);
+
+  // Try cloud upload
   try {
     const res = await fetch("/api/upload-image", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        dataUrl,
+        dataUrl: compressed,
         fileName: `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       }),
     });
-    const data = await res.json();
-    if (data.url) return data.url;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) return data.url;
+    }
   } catch {}
 
   // Fallback to IndexedDB if cloud fails
