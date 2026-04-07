@@ -566,6 +566,13 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
           .lesson-notes-sidebar > button { display: none !important; }
           .lesson-notes-sidebar { overflow-y: visible !important; }
           .lesson-timestamp { display: none !important; }
+          .lesson-title-row { flex-direction: column !important; align-items: stretch !important; }
+          .lesson-title-row h1 { font-size: 18px !important; }
+          .lesson-title-inline { display: contents !important; }
+          .lesson-actions-mobile { display: flex !important; gap: 8px !important; margin-top: 12px !important; }
+          .lesson-actions-mobile > * { flex: 1 !important; justify-content: center !important; }
+          .lesson-complete-btn-desktop { display: none !important; }
+          .lesson-nav-desktop { display: none !important; }
         }
       `}</style>
 
@@ -892,19 +899,13 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
             padding: "20px",
             marginBottom: "16px",
           }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div className="lesson-title-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+              <div className="lesson-title-inline" style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#f0f0f5" }}>{currentLesson.title}</h1>
-                <ShareButton
-                  type="lesson"
-                  name={currentLesson.title}
-                  courseId={courseId}
-                  lessonId={currentLesson.id}
-                  lessonTitle={currentLesson.title}
-                  videoUrl={currentLesson.videoUrl}
-                />
               </div>
+              {/* Desktop: complete button inline */}
               <button
+                className="lesson-complete-btn-desktop"
                 onClick={() => toggleCompleted(currentLesson.id)}
                 style={{
                   background: isCurrentCompleted ? "rgba(0,200,83,0.15)" : "#12122a",
@@ -923,6 +924,82 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
               >
                 {isCurrentCompleted ? <><CheckIcon size={14} /> הושלם</> : "סמן כהושלם"}
               </button>
+
+              {/* Mobile: 3 buttons row */}
+              <div className="lesson-actions-mobile" style={{ display: "none" }}>
+                <button
+                  onClick={() => toggleCompleted(currentLesson.id)}
+                  style={{
+                    background: isCurrentCompleted ? "rgba(0,200,83,0.15)" : "#12122a",
+                    color: isCurrentCompleted ? "#00C853" : "rgba(240,240,245,0.6)",
+                    padding: "10px 12px",
+                    borderRadius: "4px",
+                    border: `1px solid ${isCurrentCompleted ? "rgba(0,200,83,0.3)" : "rgba(255,255,255,0.06)"}`,
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                  }}
+                >
+                  {isCurrentCompleted ? <><CheckIcon size={12} /> הושלם</> : "סמן כהושלם"}
+                </button>
+                <ShareButton
+                  type="lesson"
+                  name={currentLesson.title}
+                  courseId={courseId}
+                  lessonId={currentLesson.id}
+                  lessonTitle={currentLesson.title}
+                  videoUrl={currentLesson.videoUrl}
+                />
+                {nextLesson ? (
+                  <Link
+                    href={`/courses/${courseId}/lessons/${nextLesson.id}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      background: "#0000FF",
+                      color: "white",
+                      padding: "10px 12px",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      textDecoration: "none",
+                      fontWeight: 600,
+                    }}
+                  >
+                    שיעור הבא
+                  </Link>
+                ) : (
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "10px 12px",
+                    borderRadius: "4px",
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    color: "rgba(240,240,245,0.4)",
+                    fontSize: "12px",
+                  }}>
+                    שיעור אחרון
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* Desktop share button - after title */}
+            <div className="lesson-complete-btn-desktop" style={{ marginBottom: 8 }}>
+              <ShareButton
+                type="lesson"
+                name={currentLesson.title}
+                courseId={courseId}
+                lessonId={currentLesson.id}
+                lessonTitle={currentLesson.title}
+                videoUrl={currentLesson.videoUrl}
+              />
             </div>
             <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.7)", lineHeight: 1.6 }}>{currentLesson.description}</p>
           </div>
@@ -998,8 +1075,8 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
             </div>
           )}
 
-          {/* Navigation */}
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "32px" }}>
+          {/* Navigation (desktop only) */}
+          <div className="lesson-nav-desktop" style={{ display: "flex", justifyContent: "space-between", marginBottom: "32px" }}>
             {prevLesson ? (
               <Link
                 href={`/courses/${courseId}/lessons/${prevLesson.id}`}
