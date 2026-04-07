@@ -1,4 +1,4 @@
-import { getCourses } from "@/lib/data/courses";
+import { getCourses, formatDuration } from "@/lib/data/courses";
 import DashboardClient from "./dashboard-client";
 
 export const revalidate = 10;
@@ -23,7 +23,7 @@ export default async function DashboardPage() {
         slug: l.slug || l.id,
         title: l.title,
         videoUrl: l.videoUrl || "",
-        duration: l.duration ? `${Math.floor(l.duration / 60)}:${String(l.duration % 60).padStart(2, "0")}` : "—",
+        duration: l.duration ? formatDuration(l.duration) : "—",
       })),
     })),
   }));

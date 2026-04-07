@@ -1,6 +1,6 @@
 export const revalidate = 30;
 
-import { getCourseById } from "@/lib/data/courses";
+import { getCourseById, formatDuration } from "@/lib/data/courses";
 import { notFound } from "next/navigation";
 import CourseViewClient from "./course-view-client";
 
@@ -34,7 +34,7 @@ export default async function CourseViewPage({
         slug: l.slug || l.id,
         title: l.title,
         videoUrl: l.videoUrl || "",
-        duration: l.duration ? `${Math.floor(l.duration / 60)}:${String(l.duration % 60).padStart(2, "0")}` : "",
+        duration: l.duration ? formatDuration(l.duration) : "",
         number: l.displayOrder + 1,
         completed: false,
         hasAssignment: l.hasAssignment || false,

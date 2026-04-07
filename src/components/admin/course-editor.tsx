@@ -409,7 +409,7 @@ export default function CourseEditor({ courseId }: { courseId?: string }) {
                 number: li + 1,
                 title: l.title || "",
                 videoUrl: l.videoUrl || "",
-                duration: l.duration ? `${Math.floor(l.duration / 60)}:${String(l.duration % 60).padStart(2, "0")}` : "—",
+                duration: l.duration ? (l.duration >= 3600 ? `${Math.floor(l.duration / 3600)}:${String(Math.floor((l.duration % 3600) / 60)).padStart(2, "0")}:${String(l.duration % 60).padStart(2, "0")}` : `${Math.floor(l.duration / 60)}:${String(l.duration % 60).padStart(2, "0")}`) : "—",
                 description: l.description || "",
                 skills: [],
                 hasAssignment: l.hasAssignment || false,

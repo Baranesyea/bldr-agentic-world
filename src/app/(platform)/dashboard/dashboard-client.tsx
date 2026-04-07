@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
-import { BookIcon, FireIcon, TrophyIcon, PlayIcon, LockIcon } from "@/components/ui/icons";
+import { BookIcon, FireIcon, TrophyIcon, PlayIcon, LockIcon, CheckIcon } from "@/components/ui/icons";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
 import { resolveImageUrl } from "@/lib/image-store";
 import { YouTubeCarousel, YouTubeShortsCarousel } from "@/components/youtube-carousel";
@@ -75,8 +75,14 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
 
   const userName = userProfile?.full_name?.split(" ")[0] || "";
 
-  // Last watched - "continue where you left off"
+  // Last watched + progress
   const [lastWatched, setLastWatched] = useState<{ lessonId: string; courseId: string; courseTitle: string; lessonTitle: string; watchPosition: number } | null>(null);
+  const [completedLessons, setCompletedLessons] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try { return JSON.parse(localStorage.getItem("bldr_completed_lessons") || "[]"); } catch {}
+    }
+    return [];
+  });
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -90,9 +96,18 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
         const { data } = await supabase.auth.getSession();
         const email = data.session?.user?.email;
         if (!email) return;
-        const res = await fetch(`/api/progress/last-watched?email=${encodeURIComponent(email)}`);
-        const lw = await res.json();
+        // Fetch last-watched and progress in parallel
+        const [lwRes, progRes] = await Promise.all([
+          fetch(`/api/progress/last-watched?email=${encodeURIComponent(email)}`),
+          fetch(`/api/progress?email=${encodeURIComponent(email)}`),
+        ]);
+        const lw = await lwRes.json();
         if (lw && lw.lessonId) setLastWatched(lw);
+        const prog = await progRes.json();
+        if (Array.isArray(prog.completedLessons) && prog.completedLessons.length > 0) {
+          setCompletedLessons(prog.completedLessons);
+          localStorage.setItem("bldr_completed_lessons", JSON.stringify(prog.completedLessons));
+        }
       } catch {}
     })();
   }, []);
@@ -164,39 +179,38 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
           style={{ textDecoration: "none", display: "block" }}
         >
           <div style={{
-            margin: "12px 32px 0",
-            padding: "12px 20px",
-            background: "linear-gradient(135deg, rgba(0,0,255,0.08), rgba(100,100,255,0.04))",
-            border: "1px solid rgba(0,0,255,0.2)",
-            borderRadius: 4,
+            margin: "0",
+            padding: "10px 32px",
+            background: "transparent",
+            borderBottom: "1px solid rgba(255,255,255,0.04)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             cursor: "pointer",
             transition: "all 0.2s",
           }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,255,0.4)"; e.currentTarget.style.background = "linear-gradient(135deg, rgba(0,0,255,0.12), rgba(100,100,255,0.06))"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,255,0.2)"; e.currentTarget.style.background = "linear-gradient(135deg, rgba(0,0,255,0.08), rgba(100,100,255,0.04))"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,0,255,0.04)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{
-                width: 36, height: 36, borderRadius: "50%",
-                background: "rgba(0,0,255,0.15)",
+                width: 32, height: 32, borderRadius: "50%",
+                background: "rgba(0,0,255,0.12)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <PlayIcon size={16} color="#6666FF" />
+                <PlayIcon size={14} color="#6666FF" />
               </div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#f0f0f5" }}>
                   המשך מאיפה שעצרת
                 </div>
-                <div style={{ fontSize: 12, color: "rgba(240,240,245,0.6)", marginTop: 2 }}>
-                  {lastWatched.courseTitle} · {lastWatched.lessonTitle} · {Math.floor(lastWatched.watchPosition / 60)}:{String(lastWatched.watchPosition % 60).padStart(2, "0")}
+                <div style={{ fontSize: 12, color: "rgba(240,240,245,0.5)", marginTop: 1 }}>
+                  {lastWatched.courseTitle} · {lastWatched.lessonTitle}{lastWatched.watchPosition > 0 ? ` · ${Math.floor(lastWatched.watchPosition / 60)}:${String(lastWatched.watchPosition % 60).padStart(2, "0")}` : ""}
                 </div>
               </div>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6666FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: "rotate(180deg)" }}>
-              <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6666FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12H19" /><path d="M12 5l7 7-7 7" />
             </svg>
           </div>
         </Link>
@@ -320,8 +334,12 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "16px" }}>כל הקורסים</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
             {nonFeaturedActive.map((c, idx) => {
-              const lessonCount = c.chapters?.reduce((s, ch) => s + ch.lessons.length, 0) || 0;
+              const allCourseLessons = c.chapters?.flatMap((ch) => ch.lessons) || [];
+              const lessonCount = allCourseLessons.length;
               const totalDur = getTotalDuration(c);
+              const doneLessons = allCourseLessons.filter((l) => completedLessons.includes(l.id)).length;
+              const courseComplete = lessonCount > 0 && doneLessons === lessonCount;
+              const courseStarted = doneLessons > 0;
               const locked = !isAdmin && !access.loading && access.allCourseIds.length > 0 && !isCourseAvailable(c.id, access);
               if (locked) {
                 return (
@@ -448,6 +466,16 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                     <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "rgba(240,240,245,0.7)", padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>
                       {lessonCount} שיעורים{totalDur ? ` · ${totalDur}` : ""}
                     </span>
+                    {/* Completion indicator */}
+                    {courseComplete ? (
+                      <div style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: "50%", background: "rgba(0,200,83,0.2)", border: "2px solid #00C853", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2, backdropFilter: "blur(4px)" }}>
+                        <CheckIcon size={16} color="#00C853" />
+                      </div>
+                    ) : courseStarted ? (
+                      <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,0,0.6)", borderRadius: 4, padding: "4px 10px", zIndex: 2, backdropFilter: "blur(4px)", display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#6666FF" }}>{doneLessons}/{lessonCount}</span>
+                      </div>
+                    ) : null}
                     {isAdmin && (
                       <a
                         href={`/admin/courses/${c.id}/edit`}

@@ -1,4 +1,4 @@
-import { getCourses } from "@/lib/data/courses";
+import { getCourses, formatDuration } from "@/lib/data/courses";
 export const revalidate = 10;
 import AdminCoursesClient from "./admin-courses-client";
 
@@ -23,7 +23,7 @@ export default async function CourseManagerPage() {
         number: l.displayOrder + 1,
         title: l.title,
         videoUrl: l.videoUrl || "",
-        duration: l.duration ? `${Math.floor(l.duration / 60)}:${String(l.duration % 60).padStart(2, "0")}` : "—",
+        duration: l.duration ? formatDuration(l.duration) : "—",
         description: l.description || "",
         skills: [],
         hasAssignment: l.hasAssignment || false,
