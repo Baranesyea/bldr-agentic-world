@@ -170,6 +170,12 @@ export const forumReplies = pgTable("forum_replies", {
 export const supportQuestions = pgTable("support_questions", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  courseId: uuid("course_id"),
+  lessonId: uuid("lesson_id"),
+  courseName: varchar("course_name", { length: 500 }),
+  lessonTitle: varchar("lesson_title", { length: 500 }),
+  userName: varchar("user_name", { length: 255 }),
+  userEmail: varchar("user_email", { length: 255 }),
   title: varchar("title", { length: 500 }).notNull(),
   description: text("description").notNull(),
   mediaLink: text("media_link"),
@@ -178,8 +184,21 @@ export const supportQuestions = pgTable("support_questions", {
   adminResponseMedia: text("admin_response_media"),
   tags: jsonb("tags").default([]),
   isPublished: boolean("is_published").default(false),
+  resolvedByAdmin: boolean("resolved_by_admin").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   answeredAt: timestamp("answered_at"),
+});
+
+export const questionReplies = pgTable("question_replies", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  questionId: uuid("question_id").notNull().references(() => supportQuestions.id, { onDelete: "cascade" }),
+  parentReplyId: uuid("parent_reply_id"),
+  userId: uuid("user_id"),
+  userName: varchar("user_name", { length: 255 }),
+  userEmail: varchar("user_email", { length: 255 }),
+  content: text("content").notNull(),
+  isAdmin: boolean("is_admin").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const chatChannels = pgTable("chat_channels", {

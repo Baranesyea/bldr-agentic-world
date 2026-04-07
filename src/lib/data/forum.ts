@@ -7,6 +7,10 @@ export async function getForumQuestions() {
     .select({
       id: supportQuestions.id,
       userId: supportQuestions.userId,
+      courseId: supportQuestions.courseId,
+      lessonId: supportQuestions.lessonId,
+      courseName: supportQuestions.courseName,
+      lessonTitle: supportQuestions.lessonTitle,
       title: supportQuestions.title,
       description: supportQuestions.description,
       mediaLink: supportQuestions.mediaLink,
@@ -15,9 +19,11 @@ export async function getForumQuestions() {
       adminResponseMedia: supportQuestions.adminResponseMedia,
       tags: supportQuestions.tags,
       isPublished: supportQuestions.isPublished,
+      resolvedByAdmin: supportQuestions.resolvedByAdmin,
       createdAt: supportQuestions.createdAt,
       answeredAt: supportQuestions.answeredAt,
-      userName: users.fullName,
+      userName: supportQuestions.userName,
+      userEmail: supportQuestions.userEmail,
       userAvatar: users.avatarUrl,
     })
     .from(supportQuestions)
@@ -32,6 +38,10 @@ export async function getForumQuestionById(id: string) {
     .select({
       id: supportQuestions.id,
       userId: supportQuestions.userId,
+      courseId: supportQuestions.courseId,
+      lessonId: supportQuestions.lessonId,
+      courseName: supportQuestions.courseName,
+      lessonTitle: supportQuestions.lessonTitle,
       title: supportQuestions.title,
       description: supportQuestions.description,
       mediaLink: supportQuestions.mediaLink,
@@ -40,9 +50,11 @@ export async function getForumQuestionById(id: string) {
       adminResponseMedia: supportQuestions.adminResponseMedia,
       tags: supportQuestions.tags,
       isPublished: supportQuestions.isPublished,
+      resolvedByAdmin: supportQuestions.resolvedByAdmin,
       createdAt: supportQuestions.createdAt,
       answeredAt: supportQuestions.answeredAt,
-      userName: users.fullName,
+      userName: supportQuestions.userName,
+      userEmail: supportQuestions.userEmail,
       userAvatar: users.avatarUrl,
     })
     .from(supportQuestions)

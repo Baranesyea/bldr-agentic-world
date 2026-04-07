@@ -281,9 +281,50 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
   const [kbSuccess, setKbSuccess] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
-    const all = loadQuestions().filter((q) => q.courseId === courseId && q.lessonId === lessonId);
-    setQuestions(all);
-  }, [courseId, lessonId]);
+    // Load from API first, fallback to localStorage
+    fetch(`/api/questions?courseId=${courseId}&lessonId=${lessonId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          // Transform DB format to ForumQuestion format
+          const mapped: ForumQuestion[] = data.map((q: Record<string, unknown>) => ({
+            id: q.id as string,
+            courseId: (q.courseId as string) || courseId,
+            lessonId: (q.lessonId as string) || lessonId,
+            lessonTitle: (q.lessonTitle as string) || lessonTitle,
+            courseName: (q.courseName as string) || courseName,
+            userId: (q.userId as string) || "",
+            userName: (q.userName as string) || "משתמש",
+            userAvatar: "",
+            title: q.title as string,
+            content: (q.description as string) || "",
+            mediaUrls: q.mediaLink ? [q.mediaLink as string] : [],
+            createdAt: (q.createdAt as string) || new Date().toISOString(),
+            status: (q.status as "pending" | "answered" | "closed") || "pending",
+            answers: ((q.replies as Array<Record<string, unknown>>) || []).map((r) => ({
+              id: r.id as string,
+              userId: (r.user_id as string) || "",
+              userName: (r.user_name as string) || "משתמש",
+              userAvatar: "",
+              content: r.content as string,
+              mediaUrls: [],
+              createdAt: (r.created_at as string) || new Date().toISOString(),
+              isAdmin: r.is_admin as boolean || false,
+              replies: [],
+            })),
+          }));
+          setQuestions(mapped);
+        } else {
+          // Fallback to localStorage
+          const all = loadQuestions().filter((q) => q.courseId === courseId && q.lessonId === lessonId);
+          setQuestions(all);
+        }
+      })
+      .catch(() => {
+        const all = loadQuestions().filter((q) => q.courseId === courseId && q.lessonId === lessonId);
+        setQuestions(all);
+      });
+  }, [courseId, lessonId, lessonTitle, courseName]);
 
   useEffect(() => {
     refresh();
@@ -317,13 +358,45 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
     }, 2000);
   };
 
-  const postQuestion = () => {
+  const postQuestion = async () => {
+    // Get user email for API
+    let email = "";
+    try {
+      const profile = JSON.parse(localStorage.getItem("bldr_user_profile") || "{}");
+      email = profile.email || "";
+    } catch {}
+    if (!email) {
+      try {
+        const { createClient } = await import("@/lib/supabase");
+        const supabase = createClient();
+        const { data } = await supabase.auth.getSession();
+        email = data.session?.user?.email || "";
+      } catch {}
+    }
+
+    // Save to API (DB)
+    try {
+      await fetch("/api/questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          title: title.trim(),
+          description: content.trim(),
+          courseId,
+          lessonId,
+          courseName,
+          lessonTitle,
+          userName: user.name,
+          mediaLink: mediaUrl.trim() || null,
+        }),
+      });
+    } catch {}
+
+    // Also save to localStorage as fallback
     const q: ForumQuestion = {
       id: crypto.randomUUID(),
-      courseId,
-      lessonId,
-      lessonTitle,
-      courseName,
+      courseId, lessonId, lessonTitle, courseName,
       userId: crypto.randomUUID(),
       userName: user.name,
       userAvatar: user.avatarUrl,
@@ -336,7 +409,7 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
     };
     addQuestion(q);
     addForumNotification(q.title, lessonTitle);
-    // Track question_asked analytics event
+
     fetch("/api/analytics", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -352,9 +425,33 @@ export function LessonDiscussion({ courseId, lessonId, lessonTitle, courseName }
     setTimeout(() => resetForm(), 2500);
   };
 
-  const handleDirectAnswer = (questionId: string) => {
+  const handleDirectAnswer = async (questionId: string) => {
     const text = answerTexts[questionId]?.trim();
     if (!text) return;
+
+    // Get email
+    let email = "";
+    try {
+      const profile = JSON.parse(localStorage.getItem("bldr_user_profile") || "{}");
+      email = profile.email || "";
+    } catch {}
+
+    // Save to API
+    try {
+      await fetch("/api/questions/replies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionId,
+          content: text,
+          userName: user.name,
+          userEmail: email,
+          isAdmin: user.role === "admin",
+        }),
+      });
+    } catch {}
+
+    // Also save to localStorage
     const answer: ForumAnswer = {
       id: crypto.randomUUID(),
       userId: crypto.randomUUID(),
