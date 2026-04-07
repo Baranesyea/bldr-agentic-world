@@ -48,35 +48,35 @@ const DEFAULT_SETTINGS: OnboardingSettings = {
   soundDefault: true,
 };
 
-function getSteps(): TourStep[] {
+function getStepsFromCache(): TourStep[] {
   try {
     const stored = localStorage.getItem("bldr_onboarding_steps");
-    if (stored) {
-      const parsed: TourStep[] = JSON.parse(stored);
-      // Migrate old href selectors to data-nav
-      let migrated = false;
-      for (const step of parsed) {
-        if (step.targetSelector.startsWith("[href='")) {
-          step.targetSelector = step.targetSelector.replace("[href='", "[data-nav='");
-          migrated = true;
-        }
-      }
-      if (migrated) {
-        localStorage.setItem("bldr_onboarding_steps", JSON.stringify(parsed));
-      }
-      return parsed;
-    }
+    if (stored) return JSON.parse(stored);
   } catch {}
-  localStorage.setItem("bldr_onboarding_steps", JSON.stringify(DEFAULT_STEPS));
   return DEFAULT_STEPS;
 }
 
-function getSettings(): OnboardingSettings {
+function getSettingsFromCache(): OnboardingSettings {
   try {
     const stored = localStorage.getItem("bldr_onboarding_settings");
     if (stored) return JSON.parse(stored);
   } catch {}
   return DEFAULT_SETTINGS;
+}
+
+async function loadOnboardingFromDB(): Promise<{ steps: TourStep[]; settings: OnboardingSettings }> {
+  try {
+    const res = await fetch("/api/onboarding-settings");
+    const data = await res.json();
+    const steps = (data.steps as TourStep[]) || getStepsFromCache();
+    const settings = (data.settings as OnboardingSettings) || getSettingsFromCache();
+    // Cache in localStorage
+    localStorage.setItem("bldr_onboarding_steps", JSON.stringify(steps));
+    localStorage.setItem("bldr_onboarding_settings", JSON.stringify(settings));
+    return { steps, settings };
+  } catch {
+    return { steps: getStepsFromCache(), settings: getSettingsFromCache() };
+  }
 }
 
 /* ─────────────────────────────────────────────
@@ -241,29 +241,30 @@ export function OnboardingTour() {
   useEffect(() => {
     const done = localStorage.getItem("bldr_onboarding_done") === "true";
     if (!done) {
-      const s = getSteps();
-      const st = getSettings();
-      if (s.length > 0) {
-        setSteps(s);
-        setSettings(st);
-        setSoundEnabled(st.soundEnabled !== false && st.soundDefault);
-        setTimeout(() => setShowWelcome(true), 1000);
-      }
+      // Load from DB, fallback to localStorage cache
+      loadOnboardingFromDB().then(({ steps: s, settings: st }) => {
+        if (s.length > 0) {
+          setSteps(s);
+          setSettings(st);
+          setSoundEnabled(st.soundEnabled !== false && st.soundDefault);
+          setTimeout(() => setShowWelcome(true), 1000);
+        }
+      });
     }
 
     // Listen for trigger from sidebar
     const interval = setInterval(() => {
       if (localStorage.getItem("bldr_onboarding_trigger") === "true") {
         localStorage.removeItem("bldr_onboarding_trigger");
-        const s = getSteps();
-        const st = getSettings();
-        if (s.length > 0) {
-          setSteps(s);
-          setSettings(st);
-          setSoundEnabled(st.soundEnabled !== false && st.soundDefault);
-          setCurrentStep(0);
-          setShowWelcome(true);
-        }
+        loadOnboardingFromDB().then(({ steps: s, settings: st }) => {
+          if (s.length > 0) {
+            setSteps(s);
+            setSettings(st);
+            setSoundEnabled(st.soundEnabled !== false && st.soundDefault);
+            setCurrentStep(0);
+            setShowWelcome(true);
+          }
+        });
       }
     }, 500);
 

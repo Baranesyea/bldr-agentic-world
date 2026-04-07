@@ -55,11 +55,28 @@ export async function deleteImage(id: string): Promise<void> {
 }
 
 /**
- * Save a data URL image to IndexedDB and return a reference key.
+ * Upload a data URL image to cloud storage and return the public URL.
+ * Falls back to IndexedDB if cloud upload fails.
  * If the URL is already an external URL (not data:), just return it as-is.
  */
 export async function storeImageIfDataUrl(dataUrl: string, prefix: string = "img"): Promise<string> {
   if (!dataUrl || !dataUrl.startsWith("data:")) return dataUrl;
+
+  // Try cloud upload first
+  try {
+    const res = await fetch("/api/upload-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dataUrl,
+        fileName: `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      }),
+    });
+    const data = await res.json();
+    if (data.url) return data.url;
+  } catch {}
+
+  // Fallback to IndexedDB if cloud fails
   const id = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   await saveImage(id, dataUrl);
   return `idb://${id}`;

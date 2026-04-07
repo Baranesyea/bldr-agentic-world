@@ -117,12 +117,28 @@ export default function MediaLibraryPage() {
       });
 
       const key = `media_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-      await saveImage(key, dataUrl);
+
+      // Upload to cloud
+      let cloudUrl = "";
+      try {
+        const res = await fetch("/api/upload-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dataUrl, fileName: key }),
+        });
+        const json = await res.json();
+        if (json.url) cloudUrl = json.url;
+      } catch {}
+
+      // Fallback to IndexedDB if cloud fails
+      if (!cloudUrl) {
+        await saveImage(key, dataUrl);
+      }
 
       newItems.push({
         id: key,
         label: file.name,
-        key,
+        key: cloudUrl || key,
         createdAt: Date.now(),
         width: dims.width,
         height: dims.height,

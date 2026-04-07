@@ -130,8 +130,23 @@ function AudioUpload({
     try {
       const dataUrl = await readFileAsDataUrl(file);
       const id = `audio_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      await saveImage(id, dataUrl);
-      onUpload(`idb://${id}`);
+      // Try cloud upload first
+      let cloudUrl = "";
+      try {
+        const res = await fetch("/api/upload-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dataUrl, fileName: id }),
+        });
+        const json = await res.json();
+        if (json.url) cloudUrl = json.url;
+      } catch {}
+      if (cloudUrl) {
+        onUpload(cloudUrl);
+      } else {
+        await saveImage(id, dataUrl);
+        onUpload(`idb://${id}`);
+      }
     } catch (err) {
       console.error("Failed to upload audio:", err);
     }
@@ -284,7 +299,16 @@ export default function OnboardingAdminPage() {
     setSteps(steps.filter((_, i) => i !== index));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Save to DB
+    try {
+      await fetch("/api/onboarding-settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ steps, settings }),
+      });
+    } catch {}
+    // Also cache in localStorage
     localStorage.setItem("bldr_onboarding_steps", JSON.stringify(steps));
     localStorage.setItem("bldr_onboarding_settings", JSON.stringify(settings));
     setSaved(true);
