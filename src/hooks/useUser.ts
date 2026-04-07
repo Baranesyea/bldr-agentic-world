@@ -66,7 +66,14 @@ function getCachedProfile(): Profile | null {
   try {
     // Try sessionStorage first, then localStorage
     const cached = sessionStorage.getItem(CACHE_KEY) || localStorage.getItem(CACHE_KEY);
-    if (cached) return JSON.parse(cached);
+    if (cached) {
+      const profile = JSON.parse(cached);
+      // Never trust cached admin role — always force re-verification from API
+      if (profile && profile.role === "admin") {
+        profile.role = "member";
+      }
+      return profile;
+    }
   } catch {}
   return null;
 }
@@ -163,13 +170,33 @@ export function useUser() {
         setUser(session?.user ?? null);
         if (session?.user) {
           clearStaleUserData(session.user.id);
-          const { data } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", session.user.id)
-            .single();
-          setProfile(data as Profile | null);
-          setCachedProfile(data as Profile | null);
+          // Use our API first (same as initial load) for reliable role check
+          let p: Profile | null = null;
+          try {
+            const apiRes = await fetch(`/api/users/by-email?email=${encodeURIComponent(session.user.email!)}`);
+            const apiData = await apiRes.json();
+            if (apiData.id) {
+              p = {
+                id: apiData.id,
+                email: apiData.email,
+                full_name: apiData.fullName || "",
+                avatar_url: apiData.avatarUrl || null,
+                bio: null,
+                role: apiData.role || "member",
+                created_at: "",
+              } as Profile;
+            }
+          } catch {}
+          if (!p) {
+            const { data } = await supabase
+              .from("profiles")
+              .select("*")
+              .eq("id", session.user.id)
+              .single();
+            p = data as Profile | null;
+          }
+          setProfile(p);
+          setCachedProfile(p);
         } else {
           setProfile(null);
           setCachedProfile(null);

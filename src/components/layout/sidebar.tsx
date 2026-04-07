@@ -86,7 +86,7 @@ interface Notification {
 export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
-  const { profile: userProfile, isAdmin } = useUser();
+  const { profile: userProfile, isAdmin, loading: userLoading } = useUser();
   const touristData = typeof window !== "undefined" ? getTouristData() : null;
   const isTourist = !!touristData;
   const [internalCollapsed, setInternalCollapsed] = useState(true);
@@ -326,7 +326,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
       WebkitBackdropFilter: "blur(20px)",
     }}>
       {/* Admin view toggle */}
-      {isAdmin && (
+      {!userLoading && isAdmin && (
         <div style={{
           padding: collapsed ? "6px 4px" : "6px 12px",
           borderBottom: "1px solid rgba(255,255,255,0.04)",
