@@ -1,34 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { userProgress, users } from "@/lib/schema";
-import { eq, and } from "drizzle-orm";
-import postgres from "postgres";
+import { adminSettings } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 
-async function getUserByEmail(email: string) {
-  const normalized = email.toLowerCase().trim();
-  // Check users table first
-  const rows = await db.select().from(users).where(eq(users.email, normalized));
-  if (rows[0]) return rows[0];
-
-  // Fallback: sync from profiles table (Supabase-managed)
-  const sql = postgres(process.env.DATABASE_URL!);
-  try {
-    const [profile] = await sql`SELECT id, email, full_name FROM profiles WHERE LOWER(email) = ${normalized}`;
-    if (profile) {
-      await db.insert(users).values({
-        id: profile.id,
-        email: profile.email,
-        fullName: profile.full_name || profile.email.split("@")[0],
-        passwordHash: "oauth",
-        role: "member",
-      }).onConflictDoNothing();
-      const [user] = await db.select().from(users).where(eq(users.email, normalized));
-      return user || null;
-    }
-  } finally {
-    await sql.end();
-  }
-  return null;
+function progressKey(email: string) {
+  return `progress_${email.toLowerCase().trim()}`;
 }
 
 // GET /api/progress?email=xxx — returns completed lesson IDs for user
@@ -37,15 +13,12 @@ export async function GET(req: NextRequest) {
     const email = req.nextUrl.searchParams.get("email");
     if (!email) return NextResponse.json({ completedLessons: [] });
 
-    const user = await getUserByEmail(email);
-    if (!user) return NextResponse.json({ completedLessons: [] });
+    const key = progressKey(email);
+    const rows = await db.select().from(adminSettings).where(eq(adminSettings.key, key));
+    if (rows.length === 0) return NextResponse.json({ completedLessons: [] });
 
-    const rows = await db
-      .select({ lessonId: userProgress.lessonId })
-      .from(userProgress)
-      .where(and(eq(userProgress.userId, user.id), eq(userProgress.status, "completed")));
-
-    return NextResponse.json({ completedLessons: rows.map((r) => r.lessonId) });
+    const value = rows[0].value as { completedLessons?: string[] } | null;
+    return NextResponse.json({ completedLessons: value?.completedLessons || [] });
   } catch {
     return NextResponse.json({ completedLessons: [] });
   }
@@ -58,32 +31,29 @@ export async function POST(req: NextRequest) {
     const { email, lessonId, completed } = await req.json();
     if (!email || !lessonId) return NextResponse.json({ error: "missing fields" }, { status: 400 });
 
-    const user = await getUserByEmail(email);
-    if (!user) return NextResponse.json({ error: "user not found" }, { status: 404 });
+    const key = progressKey(email);
+    const rows = await db.select().from(adminSettings).where(eq(adminSettings.key, key));
 
-    const existing = await db
-      .select()
-      .from(userProgress)
-      .where(and(eq(userProgress.userId, user.id), eq(userProgress.lessonId, lessonId)));
+    let current: string[] = [];
+    if (rows.length > 0) {
+      const val = rows[0].value as { completedLessons?: string[] } | null;
+      current = val?.completedLessons || [];
+    }
 
     if (completed) {
-      if (existing.length > 0) {
-        await db
-          .update(userProgress)
-          .set({ status: "completed", completedAt: new Date() })
-          .where(eq(userProgress.id, existing[0].id));
-      } else {
-        await db.insert(userProgress).values({
-          userId: user.id,
-          lessonId,
-          status: "completed",
-          completedAt: new Date(),
-        });
+      if (!current.includes(lessonId)) {
+        current = [...current, lessonId];
       }
     } else {
-      if (existing.length > 0) {
-        await db.delete(userProgress).where(eq(userProgress.id, existing[0].id));
-      }
+      current = current.filter((id) => id !== lessonId);
+    }
+
+    const value = { completedLessons: current };
+
+    if (rows.length > 0) {
+      await db.update(adminSettings).set({ value, updatedAt: new Date() }).where(eq(adminSettings.key, key));
+    } else {
+      await db.insert(adminSettings).values({ key, value });
     }
 
     return NextResponse.json({ ok: true });

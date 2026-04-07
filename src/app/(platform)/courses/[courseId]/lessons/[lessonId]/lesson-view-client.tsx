@@ -200,6 +200,22 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
       setCompletedLessons(merged);
       localStorage.setItem("bldr_completed_lessons", JSON.stringify(merged));
 
+      // Save last-watched on lesson visit (so "continue" banner always has data)
+      if (userEmailRef.current && currentLesson) {
+        fetch("/api/progress/last-watched", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: userEmailRef.current,
+            lessonId: currentLesson.id,
+            courseId,
+            courseTitle: course.title,
+            lessonTitle: currentLesson.title,
+            watchPosition: 0,
+          }),
+        }).catch(() => {});
+      }
+
       // Sync any localStorage-only lessons to DB
       if (userEmailRef.current) {
         const dbSet = new Set(dbLessons);

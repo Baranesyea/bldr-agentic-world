@@ -204,7 +204,7 @@ export default function CourseViewClient({ course }: { course: Course }) {
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
                       {lesson.hasAssignment && <span style={{ fontSize: "11px", color: "#FFB300", background: "rgba(255,179,0,0.1)", padding: "2px 6px", borderRadius: "4px" }}>מטלה</span>}
                       {lesson.duration && !/^[—–\-]+$/.test(lesson.duration.trim()) && lesson.duration.trim() !== "" && (
-                        <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", display: "inline-flex", alignItems: "center", gap: "4px" }}><ClockIcon size={12} /> {lesson.duration}</span>
+                        <span style={{ fontSize: "12px", color: "rgba(240,240,245,0.7)", display: "inline-flex", alignItems: "center", gap: "4px", lineHeight: 1 }}><span style={{ display: "flex", flexShrink: 0 }}><ClockIcon size={12} /></span>{lesson.duration}</span>
                       )}
                     </div>
                   </Link>
