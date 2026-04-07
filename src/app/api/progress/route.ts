@@ -2,10 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { userProgress, users } from "@/lib/schema";
 import { eq, and } from "drizzle-orm";
+import postgres from "postgres";
 
 async function getUserByEmail(email: string) {
-  const rows = await db.select().from(users).where(eq(users.email, email.toLowerCase().trim()));
-  return rows[0] || null;
+  const normalized = email.toLowerCase().trim();
+  // Check users table first
+  const rows = await db.select().from(users).where(eq(users.email, normalized));
+  if (rows[0]) return rows[0];
+
+  // Fallback: sync from profiles table (Supabase-managed)
+  const sql = postgres(process.env.DATABASE_URL!);
+  try {
+    const [profile] = await sql`SELECT id, email, full_name FROM profiles WHERE LOWER(email) = ${normalized}`;
+    if (profile) {
+      await db.insert(users).values({
+        id: profile.id,
+        email: profile.email,
+        fullName: profile.full_name || profile.email.split("@")[0],
+        passwordHash: "oauth",
+        role: "member",
+      }).onConflictDoNothing();
+      const [user] = await db.select().from(users).where(eq(users.email, normalized));
+      return user || null;
+    }
+  } finally {
+    await sql.end();
+  }
+  return null;
 }
 
 // GET /api/progress?email=xxx — returns completed lesson IDs for user
@@ -58,7 +81,6 @@ export async function POST(req: NextRequest) {
         });
       }
     } else {
-      // Uncomplete — delete the row
       if (existing.length > 0) {
         await db.delete(userProgress).where(eq(userProgress.id, existing[0].id));
       }

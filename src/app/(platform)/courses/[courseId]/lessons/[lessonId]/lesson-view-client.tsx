@@ -232,6 +232,59 @@ export default function LessonViewClient({ course, lessonId }: { course: Course;
     }
   }, [isPlaying, currentLesson, courseId, trackEvent]);
 
+  // Save last watched position every 15 seconds while playing
+  useEffect(() => {
+    if (!isPlaying || !currentLesson || !userEmailRef.current) return;
+    const interval = setInterval(() => {
+      if (videoTimer > 5) {
+        fetch("/api/progress/last-watched", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: userEmailRef.current,
+            lessonId: currentLesson.id,
+            courseId,
+            courseTitle: course.title,
+            lessonTitle: currentLesson.title,
+            watchPosition: videoTimer,
+          }),
+        }).catch(() => {});
+      }
+    }, 15000);
+
+    // Also save on beforeunload
+    const saveOnLeave = () => {
+      if (videoTimer > 5 && userEmailRef.current && currentLesson) {
+        const payload = JSON.stringify({
+          email: userEmailRef.current,
+          lessonId: currentLesson.id,
+          courseId,
+          courseTitle: course.title,
+          lessonTitle: currentLesson.title,
+          watchPosition: videoTimer,
+        });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon("/api/progress/last-watched", new Blob([payload], { type: "application/json" }));
+        } else {
+          fetch("/api/progress/last-watched", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: payload,
+            keepalive: true,
+          }).catch(() => {});
+        }
+      }
+    };
+    window.addEventListener("beforeunload", saveOnLeave);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("beforeunload", saveOnLeave);
+      // Save position on lesson change
+      saveOnLeave();
+    };
+  }, [isPlaying, currentLesson?.id, courseId, course.title, videoTimer]);
+
   // Reset play tracking when lesson changes
   useEffect(() => {
     hasTrackedPlayRef.current = false;

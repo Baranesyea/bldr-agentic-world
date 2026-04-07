@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase";
 import { BookIcon, FireIcon, TrophyIcon, PlayIcon, LockIcon } from "@/components/ui/icons";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
 import { resolveImageUrl } from "@/lib/image-store";
@@ -35,6 +36,23 @@ function ResolvedImg({ src, alt, style }: { src: string; alt: string; style: Rea
   return <img src={resolved} alt={alt} style={style} />;
 }
 
+function getTotalDuration(c: { chapters: { lessons: { duration: string }[] }[] }): string {
+  let totalSec = 0;
+  for (const ch of c.chapters) {
+    for (const l of ch.lessons) {
+      if (!l.duration) continue;
+      const parts = l.duration.split(":").map(Number);
+      if (parts.length === 2) totalSec += parts[0] * 60 + parts[1];
+      else if (parts.length === 3) totalSec += parts[0] * 3600 + parts[1] * 60 + parts[2];
+    }
+  }
+  if (totalSec === 0) return "";
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  if (h > 0) return `${h} שע׳ ${m > 0 ? `${m} דק׳` : ""}`.trim();
+  return `${m} דק׳`;
+}
+
 interface Course {
   id: string;
   slug?: string;
@@ -56,6 +74,28 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
   const access = useAccessCheck();
 
   const userName = userProfile?.full_name?.split(" ")[0] || "";
+
+  // Last watched - "continue where you left off"
+  const [lastWatched, setLastWatched] = useState<{ lessonId: string; courseId: string; courseTitle: string; lessonTitle: string; watchPosition: number } | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth <= 768);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.auth.getSession();
+        const email = data.session?.user?.email;
+        if (!email) return;
+        const res = await fetch(`/api/progress/last-watched?email=${encodeURIComponent(email)}`);
+        const lw = await res.json();
+        if (lw && lw.lessonId) setLastWatched(lw);
+      } catch {}
+    })();
+  }, []);
 
   const activeCourses = courses.filter((c) => c.status === "active");
   const comingSoonCourses = courses.filter((c) =>
@@ -116,6 +156,51 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
           ))}
         </div>
       </div>
+
+      {/* ── Continue Where You Left Off (desktop only) ── */}
+      {!isMobile && lastWatched && (
+        <Link
+          href={`/courses/${lastWatched.courseId}/lessons/${lastWatched.lessonId}?t=${Math.floor(lastWatched.watchPosition / 60)}:${String(lastWatched.watchPosition % 60).padStart(2, "0")}`}
+          style={{ textDecoration: "none", display: "block" }}
+        >
+          <div style={{
+            margin: "12px 32px 0",
+            padding: "12px 20px",
+            background: "linear-gradient(135deg, rgba(0,0,255,0.08), rgba(100,100,255,0.04))",
+            border: "1px solid rgba(0,0,255,0.2)",
+            borderRadius: 4,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            cursor: "pointer",
+            transition: "all 0.2s",
+          }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,255,0.4)"; e.currentTarget.style.background = "linear-gradient(135deg, rgba(0,0,255,0.12), rgba(100,100,255,0.06))"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,255,0.2)"; e.currentTarget.style.background = "linear-gradient(135deg, rgba(0,0,255,0.08), rgba(100,100,255,0.04))"; }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: "50%",
+                background: "rgba(0,0,255,0.15)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <PlayIcon size={16} color="#6666FF" />
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#f0f0f5" }}>
+                  המשך מאיפה שעצרת
+                </div>
+                <div style={{ fontSize: 12, color: "rgba(240,240,245,0.6)", marginTop: 2 }}>
+                  {lastWatched.courseTitle} · {lastWatched.lessonTitle} · {Math.floor(lastWatched.watchPosition / 60)}:{String(lastWatched.watchPosition % 60).padStart(2, "0")}
+                </div>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6666FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: "rotate(180deg)" }}>
+              <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
+            </svg>
+          </div>
+        </Link>
+      )}
 
       {/* ── Hero — Featured Course ── */}
       {featuredCourse ? (
@@ -236,6 +321,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
             {nonFeaturedActive.map((c, idx) => {
               const lessonCount = c.chapters?.reduce((s, ch) => s + ch.lessons.length, 0) || 0;
+              const totalDur = getTotalDuration(c);
               const locked = !isAdmin && !access.loading && access.allCourseIds.length > 0 && !isCourseAvailable(c.id, access);
               if (locked) {
                 return (
@@ -270,7 +356,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                     )}
                     {/* Lesson count badge */}
                     <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "rgba(240,240,245,0.7)", padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>
-                      {lessonCount} שיעורים
+                      {lessonCount} שיעורים{totalDur ? ` · ${totalDur}` : ""}
                     </span>
                     {/* Admin edit button */}
                     {isAdmin && (
@@ -360,7 +446,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                       <span style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,255,0.35)", color: "#6666FF", padding: "4px 12px", borderRadius: 4, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>מומלץ</span>
                     )}
                     <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.5)", color: "rgba(240,240,245,0.7)", padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600, backdropFilter: "blur(4px)", zIndex: 2 }}>
-                      {lessonCount} שיעורים
+                      {lessonCount} שיעורים{totalDur ? ` · ${totalDur}` : ""}
                     </span>
                     {isAdmin && (
                       <a
