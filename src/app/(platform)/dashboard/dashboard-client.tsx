@@ -197,9 +197,6 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,0,255,0.04)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6666FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
-            </svg>
             <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: "50%",
@@ -218,6 +215,9 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                 </div>
               </div>
             </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6666FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
+            </svg>
           </div>
         </Link>
       )}
