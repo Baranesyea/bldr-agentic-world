@@ -473,7 +473,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                       </div>
                     ) : courseStarted ? (
                       <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,0,0.6)", borderRadius: 4, padding: "4px 10px", zIndex: 2, backdropFilter: "blur(4px)", display: "flex", alignItems: "center", gap: 4 }}>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: "#6666FF" }}>{doneLessons}/{lessonCount}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>{doneLessons}/{lessonCount}</span>
                       </div>
                     ) : null}
                     {isAdmin && (
