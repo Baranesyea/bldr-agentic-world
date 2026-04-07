@@ -177,25 +177,28 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
         </div>
       </div>
 
-      {/* ── Continue Where You Left Off (desktop only) ── */}
+      {/* ── Continue Where You Left Off (desktop only) — overlays hero top ── */}
       {!isMobile && lastWatched && (
         <Link
           href={`/courses/${lastWatched.courseId}/lessons/${lastWatched.lessonId}?t=${Math.floor(lastWatched.watchPosition / 60)}:${String(lastWatched.watchPosition % 60).padStart(2, "0")}`}
-          style={{ textDecoration: "none", display: "block" }}
+          style={{ textDecoration: "none", display: "block", position: "relative", zIndex: 5 }}
         >
           <div style={{
             margin: "0",
             padding: "10px 32px",
-            background: "transparent",
-            borderBottom: "1px solid rgba(255,255,255,0.04)",
+            background: "rgba(5,5,16,0.85)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             cursor: "pointer",
             transition: "all 0.2s",
+            marginBottom: "-52px",
           }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,0,255,0.04)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(5,5,16,0.92)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(5,5,16,0.85)"; }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1 }}>
               <div style={{
