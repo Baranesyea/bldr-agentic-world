@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import {
   getCourses,
   createCourse,
@@ -42,6 +43,8 @@ export async function POST(request: NextRequest) {
     }
 
     const course = await createCourse(body);
+    revalidatePath("/dashboard");
+    revalidatePath("/courses");
     return NextResponse.json({ course }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -61,6 +64,9 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Missing course id" }, { status: 400 });
     }
     const course = await updateCourse(id, data);
+    revalidatePath("/dashboard");
+    revalidatePath("/courses");
+    revalidatePath(`/courses/${id}`);
     return NextResponse.json({ course });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -79,6 +85,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Missing course id" }, { status: 400 });
     }
     await deleteCourse(id);
+    revalidatePath("/dashboard");
+    revalidatePath("/courses");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete course:", error);
