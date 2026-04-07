@@ -122,6 +122,11 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
 
   const totalLessons = courses.reduce((s, c) => s + (c.chapters?.reduce((cs, ch) => cs + ch.lessons.length, 0) || 0), 0);
   const firstLesson = featuredCourse?.chapters?.[0]?.lessons?.[0];
+  const featuredAllLessons = featuredCourse?.chapters?.flatMap((ch) => ch.lessons) || [];
+  const featuredDone = featuredAllLessons.filter((l) => completedLessons.includes(l.id)).length;
+  const featuredTotal = featuredAllLessons.length;
+  const featuredComplete = featuredTotal > 0 && featuredDone === featuredTotal;
+  const featuredStarted = featuredDone > 0;
 
   return (
     <div style={{ minHeight: "100vh", background: "#050510" }}>
@@ -192,11 +197,15 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,0,255,0.04)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6666FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
+            </svg>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: "50%",
                 background: "rgba(0,0,255,0.12)",
                 display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
               }}>
                 <PlayIcon size={14} color="#6666FF" />
               </div>
@@ -209,9 +218,6 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
                 </div>
               </div>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6666FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12H19" /><path d="M12 5l7 7-7 7" />
-            </svg>
           </div>
         </Link>
       )}
@@ -265,9 +271,20 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
             </a>
           )}
           <div style={{ position: "relative", zIndex: 1, maxWidth: "550px" }}>
-            <span style={{ background: "rgba(0,0,255,0.2)", color: "#3333FF", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: 600, display: "inline-block", marginBottom: "12px" }}>
-              קורס מומלץ
-            </span>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+              <span style={{ background: "rgba(0,0,255,0.2)", color: "#3333FF", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: 600 }}>
+                קורס מומלץ
+              </span>
+              {featuredComplete ? (
+                <span style={{ background: "rgba(0,200,83,0.15)", border: "1px solid rgba(0,200,83,0.3)", color: "#00C853", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <CheckIcon size={12} color="#00C853" /> הושלם
+                </span>
+              ) : featuredStarted ? (
+                <span style={{ background: "rgba(255,255,255,0.08)", color: "#fff", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: 600 }}>
+                  {featuredDone}/{featuredTotal} שיעורים
+                </span>
+              ) : null}
+            </div>
             <h1 style={{ fontSize: "36px", fontWeight: 900, color: "#f0f0f5", lineHeight: 1.1, marginBottom: "12px", textShadow: "0 2px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)" }}>
               {featuredCourse.title}
             </h1>
