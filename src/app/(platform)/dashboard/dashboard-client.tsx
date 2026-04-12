@@ -38,8 +38,8 @@ function ResolvedImg({ src, alt, style }: { src: string; alt: string; style: Rea
 
 function getTotalDuration(c: { chapters: { lessons: { duration: string }[] }[] }): string {
   let totalSec = 0;
-  for (const ch of c.chapters) {
-    for (const l of ch.lessons) {
+  for (const ch of (c.chapters || [])) {
+    for (const l of (ch.lessons || [])) {
       if (!l.duration) continue;
       const parts = l.duration.split(":").map(Number);
       if (parts.length === 2) totalSec += parts[0] * 60 + parts[1];
@@ -112,15 +112,16 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
     })();
   }, []);
 
-  const activeCourses = courses.filter((c) => c.status === "active");
-  const comingSoonCourses = courses.filter((c) =>
+  const safeCourses = Array.isArray(courses) ? courses : [];
+  const activeCourses = safeCourses.filter((c) => c.status === "active");
+  const comingSoonCourses = safeCourses.filter((c) =>
     c.status === "coming_soon" || (c.status === "draft" && isAdmin)
   );
   const featuredCourse = activeCourses.find((c) => c.featured) || activeCourses[0];
   // Show all active courses in the grid (including featured)
   const nonFeaturedActive = activeCourses;
 
-  const totalLessons = (Array.isArray(courses) ? courses : []).reduce((s, c) => s + (Array.isArray(c.chapters) ? c.chapters : []).reduce((cs, ch) => cs + (Array.isArray(ch.lessons) ? ch.lessons.length : 0), 0), 0);
+  const totalLessons = safeCourses.reduce((s, c) => s + (Array.isArray(c.chapters) ? c.chapters : []).reduce((cs, ch) => cs + (Array.isArray(ch.lessons) ? ch.lessons.length : 0), 0), 0);
   const firstLesson = featuredCourse?.chapters?.[0]?.lessons?.[0];
   const featuredAllLessons = (Array.isArray(featuredCourse?.chapters) ? featuredCourse.chapters : []).flatMap((ch) => Array.isArray(ch.lessons) ? ch.lessons : []);
   const featuredDone = featuredAllLessons.filter((l) => completedLessons.includes(l.id)).length;

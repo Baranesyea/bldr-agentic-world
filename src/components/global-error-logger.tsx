@@ -4,7 +4,10 @@ import { useEffect } from "react";
 
 export function GlobalErrorLogger() {
   useEffect(() => {
+    const IGNORE = ["AbortError", "Lock broken", "ResizeObserver", "Script error"];
+
     function sendError(message: string, stack?: string) {
+      if (IGNORE.some((i) => message.includes(i))) return;
       try {
         const profile = JSON.parse(localStorage.getItem("bldr_profile_cache") || "{}");
         fetch("/api/client-errors", {
