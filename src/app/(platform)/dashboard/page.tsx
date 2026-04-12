@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getCourses, formatDuration } from "@/lib/data/courses";
 import DashboardClient from "./dashboard-client";
 
@@ -28,5 +29,9 @@ export default async function DashboardPage() {
     })),
   }));
 
-  return <DashboardClient courses={transformedCourses} />;
+  return (
+    <Suspense fallback={<div style={{ padding: 32, textAlign: "center", color: "rgba(240,240,245,0.5)" }}>טוען...</div>}>
+      <DashboardClient courses={transformedCourses} />
+    </Suspense>
+  );
 }
