@@ -29,6 +29,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/update-video": <ImportIcon size={28} />,
   "/admin/flogin": <UsersIcon size={28} />,
   "/admin/errors": <TerminalIcon size={28} />,
+  "/admin/pending-questions": <QuestionIcon size={28} />,
 };
 
 const sections = [
@@ -86,6 +87,11 @@ const sections = [
     title: "ניהול שאלות",
     description: "ניהול שאלות מהפורום, מענה לתלמידים והעברת שאלות לבסיס הידע",
     href: "/admin/qa",
+  },
+  {
+    title: "שאלות ממתינות",
+    description: "שאלות שנשאלו על ידי סטודנטים בשיעורים — מענה, סטטוס ומעקב",
+    href: "/admin/pending-questions",
   },
   {
     title: "ספריית מדיה",

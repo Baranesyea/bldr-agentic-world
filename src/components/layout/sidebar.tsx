@@ -67,6 +67,7 @@ const adminNav = [
   { label: "תבניות אימייל", href: "/admin/email-templates", icon: LinkIcon },
   { label: "הרשמה חופשית", href: "/admin/flogin", icon: UsersIcon },
   { label: "אנליטיקס", href: "/admin/analytics", icon: DashboardIcon },
+  { label: "שאלות ממתינות", href: "/admin/pending-questions", icon: QuestionIcon },
   { label: "שגיאות", href: "/admin/errors", icon: TerminalIcon },
 ];
 
