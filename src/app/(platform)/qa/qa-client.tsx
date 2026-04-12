@@ -156,7 +156,7 @@ export default function QAPageClient({ courses }: { courses: { id: string; name:
         <QuestionIcon size={24} /> שאלות ותשובות
       </h1>
       <p style={{ color: "rgba(240,240,245,0.7)", marginBottom: "24px", fontSize: "14px" }}>
-        {isAdmin ? "כל השאלות מכל הקורסים — ענה, סמן כפתור, העבר למאגר" : "שאלות נפוצות עם תשובות מהצוות"}
+        {isAdmin ? "כל השאלות מכל הקורסים — ענה, סמן כפתור, העבר למאגר" : "כאן יופיעו שאלות שחוזרות על עצמן עם תשובות מפורטות"}
       </p>
 
       {/* Filters */}
@@ -193,7 +193,7 @@ export default function QAPageClient({ courses }: { courses: { id: string; name:
         <div style={{ textAlign: "center", padding: "64px 24px", color: "rgba(240,240,245,0.7)" }}>
           <QuestionIcon size={48} color="rgba(240,240,245,0.15)" />
           <p style={{ marginTop: "16px", fontSize: "15px" }}>
-            {isAdmin ? "אין שאלות חדשות!" : "אין שאלות ותשובות עדיין. שאל שאלה מתוך שיעור!"}
+            {isAdmin ? "אין שאלות חדשות!" : "ממש בקרוב תתחילו לראות כאן שאלות ותשובות מפורטות."}
           </p>
         </div>
       ) : (

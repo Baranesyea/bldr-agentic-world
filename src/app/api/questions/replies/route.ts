@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { questionReplies, supportQuestions } from "@/lib/schema";
+import { questionReplies, supportQuestions, notifications } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
 // POST /api/questions/replies — add a reply to a question
@@ -20,12 +20,29 @@ export async function POST(req: NextRequest) {
       parentReplyId: parentReplyId || null,
     }).returning();
 
-    // If admin reply, mark question as answered
+    // If admin reply, mark question as answered and notify the student
     if (isAdmin) {
       await db.update(supportQuestions).set({
         status: "answered",
         answeredAt: new Date(),
       }).where(eq(supportQuestions.id, questionId));
+
+      // Notify the student who asked the question
+      try {
+        const [question] = await db.select().from(supportQuestions).where(eq(supportQuestions.id, questionId));
+        if (question?.userId) {
+          const lessonLink = question.courseId && question.lessonId
+            ? `/courses/${question.courseId}/lessons/${question.lessonId}`
+            : "/qa";
+          await db.insert(notifications).values({
+            userId: question.userId,
+            class: "reply",
+            content: `קיבלת תשובה לשאלה: "${question.title}"`,
+            link: lessonLink,
+            channel: "in_app",
+          });
+        }
+      } catch {}
     }
 
     return NextResponse.json(reply, { status: 201 });

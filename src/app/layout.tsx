@@ -2,6 +2,7 @@ import type { Metadata } from "next/types";
 import { Merriweather } from "next/font/google";
 import "./globals.css";
 import { SeedLoader } from "@/components/seed-loader";
+import { GlobalErrorLogger } from "@/components/global-error-logger";
 
 const merriweather = Merriweather({
   variable: "--font-merriweather",
@@ -40,6 +41,7 @@ export default function RootLayout({
         className={`${merriweather.variable} antialiased bg-background text-foreground`}
       >
         <SeedLoader />
+        <GlobalErrorLogger />
         {children}
       </body>
     </html>

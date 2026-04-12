@@ -28,6 +28,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/entry-video": <ImportIcon size={28} />,
   "/admin/update-video": <ImportIcon size={28} />,
   "/admin/flogin": <UsersIcon size={28} />,
+  "/admin/errors": <TerminalIcon size={28} />,
 };
 
 const sections = [
@@ -140,6 +141,11 @@ const sections = [
     title: "הרשמה חופשית",
     description: "ניהול עמוד הרשמה חופשית עם גישה מוגבלת בזמן — הפעלה, כיבוי ומשך גישה",
     href: "/admin/flogin",
+  },
+  {
+    title: "שגיאות קליינט",
+    description: "מעקב אחר שגיאות שמשתמשים נתקלו בהן — stack trace, דפדפן ודף",
+    href: "/admin/errors",
   },
 ];
 

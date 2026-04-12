@@ -195,7 +195,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       {!access.loading && access.expired && access.expiryMode === "full_lock" && (
         <PricingPopup onClose={() => {}} dismissible={false} />
       )}
-      {!isAdmin && <FeedbackWidget />}
+      <FeedbackWidget />
       {!isAdmin && <WhatsAppCTA />}
       {!isAdmin && <NextEventBanner event={null} />}
       {!isMobile && <OnboardingTour />}

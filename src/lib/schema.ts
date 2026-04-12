@@ -295,6 +295,7 @@ export const notifications = pgTable("notifications", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   class: notificationClassEnum("class").notNull(),
   content: text("content").notNull(),
+  link: text("link"),
   read: boolean("read").default(false).notNull(),
   channel: notificationChannelEnum("channel").default("in_app").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -553,5 +554,20 @@ export const reviews = pgTable("reviews", {
   videoSent: boolean("video_sent").default(false),
   webhookSent: boolean("webhook_sent").default(false),
   triggerType: varchar("trigger_type", { length: 50 }), // "time", "login_count", "manual"
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ============================================
+// Client Error Logs
+// ============================================
+export const clientErrors = pgTable("client_errors", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userEmail: varchar("user_email", { length: 500 }),
+  userName: varchar("user_name", { length: 255 }),
+  message: text("message").notNull(),
+  stack: text("stack"),
+  url: text("url"),
+  userAgent: text("user_agent"),
+  resolved: boolean("resolved").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

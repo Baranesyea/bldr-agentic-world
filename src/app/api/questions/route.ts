@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { supportQuestions, questionReplies, users } from "@/lib/schema";
+import { supportQuestions, questionReplies, users, notifications } from "@/lib/schema";
 import { eq, desc } from "drizzle-orm";
 import postgres from "postgres";
 
@@ -85,6 +85,21 @@ export async function POST(req: NextRequest) {
       mediaLink: mediaLink || null,
       status: "pending",
     }).returning();
+
+    // Notify all admin users about the new question
+    try {
+      const admins = await db.select({ id: users.id }).from(users).where(eq(users.role, "admin"));
+      const lessonLink = courseId && lessonId ? `/courses/${courseId}/lessons/${lessonId}` : "/admin/qa";
+      for (const admin of admins) {
+        await db.insert(notifications).values({
+          userId: admin.id,
+          class: "reply",
+          content: `שאלה חדשה מ${userName || "משתמש"}: "${title}"`,
+          link: lessonLink,
+          channel: "in_app",
+        });
+      }
+    } catch {}
 
     return NextResponse.json(question, { status: 201 });
   } catch (err: unknown) {

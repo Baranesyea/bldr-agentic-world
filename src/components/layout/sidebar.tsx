@@ -67,6 +67,7 @@ const adminNav = [
   { label: "תבניות אימייל", href: "/admin/email-templates", icon: LinkIcon },
   { label: "הרשמה חופשית", href: "/admin/flogin", icon: UsersIcon },
   { label: "אנליטיקס", href: "/admin/analytics", icon: DashboardIcon },
+  { label: "שגיאות", href: "/admin/errors", icon: TerminalIcon },
 ];
 
 interface SidebarProps {
@@ -81,6 +82,20 @@ interface Notification {
   read: boolean;
   type: string;
   link?: string;
+  class?: string;
+}
+
+function formatTimeAgo(dateStr: string): string {
+  if (!dateStr) return "";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  if (diff < 0) return "עכשיו";
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "עכשיו";
+  if (mins < 60) return `לפני ${mins} דקות`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `לפני ${hours} שעות`;
+  const days = Math.floor(hours / 24);
+  return `לפני ${days} ימים`;
 }
 
 export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {}) {
@@ -126,13 +141,36 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
     return () => window.removeEventListener("bldr:tour-complete", handleTourComplete);
   }, []);
 
-  // Load notifications
-  React.useEffect(() => {
+  // Load notifications from DB
+  const fetchNotifications = React.useCallback(async () => {
+    if (!userProfile?.id) return;
     try {
-      const stored = JSON.parse(localStorage.getItem("bldr_notifications") || "[]");
-      setNotifications(stored);
+      const res = await fetch(`/api/notifications?userId=${userProfile.id}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setNotifications(data.map((n: { id: string; content: string; read: boolean; class: string; link?: string; createdAt?: string; created_at?: string }) => ({
+          id: n.id,
+          text: n.content,
+          time: n.createdAt || n.created_at || "",
+          read: n.read,
+          type: n.class,
+          link: n.link || undefined,
+          class: n.class,
+        })));
+      }
     } catch {}
-  }, [showNotifications]);
+  }, [userProfile?.id]);
+
+  React.useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  // Poll for new notifications every 30s
+  React.useEffect(() => {
+    if (!userProfile?.id) return;
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [userProfile?.id, fetchNotifications]);
 
   // Load news from API
   const iconMap: Record<string, React.ReactNode> = {
@@ -179,15 +217,23 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: string) => {
-    const updated = notifications.map((n) => n.id === id ? { ...n, read: true } : n);
-    setNotifications(updated);
-    localStorage.setItem("bldr_notifications", JSON.stringify(updated));
+    setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
+    fetch("/api/notifications", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, read: true }),
+    }).catch(() => {});
   };
 
   const markAllRead = () => {
-    const updated = notifications.map((n) => ({ ...n, read: true }));
-    setNotifications(updated);
-    localStorage.setItem("bldr_notifications", JSON.stringify(updated));
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    if (userProfile?.id) {
+      fetch("/api/notifications", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: userProfile.id, readAll: true }),
+      }).catch(() => {});
+    }
   };
 
   const isActive = (href: string) => pathname === href || pathname?.startsWith(href + "/");
@@ -480,11 +526,15 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
           <span style={{ flexShrink: 0, display: "flex", alignItems: "center", position: "relative" }}>
             <BellDotIcon size={18} />
             {unreadCount > 0 && (
-              <span style={{
-                position: "absolute", top: -4, right: -4, width: 16, height: 16,
-                borderRadius: "50%", background: "#FF3D00", color: "white",
-                fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center",
-              }}>{unreadCount}</span>
+              <>
+                <style>{`@keyframes notifPulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,61,0,0.5); } 50% { transform: scale(1.15); box-shadow: 0 0 8px 2px rgba(255,61,0,0.4); } }`}</style>
+                <span style={{
+                  position: "absolute", top: -4, right: -4, width: 16, height: 16,
+                  borderRadius: "50%", background: "#FF3D00", color: "white",
+                  fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center",
+                  animation: "notifPulse 2s ease-in-out infinite",
+                }}>{unreadCount}</span>
+              </>
             )}
           </span>
           {!collapsed && <span>התראות</span>}
@@ -534,14 +584,15 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
                     key={n.id}
                     onClick={() => {
                       markAsRead(n.id);
-                      // Navigate based on notification type
                       const link = n.link || (
-                        n.type === "qa" ? "/admin/qa" :
-                        n.type === "feedback" ? "/admin/feedback" :
-                        n.type === "case_study" ? "/admin/case-studies" :
-                        n.type === "user" ? "/admin/users" :
-                        n.type === "course" ? "/admin/courses" :
-                        null
+                        isAdmin ? (
+                          n.type === "qa" || n.type === "reply" ? "/admin/qa" :
+                          n.type === "feedback" ? "/admin/feedback" :
+                          n.type === "case_study" ? "/admin/case-studies" :
+                          n.type === "user" ? "/admin/users" :
+                          n.type === "course" ? "/admin/courses" :
+                          null
+                        ) : null
                       );
                       if (link) {
                         setShowNotifications(false);
@@ -559,7 +610,7 @@ export function Sidebar({ collapsed: collapsedProp, onToggle }: SidebarProps = {
                       {!n.read && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#0000FF", flexShrink: 0, marginTop: 5 }} />}
                       <div style={{ flex: 1 }}>
                         <p style={{ fontSize: "13px", color: n.read ? "rgba(240,240,245,0.5)" : "#f0f0f5", lineHeight: 1.4 }}>{n.text}</p>
-                        <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)", marginTop: "4px" }}>{n.time}</p>
+                        <p style={{ fontSize: "11px", color: "rgba(240,240,245,0.7)", marginTop: "4px" }}>{formatTimeAgo(n.time)}</p>
                       </div>
                     </div>
                   </div>

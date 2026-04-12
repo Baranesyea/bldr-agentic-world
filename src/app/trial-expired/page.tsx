@@ -35,7 +35,7 @@ export default function TrialExpiredPage() {
         <div style={{ fontSize: "48px", marginBottom: "24px" }}>⏰</div>
 
         <h1 style={{
-          fontFamily: "var(--font-heading-en)", fontSize: "28px", fontWeight: 700,
+          fontSize: "28px", fontWeight: 700,
           color: "#fff", marginBottom: "12px", lineHeight: 1.3,
         }}>
           תקופת הניסיון שלך הסתיימה
@@ -49,7 +49,7 @@ export default function TrialExpiredPage() {
         </p>
 
         <a
-          href="#"
+          href="https://www.bldr.co.il/awlp"
           style={{
             display: "block",
             width: "100%",
@@ -67,10 +67,6 @@ export default function TrialExpiredPage() {
         >
           הצטרף למועדון BLDR
         </a>
-
-        <p style={{ color: "rgba(240,240,245,0.7)", fontSize: "14px", marginTop: "16px" }}>
-          החל מ-₪99 לחודש
-        </p>
 
         <div style={{ marginTop: "32px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "20px" }}>
           <Link href="/login" style={{ color: "rgba(240,240,245,0.7)", fontSize: "13px", textDecoration: "none" }}>
