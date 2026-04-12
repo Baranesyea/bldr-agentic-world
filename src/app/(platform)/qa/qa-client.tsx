@@ -71,8 +71,8 @@ export default function QAPageClient({ courses }: { courses: { id: string; name:
   const filtered = useMemo(() => {
     return questions
       .filter((q) => {
-        // For non-admin users: only show questions with admin answers (published FAQ)
-        if (!isAdmin && q.status !== "answered") return false;
+        // For non-admin users: only show questions explicitly published by admin
+        if (!isAdmin && !q.isPublished) return false;
         if (search) {
           const s = search.toLowerCase();
           if (!q.title.toLowerCase().includes(s) && !q.description.toLowerCase().includes(s)) return false;
