@@ -120,9 +120,9 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
   // Show all active courses in the grid (including featured)
   const nonFeaturedActive = activeCourses;
 
-  const totalLessons = courses.reduce((s, c) => s + (c.chapters?.reduce((cs, ch) => cs + ch.lessons.length, 0) || 0), 0);
+  const totalLessons = (Array.isArray(courses) ? courses : []).reduce((s, c) => s + (Array.isArray(c.chapters) ? c.chapters : []).reduce((cs, ch) => cs + (Array.isArray(ch.lessons) ? ch.lessons.length : 0), 0), 0);
   const firstLesson = featuredCourse?.chapters?.[0]?.lessons?.[0];
-  const featuredAllLessons = featuredCourse?.chapters?.flatMap((ch) => ch.lessons) || [];
+  const featuredAllLessons = (Array.isArray(featuredCourse?.chapters) ? featuredCourse.chapters : []).flatMap((ch) => Array.isArray(ch.lessons) ? ch.lessons : []);
   const featuredDone = featuredAllLessons.filter((l) => completedLessons.includes(l.id)).length;
   const featuredTotal = featuredAllLessons.length;
   const featuredComplete = featuredTotal > 0 && featuredDone === featuredTotal;
@@ -354,7 +354,7 @@ export default function DashboardClient({ courses }: DashboardClientProps) {
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#f0f0f5", marginBottom: "16px" }}>כל הקורסים</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
             {nonFeaturedActive.map((c, idx) => {
-              const allCourseLessons = c.chapters?.flatMap((ch) => ch.lessons) || [];
+              const allCourseLessons = (Array.isArray(c.chapters) ? c.chapters : []).flatMap((ch) => Array.isArray(ch.lessons) ? ch.lessons : []);
               const lessonCount = allCourseLessons.length;
               const totalDur = getTotalDuration(c);
               const doneLessons = allCourseLessons.filter((l) => completedLessons.includes(l.id)).length;

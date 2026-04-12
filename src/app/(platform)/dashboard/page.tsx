@@ -15,10 +15,10 @@ export default async function DashboardPage() {
     status: c.status,
     featured: c.featured ?? false,
     thumbnailUrl: c.thumbnail || "",
-    chapters: c.chapters.map((ch) => ({
+    chapters: (c.chapters || []).map((ch) => ({
       id: ch.id,
       title: ch.title,
-      lessons: ch.lessons.map((l) => ({
+      lessons: (ch.lessons || []).map((l) => ({
         id: l.id,
         slug: l.slug || l.id,
         title: l.title,
