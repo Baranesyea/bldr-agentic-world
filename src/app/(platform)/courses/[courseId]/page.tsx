@@ -1,5 +1,6 @@
 export const revalidate = 30;
 
+import { Suspense } from "react";
 import { getCourseById, formatDuration } from "@/lib/data/courses";
 import { notFound } from "next/navigation";
 import CourseViewClient from "./course-view-client";
@@ -24,12 +25,12 @@ export default async function CourseViewPage({
     description: course.description || "",
     status: course.status,
     thumbnailUrl: course.thumbnail || "",
-    chapters: course.chapters.map((ch) => ({
+    chapters: (course.chapters || []).map((ch) => ({
       id: ch.id,
       title: ch.title,
       number: ch.displayOrder + 1,
       isLocked: false,
-      lessons: ch.lessons.map((l) => ({
+      lessons: (ch.lessons || []).map((l) => ({
         id: l.id,
         slug: l.slug || l.id,
         title: l.title,
@@ -42,5 +43,9 @@ export default async function CourseViewPage({
     })),
   };
 
-  return <CourseViewClient course={serializedCourse} />;
+  return (
+    <Suspense fallback={<div style={{ padding: 32, textAlign: "center", color: "rgba(240,240,245,0.5)" }}>טוען קורס...</div>}>
+      <CourseViewClient course={serializedCourse} />
+    </Suspense>
+  );
 }

@@ -38,6 +38,7 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl" className="dark">
       <body
+        suppressHydrationWarning
         className={`${merriweather.variable} antialiased bg-background text-foreground`}
       >
         <SeedLoader />
