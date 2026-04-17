@@ -54,6 +54,37 @@ function MethodPill({ method }: { method: string }) {
   );
 }
 
+function CopyAllButton({ markdown }: { markdown: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() => {
+        navigator.clipboard.writeText(markdown);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+      style={{
+        background: copied ? "rgba(74, 222, 128, 0.15)" : "rgba(51, 51, 255, 0.15)",
+        border: `1px solid ${copied ? "rgba(74, 222, 128, 0.4)" : "rgba(51, 51, 255, 0.4)"}`,
+        color: copied ? "#4ade80" : "#8888ff",
+        padding: "10px 16px",
+        borderRadius: 4,
+        cursor: "pointer",
+        fontSize: 13,
+        fontWeight: 600,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        whiteSpace: "nowrap",
+        transition: "all 0.15s",
+      }}
+    >
+      {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
+      {copied ? "הועתק לזיכרון" : "העתק הכל לסוכן"}
+    </button>
+  );
+}
+
 function CodeBlock({ code, id }: { code: string; id: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -235,9 +266,156 @@ export default function ApiDocsPage() {
     ]
   }'`;
 
+  const agentMarkdown = `# BLDR Platform API
+
+REST API for creating users and managing school/course access from external systems.
+
+Base URL: \`${baseUrl}/api/v1\`
+
+## Authentication
+
+All /api/v1 endpoints require the \`x-api-key\` header matching the \`PUBLIC_API_KEY\` env var on the server.
+
+\`\`\`
+x-api-key: YOUR_API_KEY
+\`\`\`
+
+The \`/api/news\` endpoint is public and does NOT require authentication.
+
+---
+
+## POST /api/v1/users — Create or update user
+
+Creates a Supabase auth user, syncs to \`users\` + \`members\` tables, optionally attaches to a school and grants course access — all in one call. If the email already exists, updates password (if provided) and merges access.
+
+### Body fields
+- \`email\` (string, required) — user email
+- \`fullName\` (string, required) — full name
+- \`password\` (string, optional) — min 6 chars. If omitted or \`sendInvite=true\`, an invite email is sent instead.
+- \`sendInvite\` (boolean, optional) — force invite flow (user sets own password)
+- \`schoolId\` (uuid, optional) — school to attach the user to
+- \`courseIds\` (uuid[], optional) — courses to grant access to (within the school)
+- \`accessExpiresAt\` (ISO date, optional) — access expiry
+- \`expiryMode\` ("full_lock" | "partial_lock", optional, default "full_lock") — behavior on expiry
+- \`role\` ("member" | "admin" | "tourist", optional, default "member")
+
+### Example: create with password
+${createCurl}
+
+### Example: send invite
+${inviteCurl}
+
+### Response (201 created, 200 if existed)
+\`\`\`json
+{
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "fullName": "שם מלא",
+    "role": "member",
+    "schoolId": "uuid",
+    "courseIds": ["uuid"],
+    "accessExpiresAt": "2026-12-31T23:59:59.000Z",
+    "expiryMode": "full_lock"
+  },
+  "created": true,
+  "invited": false
+}
+\`\`\`
+
+---
+
+## GET /api/v1/users/:id — Get user
+
+\`:id\` can be a UUID or email. Returns user, membership, school attachments, course access overrides.
+
+${getCurl}
+
+### Response
+\`\`\`json
+{
+  "user": { "id": "uuid", "email": "...", "fullName": "...", "role": "member", "createdAt": "..." },
+  "member": { "status": "active", "type": "free", "schoolId": "uuid", "accessExpiresAt": "...", "expiryMode": "full_lock" },
+  "schools": [{ "schoolId": "uuid", "role": "student", "accessExpiresAt": "...", "expiryMode": "full_lock" }],
+  "courseAccess": [{ "courseId": "uuid", "schoolId": "uuid", "isAvailable": true }]
+}
+\`\`\`
+
+---
+
+## POST /api/v1/users/:id/access — Manage access
+
+Add/update school membership, grant or revoke course access. \`:id\` can be UUID or email.
+
+### Body fields
+- \`schoolId\` (uuid, optional) — school to attach/detach
+- \`courseIds\` (uuid[], optional) — shorthand: all listed courses get \`isAvailable=true\`
+- \`courseAccess\` ({courseId, isAvailable}[], optional) — explicit per-course control, supports revoking
+- \`removeSchool\` (boolean, optional) — when true + \`schoolId\`, removes the user from the school
+- \`accessExpiresAt\` (ISO date | null, optional) — null clears expiry
+- \`expiryMode\` ("full_lock" | "partial_lock", optional, default "full_lock")
+
+### Example: add school + courses
+${accessCurl}
+
+### Example: per-course control
+${courseAccessCurl}
+
+### Example: remove from school
+${revokeCurl}
+
+---
+
+## /api/news — Public news feed (no auth)
+
+Stores up to 10 latest items. Used by agents to push updates to the home feed.
+
+### POST /api/news — add news
+Accepts a single object or an array. Each item requires \`title\` and \`description\`. \`imageUrl\` is optional.
+
+${newsPostCurl}
+
+Bulk:
+${newsBulkCurl}
+
+### GET /api/news — list latest
+\`\`\`
+curl ${baseUrl}/api/news
+\`\`\`
+
+### DELETE /api/news?id=xxx — delete by id
+\`\`\`
+curl -X DELETE '${baseUrl}/api/news?id=NEWS_ID'
+\`\`\`
+
+---
+
+## Error codes
+- \`400\` — invalid/missing body (email missing, bad JSON, invalid expiryMode)
+- \`401\` — missing or wrong x-api-key
+- \`404\` — user not found (on :id routes)
+- \`500\` — server env misconfigured (PUBLIC_API_KEY or SUPABASE_SERVICE_ROLE_KEY missing)
+
+---
+
+## Access resolution model
+
+Course availability for a user in a school context resolves in this order:
+1. \`userCourseAccess\` — per-user override (wins)
+2. \`schoolCourses\` — school-level availability
+3. Default: available
+
+\`expiryMode\`:
+- \`full_lock\` — locks everything after expiry
+- \`partial_lock\` — courses flagged \`availableAfterExpiry=true\` stay open
+`;
+
   return (
     <div style={{ padding: "32px 24px", maxWidth: 980, margin: "0 auto", direction: "rtl" }}>
-      <h1 style={{ fontSize: 32, marginBottom: 8, color: "#fff" }}>API Documentation</h1>
+      <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 16, marginBottom: 8 }}>
+        <h1 style={{ fontSize: 32, color: "#fff", margin: 0 }}>API Documentation</h1>
+        <CopyAllButton markdown={agentMarkdown} />
+      </div>
       <p style={{ color: "#aaa", marginBottom: 24, lineHeight: 1.6 }}>
         REST API ליצירת משתמשים וניהול הרשאות לבתי ספר וקורסים ממערכות חיצוניות.
       </p>
