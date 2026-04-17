@@ -209,6 +209,21 @@ export default function ApiDocsPage() {
     "removeSchool": true
   }'`;
 
+  const newsPostCurl = `curl -X POST '${baseUrl}/api/news' \\
+  -H 'Content-Type: application/json' \\
+  -d '{
+    "title": "כותרת העדכון",
+    "description": "תיאור מפורט של העדכון",
+    "imageUrl": "https://..."
+  }'`;
+
+  const newsBulkCurl = `curl -X POST '${baseUrl}/api/news' \\
+  -H 'Content-Type: application/json' \\
+  -d '[
+    { "title": "עדכון 1", "description": "..." },
+    { "title": "עדכון 2", "description": "..." }
+  ]'`;
+
   const courseAccessCurl = `curl -X POST '${baseUrl}/api/v1/users/user@example.com/access' \\
   -H 'Content-Type: application/json' \\
   -H 'x-api-key: YOUR_API_KEY' \\
@@ -351,6 +366,41 @@ PUBLIC_API_KEY=your-long-random-secret-here`} />
           ]}
         />
       </div>
+
+      <h2 style={{ fontSize: 22, margin: "32px 0 16px", color: "#fff" }}>חדשות (ללא אימות)</h2>
+      <p style={{ color: "#888", fontSize: 13, marginBottom: 16, lineHeight: 1.6 }}>
+        endpoint ציבורי לשליחת עדכונים למסך הראשי. לא דורש x-api-key. שומר עד 10 עדכונים אחרונים.
+      </p>
+
+      <Endpoint
+        method="POST"
+        path="/api/news"
+        title="הוספת עדכון חדשות"
+        description="מקבל אובייקט יחיד או מערך. כל פריט חייב title ו-description. imageUrl אופציונלי."
+      >
+        <h4 style={{ color: "#fff", margin: "12px 0 8px", fontSize: 14 }}>עדכון יחיד</h4>
+        <CodeBlock id="news-single" code={newsPostCurl} />
+        <h4 style={{ color: "#fff", margin: "16px 0 8px", fontSize: 14 }}>מספר עדכונים (batch)</h4>
+        <CodeBlock id="news-bulk" code={newsBulkCurl} />
+      </Endpoint>
+
+      <Endpoint
+        method="GET"
+        path="/api/news"
+        title="קריאת חדשות"
+        description="מחזיר את 10 העדכונים האחרונים במערך."
+      >
+        <CodeBlock id="news-get" code={`curl '${baseUrl}/api/news'`} />
+      </Endpoint>
+
+      <Endpoint
+        method="DELETE"
+        path="/api/news?id=xxx"
+        title="מחיקת עדכון"
+        description="מחיקה לפי id של העדכון."
+      >
+        <CodeBlock id="news-delete" code={`curl -X DELETE '${baseUrl}/api/news?id=NEWS_ID'`} />
+      </Endpoint>
 
       <div style={SECTION}>
         <h2 style={{ fontSize: 20, marginBottom: 12, color: "#fff" }}>מודל ההרשאות</h2>
