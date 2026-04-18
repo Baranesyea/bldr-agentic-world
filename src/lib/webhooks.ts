@@ -70,11 +70,15 @@ const DEFAULT_WEBHOOKS: Webhook[] = [
 export function loadWebhooks(): Webhook[] {
   try {
     const data = localStorage.getItem(WEBHOOKS_KEY);
-    if (!data) {
-      saveWebhooks(DEFAULT_WEBHOOKS);
-      return DEFAULT_WEBHOOKS;
+    const existing: Webhook[] = data ? JSON.parse(data) : [];
+    const existingIds = new Set(existing.map((w) => w.id));
+    const missingDefaults = DEFAULT_WEBHOOKS.filter((w) => !existingIds.has(w.id));
+    if (missingDefaults.length > 0) {
+      const merged = [...existing, ...missingDefaults];
+      saveWebhooks(merged);
+      return merged;
     }
-    return JSON.parse(data);
+    return existing;
   } catch {
     return DEFAULT_WEBHOOKS;
   }
