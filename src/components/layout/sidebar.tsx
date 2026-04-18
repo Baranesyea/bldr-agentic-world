@@ -70,6 +70,7 @@ const adminNav = [
   { label: "שאלות ממתינות", href: "/admin/pending-questions", icon: QuestionIcon },
   { label: "שגיאות", href: "/admin/errors", icon: TerminalIcon },
   { label: "API Docs", href: "/admin/api-docs", icon: TerminalIcon },
+  { label: "בקשות לביטול", href: "/admin/cancellation-requests", icon: FeedbackIcon },
 ];
 
 interface SidebarProps {

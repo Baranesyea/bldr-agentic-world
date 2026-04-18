@@ -25,6 +25,9 @@ interface User {
   subscriptionStart: string | null;
   payments: UserPayment[];
   accessExpiresAt?: string | null;
+  billingCycle?: string | null;
+  cancellationRequestedAt?: string | null;
+  cancellationEffectiveAt?: string | null;
 }
 
 type FilterTab = "all" | "paying" | "trial" | "blocked" | "inactive" | "tourist";
@@ -264,9 +267,12 @@ export default function AdminUsersPage() {
           amount: m.pricePaid || 0,
           joinedAt: m.createdAt || new Date().toISOString(),
           lastPaymentDate: null,
-          subscriptionStart: null,
+          subscriptionStart: m.subscriptionStartedAt || null,
           payments: [],
           accessExpiresAt: m.accessExpiresAt || null,
+          billingCycle: m.billingCycle || null,
+          cancellationRequestedAt: m.cancellationRequestedAt || null,
+          cancellationEffectiveAt: m.cancellationEffectiveAt || null,
         });
       }
       setUsers(merged);
@@ -643,6 +649,7 @@ export default function AdminUsersPage() {
                     { label: "טלפון", width: "120px", sortable: false, key: null },
                     { label: "סטטוס", width: "120px", sortable: false, key: null },
                     { label: "סכום", width: "100px", sortable: true, key: "amount" as SortKey },
+                    { label: "מנוי", width: "130px", sortable: false, key: null },
                     { label: "הצטרף", width: "110px", sortable: true, key: "joined" as SortKey },
                     { label: "פג תוקף", width: "110px", sortable: false, key: null },
                     { label: "זמן במערכת", width: "110px", sortable: false, key: null },
@@ -797,6 +804,22 @@ export default function AdminUsersPage() {
                         <td style={{ padding: "12px 14px", color: "#f0f0f5", fontWeight: 600, fontSize: 13 }}>
                           {user.amount > 0 ? formatCurrency(user.amount) : "—"}
                         </td>
+                        <td style={{ padding: "12px 14px", fontSize: 12 }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                            {user.billingCycle === "monthly" ? (
+                              <span style={{ color: "#60a5fa", fontWeight: 600 }}>חודשי</span>
+                            ) : user.billingCycle === "one_time" ? (
+                              <span style={{ color: "rgba(240,240,245,0.55)" }}>חד-פעמי</span>
+                            ) : (
+                              <span style={{ color: "rgba(240,240,245,0.35)" }}>—</span>
+                            )}
+                            {user.cancellationRequestedAt && (
+                              <span style={{ color: "#f87171", fontWeight: 600, fontSize: 11 }}>
+                                בוטל {formatDate(user.cancellationRequestedAt)}
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td style={{ padding: "12px 14px", color: "rgba(240,240,245,0.7)", fontSize: 13 }}>
                           {formatDate(user.joinedAt)}
                         </td>
@@ -820,7 +843,7 @@ export default function AdminUsersPage() {
 
                       {isExpanded && (
                         <tr>
-                          <td colSpan={11} style={{ padding: 0 }}>
+                          <td colSpan={12} style={{ padding: 0 }}>
                             <div style={{
                               background: "rgba(100,100,255,0.02)",
                               borderBottom: "1px solid rgba(255,255,255,0.06)",

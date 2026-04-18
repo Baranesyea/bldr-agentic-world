@@ -39,9 +39,15 @@ export async function GET(
       ? {
           status: member.status,
           type: member.type,
+          phone: member.phone,
           schoolId: member.schoolId,
           accessExpiresAt: member.accessExpiresAt,
           expiryMode: member.expiryMode,
+          priceAmount: member.pricePaid,
+          billingCycle: member.billingCycle,
+          subscriptionStartedAt: member.subscriptionStartedAt,
+          cancellationRequestedAt: member.cancellationRequestedAt,
+          cancellationEffectiveAt: member.cancellationEffectiveAt,
         }
       : null,
     schools: schoolRows.map((s) => ({

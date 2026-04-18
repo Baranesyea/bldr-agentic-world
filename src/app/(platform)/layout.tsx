@@ -17,6 +17,7 @@ import { PricingPopup } from "@/components/ui/pricing-popup";
 import { EntryVideo } from "@/components/layout/entry-video";
 import { UpdateVideo } from "@/components/layout/update-video";
 import { ReviewPopup } from "@/components/layout/review-popup";
+import { CancellationBanner } from "@/components/layout/cancellation-banner";
 
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
@@ -182,6 +183,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
         paddingBottom: "64px",
         transition: "margin-right 0.3s",
       }}>
+        <CancellationBanner />
         {/* Countdown timer for time-limited access */}
         {!access.loading && access.expiresAt && !access.expired && (
           <div style={{ display: "flex", justifyContent: "center", padding: "8px 16px" }}>

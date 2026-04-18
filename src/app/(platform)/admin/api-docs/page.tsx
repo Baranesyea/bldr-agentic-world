@@ -203,10 +203,14 @@ export default function ApiDocsPage() {
     "email": "user@example.com",
     "fullName": "שם מלא",
     "password": "SecurePass123",
+    "phone": "0501234567",
     "schoolId": "SCHOOL_UUID",
     "courseIds": ["COURSE_UUID_1", "COURSE_UUID_2"],
     "accessExpiresAt": "2026-12-31T23:59:59Z",
-    "expiryMode": "full_lock"
+    "expiryMode": "full_lock",
+    "priceAmount": 299,
+    "billingCycle": "monthly",
+    "subscriptionStartedAt": "2026-04-18T00:00:00Z"
   }'`;
 
   const inviteCurl = `curl -X POST '${baseUrl}/api/v1/users' \\
@@ -293,11 +297,15 @@ Creates a Supabase auth user, syncs to \`users\` + \`members\` tables, optionall
 - \`fullName\` (string, required) — full name
 - \`password\` (string, optional) — min 6 chars. If omitted or \`sendInvite=true\`, an invite email is sent instead.
 - \`sendInvite\` (boolean, optional) — force invite flow (user sets own password)
+- \`phone\` (string, optional) — phone number
 - \`schoolId\` (uuid, optional) — school to attach the user to
 - \`courseIds\` (uuid[], optional) — courses to grant access to (within the school)
 - \`accessExpiresAt\` (ISO date, optional) — access expiry
 - \`expiryMode\` ("full_lock" | "partial_lock", optional, default "full_lock") — behavior on expiry
 - \`role\` ("member" | "admin" | "tourist", optional, default "member")
+- \`priceAmount\` (number, optional) — amount the user pays (per cycle for monthly, total for one_time)
+- \`billingCycle\` ("monthly" | "one_time", optional, default "one_time") — recurring vs one-time. Required for cancellation flow.
+- \`subscriptionStartedAt\` (ISO date, optional, default = now) — anchor for monthly billing anniversary. Used to compute cancellation effective date.
 
 ### Example: create with password
 ${createCurl}
@@ -316,7 +324,10 @@ ${inviteCurl}
     "schoolId": "uuid",
     "courseIds": ["uuid"],
     "accessExpiresAt": "2026-12-31T23:59:59.000Z",
-    "expiryMode": "full_lock"
+    "expiryMode": "full_lock",
+    "priceAmount": 299,
+    "billingCycle": "monthly",
+    "subscriptionStartedAt": "2026-04-18T00:00:00.000Z"
   },
   "created": true,
   "invited": false
@@ -335,7 +346,14 @@ ${getCurl}
 \`\`\`json
 {
   "user": { "id": "uuid", "email": "...", "fullName": "...", "role": "member", "createdAt": "..." },
-  "member": { "status": "active", "type": "free", "schoolId": "uuid", "accessExpiresAt": "...", "expiryMode": "full_lock" },
+  "member": {
+    "status": "active", "type": "paid", "phone": "...",
+    "schoolId": "uuid", "accessExpiresAt": "...", "expiryMode": "full_lock",
+    "priceAmount": 299, "billingCycle": "monthly",
+    "subscriptionStartedAt": "...",
+    "cancellationRequestedAt": null,
+    "cancellationEffectiveAt": null
+  },
   "schools": [{ "schoolId": "uuid", "role": "student", "accessExpiresAt": "...", "expiryMode": "full_lock" }],
   "courseAccess": [{ "courseId": "uuid", "schoolId": "uuid", "isAvailable": true }]
 }
@@ -363,6 +381,26 @@ ${courseAccessCurl}
 
 ### Example: remove from school
 ${revokeCurl}
+
+---
+
+## Subscription fields (billing + cancellation)
+
+Set these when creating a monthly-billing user so the user can later cancel from their profile and a webhook is fired:
+
+\`\`\`json
+{
+  "priceAmount": 299,
+  "billingCycle": "monthly",
+  "subscriptionStartedAt": "2026-04-18T00:00:00Z"
+}
+\`\`\`
+
+- \`billingCycle\` must be \`"monthly"\` for the cancellation UI to appear on the user's profile.
+- \`subscriptionStartedAt\` is the billing anniversary. If user started 2026-03-03 and cancels 2026-05-05, their access stays until the next anniversary = 2026-06-03.
+- One-time purchases: omit \`billingCycle\` or set \`"one_time"\`. Cancellation flow is disabled for them.
+
+When a user cancels, the system fires the \`subscription.canceled\` webhook (configured under /admin/webhooks) with payload variables: \`fullName\`, \`email\`, \`phone\`, \`priceAmount\`, \`billingCycle\`, \`effectiveAt\`, \`cancelledAt\`.
 
 ---
 
@@ -459,6 +497,10 @@ PUBLIC_API_KEY=your-long-random-secret-here`} />
             { name: "accessExpiresAt", type: "ISO date", desc: "תאריך פקיעת גישה" },
             { name: "expiryMode", type: "full_lock | partial_lock", desc: "מצב פקיעה. ברירת מחדל: full_lock" },
             { name: "role", type: "member | admin | tourist", desc: "תפקיד ב-users.role. ברירת מחדל: member" },
+            { name: "phone", type: "string", desc: "מספר טלפון. עובר לטבלת members" },
+            { name: "priceAmount", type: "number", desc: "סכום התשלום (למחזור חודשי או סכום חד-פעמי)" },
+            { name: "billingCycle", type: "monthly | one_time", desc: "סוג חיוב. ברירת מחדל: one_time. חובה monthly כדי לאפשר ביטול מנוי מצד המשתמש" },
+            { name: "subscriptionStartedAt", type: "ISO date", desc: "תאריך תחילת המנוי (עוגן ליום החיוב החודשי). ברירת מחדל: עכשיו" },
           ]}
         />
         <h4 style={{ color: "#fff", margin: "16px 0 8px", fontSize: 14 }}>דוגמה: יצירה עם סיסמה</h4>

@@ -74,7 +74,63 @@ export default function ProfilePage() {
   const [showGenderPicker, setShowGenderPicker] = useState(false);
   const [genError, setGenError] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [subscription, setSubscription] = useState<{
+    billingCycle: string | null;
+    cancellationRequestedAt: string | null;
+    cancellationEffectiveAt: string | null;
+    daysRemaining: number | null;
+  } | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showStaySuccess, setShowStaySuccess] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/subscription/status")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d && d.billingCycle !== undefined) setSubscription(d);
+      })
+      .catch(() => {});
+  }, []);
+
+  async function handleCancel() {
+    setCancelling(true);
+    try {
+      const res = await fetch("/api/subscription/cancel", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setSubscription((prev) => ({
+          billingCycle: prev?.billingCycle ?? "monthly",
+          cancellationRequestedAt: data.cancellationRequestedAt,
+          cancellationEffectiveAt: data.cancellationEffectiveAt,
+          daysRemaining: Math.max(
+            0,
+            Math.ceil(
+              (new Date(data.cancellationEffectiveAt).getTime() - Date.now()) /
+                (1000 * 60 * 60 * 24)
+            )
+          ),
+        }));
+        setShowCancelConfirm(false);
+      }
+    } finally {
+      setCancelling(false);
+    }
+  }
+
+  async function handleUncancel() {
+    const res = await fetch("/api/subscription/uncancel", { method: "POST" });
+    if (res.ok) {
+      setSubscription((prev) => ({
+        billingCycle: prev?.billingCycle ?? "monthly",
+        cancellationRequestedAt: null,
+        cancellationEffectiveAt: null,
+        daysRemaining: null,
+      }));
+      setShowStaySuccess(true);
+    }
+  }
 
   useEffect(() => {
     try {
@@ -689,6 +745,160 @@ export default function ProfilePage() {
           מחק חשבון
         </button>
       </div>
+
+      {/* Subscription Cancellation */}
+      {subscription?.billingCycle === "monthly" && (
+        <div style={{
+          background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.15)",
+          borderRadius: "4px", padding: "24px", marginTop: "24px",
+        }}>
+          {!subscription.cancellationRequestedAt ? (
+            <>
+              <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#ef4444", marginBottom: "8px" }}>ביטול מנוי</h2>
+              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px" }}>
+                ביטול יעצור את החיוב החודשי בסוף תקופת החיוב הנוכחית.
+              </p>
+              <button
+                onClick={() => setShowCancelConfirm(true)}
+                style={{
+                  padding: "10px 20px", borderRadius: "4px",
+                  border: "1px solid rgba(239,68,68,0.3)",
+                  background: "rgba(239,68,68,0.08)", color: "#ef4444",
+                  fontSize: "13px", fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                בטל מנוי
+              </button>
+            </>
+          ) : (
+            <>
+              <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#ef4444", marginBottom: "8px" }}>
+                המנוי בוטל
+              </h2>
+              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px" }}>
+                נשארו עוד {subscription.daysRemaining ?? 0} ימים לשימוש. אחרי זה הגישה תיחסם ולא יתבצע חיוב נוסף.
+              </p>
+              <button
+                onClick={handleUncancel}
+                style={{
+                  padding: "10px 20px", borderRadius: "4px",
+                  border: "1px solid rgba(59,130,246,0.4)",
+                  background: "rgba(59,130,246,0.12)", color: "#60a5fa",
+                  fontSize: "13px", fontWeight: 600, cursor: "pointer",
+                }}
+              >
+                החלטתי להישאר
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Cancel Subscription Confirmation Modal */}
+      {showCancelConfirm && (
+        <div
+          onClick={() => setShowCancelConfirm(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)",
+            padding: "16px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#0e0e22", borderRadius: "12px",
+              border: "1px solid rgba(239,68,68,0.2)",
+              padding: "36px 32px", maxWidth: "480px", width: "100%",
+              direction: "rtl",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
+            }}
+          >
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "16px", textAlign: "center" }}>
+              חשוב לקרוא!
+            </h2>
+            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.85)", lineHeight: 1.8, textAlign: "center", marginBottom: "12px" }}>
+              המערכת שלנו מתחדשת עם תכנים מעודכנים בכל שבוע.
+            </p>
+            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.85)", lineHeight: 1.8, textAlign: "center", marginBottom: "12px" }}>
+              ביטול המנוי לא יאפשר לך לגשת לתכנים האלו.
+            </p>
+            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.85)", lineHeight: 1.8, textAlign: "center", marginBottom: "28px" }}>
+              בביטול מנוי מחזור החיוב הבא לא יתבצע (חיוב חודשי).
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                style={{
+                  padding: "12px", borderRadius: "8px",
+                  border: "1px solid rgba(59,130,246,0.4)",
+                  background: "rgba(59,130,246,0.12)", color: "#60a5fa",
+                  fontSize: "14px", fontWeight: 700, cursor: "pointer",
+                }}
+              >
+                התחרטתי
+              </button>
+              <button
+                disabled={cancelling}
+                onClick={handleCancel}
+                style={{
+                  padding: "12px", borderRadius: "8px",
+                  border: "1px solid rgba(239,68,68,0.4)",
+                  background: "rgba(239,68,68,0.12)", color: "#ef4444",
+                  fontSize: "14px", fontWeight: 700, cursor: cancelling ? "wait" : "pointer",
+                  opacity: cancelling ? 0.5 : 1,
+                }}
+              >
+                {cancelling ? "מבטל..." : "הבנתי ובכל זאת אני רוצה לבטל"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stay Success Modal */}
+      {showStaySuccess && (
+        <div
+          onClick={() => setShowStaySuccess(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)",
+            padding: "16px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#0e0e22", borderRadius: "12px",
+              border: "1px solid rgba(59,130,246,0.25)",
+              padding: "36px 32px", maxWidth: "440px", width: "100%",
+              direction: "rtl", textAlign: "center",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
+            }}
+          >
+            <div style={{ fontSize: "36px", marginBottom: "14px" }}>🎉</div>
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "14px" }}>
+              איזה כיף לנו!
+            </h2>
+            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.85)", lineHeight: 1.8, marginBottom: "28px" }}>
+              מבטיחים להמשיך לעשות הכל כדי לתת לך עוד סיבות להישאר איתנו!
+            </p>
+            <button
+              onClick={() => setShowStaySuccess(false)}
+              style={{
+                width: "100%", padding: "12px", borderRadius: "8px",
+                border: "1px solid rgba(59,130,246,0.4)",
+                background: "rgba(59,130,246,0.15)", color: "#60a5fa",
+                fontSize: "14px", fontWeight: 700, cursor: "pointer",
+              }}
+            >
+              סגור
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (

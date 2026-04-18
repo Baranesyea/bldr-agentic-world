@@ -37,20 +37,59 @@ export default function WebhooksPage() {
   const templateRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
 
   useEffect(() => {
-    setWebhooks(loadWebhooks());
-    setLogs(loadWebhookLogs());
+    (async () => {
+      const localWebhooks = loadWebhooks();
+      setLogs(loadWebhookLogs());
+      try {
+        const res = await fetch("/api/webhooks/config");
+        const data = await res.json();
+        const dbWebhooks = Array.isArray(data.webhooks) ? data.webhooks : [];
+        if (dbWebhooks.length > 0) {
+          const merged = localWebhooks.map((local) => {
+            const fromDb = dbWebhooks.find((w: Webhook) => w.id === local.id);
+            return fromDb ? { ...local, ...fromDb } : local;
+          });
+          dbWebhooks.forEach((w: Webhook) => {
+            if (!merged.find((m) => m.id === w.id)) merged.push(w);
+          });
+          setWebhooks(merged);
+          saveWebhooks(merged);
+        } else {
+          setWebhooks(localWebhooks);
+          await fetch("/api/webhooks/config", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ webhooks: localWebhooks }),
+          });
+        }
+      } catch {
+        setWebhooks(localWebhooks);
+      }
+    })();
   }, []);
+
+  async function persistToDb(list: Webhook[]) {
+    try {
+      await fetch("/api/webhooks/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ webhooks: list }),
+      });
+    } catch {}
+  }
 
   function updateWebhook(id: string, patch: Partial<Webhook>) {
     setWebhooks((prev) => {
       const next = prev.map((w) => (w.id === id ? { ...w, ...patch } : w));
       saveWebhooks(next);
+      void persistToDb(next);
       return next;
     });
   }
 
   function handleSave(id: string) {
     saveWebhooks(webhooks);
+    void persistToDb(webhooks);
     setSaved((p) => ({ ...p, [id]: true }));
     setTimeout(() => setSaved((p) => ({ ...p, [id]: false })), 2000);
   }

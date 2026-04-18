@@ -348,6 +348,8 @@ export const news = pgTable("news", {
 export const memberStatusEnum = pgEnum("member_status", ["active", "inactive"]);
 export const memberTypeEnum = pgEnum("member_type", ["free", "paid"]);
 
+export const billingCycleEnum = pgEnum("billing_cycle", ["monthly", "one_time"]);
+
 export const members = pgTable("members", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: varchar("email", { length: 255 }).notNull().unique(),
@@ -355,6 +357,10 @@ export const members = pgTable("members", {
   status: memberStatusEnum("status").default("active").notNull(),
   type: memberTypeEnum("type").default("free").notNull(),
   pricePaid: integer("price_paid").default(0),
+  billingCycle: billingCycleEnum("billing_cycle").default("one_time"),
+  subscriptionStartedAt: timestamp("subscription_started_at"),
+  cancellationRequestedAt: timestamp("cancellation_requested_at"),
+  cancellationEffectiveAt: timestamp("cancellation_effective_at"),
   phone: varchar("phone", { length: 50 }),
   supabaseUserId: text("supabase_user_id"),
   notes: text("notes"),

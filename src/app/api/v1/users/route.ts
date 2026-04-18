@@ -8,17 +8,22 @@ import { addMemberToSchool } from "@/lib/data/schools";
 import { bulkSetUserCourseAccess } from "@/lib/data/user-course-access";
 
 type ExpiryMode = "full_lock" | "partial_lock";
+type BillingCycle = "monthly" | "one_time";
 
 interface CreateUserBody {
   email: string;
   fullName: string;
   password?: string;
   sendInvite?: boolean;
+  phone?: string;
   schoolId?: string;
   courseIds?: string[];
   accessExpiresAt?: string;
   expiryMode?: ExpiryMode;
   role?: "member" | "admin" | "tourist";
+  priceAmount?: number;
+  billingCycle?: BillingCycle;
+  subscriptionStartedAt?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -46,6 +51,9 @@ export async function POST(req: NextRequest) {
   if (body.expiryMode && body.expiryMode !== "full_lock" && body.expiryMode !== "partial_lock") {
     return NextResponse.json({ error: "expiryMode must be full_lock or partial_lock" }, { status: 400 });
   }
+  if (body.billingCycle && body.billingCycle !== "monthly" && body.billingCycle !== "one_time") {
+    return NextResponse.json({ error: "billingCycle must be monthly or one_time" }, { status: 400 });
+  }
 
   const email = body.email.toLowerCase().trim();
   const fullName = body.fullName.trim();
@@ -54,6 +62,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "accessExpiresAt must be a valid ISO date" }, { status: 400 });
   }
   const expiryMode: ExpiryMode = body.expiryMode ?? "full_lock";
+  const billingCycle: BillingCycle = body.billingCycle ?? "one_time";
+  const subscriptionStartedAt = body.subscriptionStartedAt
+    ? new Date(body.subscriptionStartedAt)
+    : new Date();
+  if (isNaN(subscriptionStartedAt.getTime())) {
+    return NextResponse.json({ error: "subscriptionStartedAt must be a valid ISO date" }, { status: 400 });
+  }
+  const priceAmount = typeof body.priceAmount === "number" ? body.priceAmount : 0;
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -126,9 +142,17 @@ export async function POST(req: NextRequest) {
         fullName,
         status: "active",
         supabaseUserId: authUserId,
+        phone: body.phone ?? existingMember[0].phone,
         schoolId: body.schoolId ?? existingMember[0].schoolId,
         accessExpiresAt: accessExpiresAt ?? existingMember[0].accessExpiresAt,
         expiryMode,
+        pricePaid: priceAmount || existingMember[0].pricePaid,
+        billingCycle,
+        type: billingCycle === "monthly" || priceAmount > 0 ? "paid" : existingMember[0].type,
+        subscriptionStartedAt:
+          body.subscriptionStartedAt || !existingMember[0].subscriptionStartedAt
+            ? subscriptionStartedAt
+            : existingMember[0].subscriptionStartedAt,
         updatedAt: new Date(),
       })
       .where(eq(members.email, email));
@@ -137,8 +161,11 @@ export async function POST(req: NextRequest) {
       email,
       fullName,
       status: "active",
-      type: "free",
-      pricePaid: 0,
+      type: billingCycle === "monthly" || priceAmount > 0 ? "paid" : "free",
+      pricePaid: priceAmount,
+      billingCycle,
+      subscriptionStartedAt,
+      phone: body.phone ?? null,
       supabaseUserId: authUserId,
       schoolId: body.schoolId ?? null,
       accessExpiresAt,
@@ -175,6 +202,9 @@ export async function POST(req: NextRequest) {
         courseIds: body.courseIds ?? [],
         accessExpiresAt: accessExpiresAt?.toISOString() ?? null,
         expiryMode,
+        priceAmount,
+        billingCycle,
+        subscriptionStartedAt: subscriptionStartedAt.toISOString(),
       },
       created,
       invited,

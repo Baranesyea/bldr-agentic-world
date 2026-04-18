@@ -47,6 +47,24 @@ const DEFAULT_WEBHOOKS: Webhook[] = [
       { key: "questionTitle", description: "כותרת השאלה" },
     ],
   },
+  {
+    id: "default_subscription_canceled",
+    name: "ביטול מנוי",
+    url: "",
+    enabled: false,
+    event: "subscription.canceled",
+    messageTemplate:
+      "המשתמש {fullName} ביטל את המנוי.\nמייל: {email}\nטלפון: {phone}\nסכום: {priceAmount}\nהגישה תיפסק ב-{effectiveAt}.",
+    variables: [
+      { key: "fullName", description: "שם מלא של המשתמש" },
+      { key: "email", description: "מייל" },
+      { key: "phone", description: "טלפון" },
+      { key: "priceAmount", description: "סכום התשלום החודשי" },
+      { key: "billingCycle", description: "סוג חיוב (monthly/one_time)" },
+      { key: "effectiveAt", description: "תאריך סיום הגישה" },
+      { key: "cancelledAt", description: "תאריך הבקשה לביטול" },
+    ],
+  },
 ];
 
 export function loadWebhooks(): Webhook[] {

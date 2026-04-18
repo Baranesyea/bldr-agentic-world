@@ -31,6 +31,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/errors": <TerminalIcon size={28} />,
   "/admin/pending-questions": <QuestionIcon size={28} />,
   "/admin/api-docs": <TerminalIcon size={28} />,
+  "/admin/cancellation-requests": <FeedbackIcon size={28} />,
 };
 
 const sections = [
@@ -158,6 +159,11 @@ const sections = [
     title: "API משתמשים",
     description: "REST API ליצירת משתמשים, צירוף לבתי ספר והענקת גישה לקורסים ממערכות חיצוניות",
     href: "/admin/api-docs",
+  },
+  {
+    title: "בקשות לביטול",
+    description: "משתמשים שביקשו לבטל מנוי — פילטר לפי היום, השבוע או הכל",
+    href: "/admin/cancellation-requests",
   },
 ];
 
