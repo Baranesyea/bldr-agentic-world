@@ -28,6 +28,9 @@ interface User {
   billingCycle?: string | null;
   cancellationRequestedAt?: string | null;
   cancellationEffectiveAt?: string | null;
+  lastPasswordLinkSentAt?: string | null;
+  lastPasswordLinkEmailStatus?: string | null;
+  lastPasswordLinkWhatsappStatus?: string | null;
 }
 
 type FilterTab = "all" | "paying" | "trial" | "blocked" | "inactive" | "tourist";
@@ -273,6 +276,9 @@ export default function AdminUsersPage() {
           billingCycle: m.billingCycle || null,
           cancellationRequestedAt: m.cancellationRequestedAt || null,
           cancellationEffectiveAt: m.cancellationEffectiveAt || null,
+          lastPasswordLinkSentAt: m.lastPasswordLinkSentAt || null,
+          lastPasswordLinkEmailStatus: m.lastPasswordLinkEmailStatus || null,
+          lastPasswordLinkWhatsappStatus: m.lastPasswordLinkWhatsappStatus || null,
         });
       }
       setUsers(merged);
@@ -799,6 +805,25 @@ export default function AdminUsersPage() {
                                 </span>
                               );
                             })()}
+                            {user.lastPasswordLinkSentAt && (() => {
+                              const emailOk = user.lastPasswordLinkEmailStatus === "sent";
+                              const waStatus = user.lastPasswordLinkWhatsappStatus;
+                              const waOk = waStatus === "sent";
+                              const waSkipped = waStatus === "skipped";
+                              const allGood = emailOk && (waOk || waSkipped);
+                              return (
+                                <span
+                                  title={`קישור סיסמה נשלח ${new Date(user.lastPasswordLinkSentAt!).toLocaleString("he-IL")} · מייל: ${emailOk ? "נשלח" : "נכשל"} · וואצאפ: ${waOk ? "נשלח" : waSkipped ? "אין טלפון" : "נכשל"}`}
+                                  style={{
+                                    background: allGood ? "rgba(74,222,128,0.1)" : "rgba(248,113,113,0.1)",
+                                    color: allGood ? "#4ade80" : "#f87171",
+                                    padding: "3px 8px", borderRadius: 4, fontSize: 10, fontWeight: 600, whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  🔗 {emailOk ? "✓" : "✗"}✉ {waOk ? "✓" : waSkipped ? "—" : "✗"}📱
+                                </span>
+                              );
+                            })()}
                           </div>
                         </td>
                         <td style={{ padding: "12px 14px", color: "#f0f0f5", fontWeight: 600, fontSize: 13 }}>
@@ -1025,6 +1050,54 @@ export default function AdminUsersPage() {
                                     }}
                                   >
                                     ניהול גישה
+                                  </button>
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (!confirm(`לשלוח קישור סיסמה חדש ל-${user.email} במייל + וואצאפ?`)) return;
+                                      try {
+                                        const res = await fetch(
+                                          `/api/v1/users/${encodeURIComponent(user.email)}/send-password-link`,
+                                          { method: "POST" }
+                                        );
+                                        const data = await res.json();
+                                        if (!res.ok) {
+                                          alert(data.error || "שגיאה בשליחה");
+                                          return;
+                                        }
+                                        const emailOk = data.notifications?.email?.sent;
+                                        const waOk = data.notifications?.whatsapp?.sent;
+                                        alert(
+                                          `קישור נשלח:\nמייל: ${emailOk ? "✓" : "✗"}${!emailOk && data.notifications?.email?.error ? " (" + data.notifications.email.error + ")" : ""}\nוואצאפ: ${waOk ? "✓" : "✗"}${!waOk && data.notifications?.whatsapp?.error ? " (" + data.notifications.whatsapp.error + ")" : ""}`
+                                        );
+                                        setUsers((prev) =>
+                                          prev.map((u) =>
+                                            u.id === user.id
+                                              ? {
+                                                  ...u,
+                                                  lastPasswordLinkSentAt: new Date().toISOString(),
+                                                  lastPasswordLinkEmailStatus: emailOk ? "sent" : "failed",
+                                                  lastPasswordLinkWhatsappStatus: waOk
+                                                    ? "sent"
+                                                    : data.notifications?.whatsapp?.error === "no phone"
+                                                      ? "skipped"
+                                                      : "failed",
+                                                }
+                                              : u
+                                          )
+                                        );
+                                      } catch {
+                                        alert("שגיאה בשליחה");
+                                      }
+                                    }}
+                                    style={{
+                                      padding: "6px 14px", borderRadius: 6,
+                                      border: "1px solid rgba(51,51,255,0.4)",
+                                      background: "rgba(51,51,255,0.1)", color: "#8888ff",
+                                      fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                    }}
+                                  >
+                                    שלח קישור סיסמה
                                   </button>
                                   <button
                                     onClick={async (e) => {

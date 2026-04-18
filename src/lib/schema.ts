@@ -361,6 +361,9 @@ export const members = pgTable("members", {
   subscriptionStartedAt: timestamp("subscription_started_at"),
   cancellationRequestedAt: timestamp("cancellation_requested_at"),
   cancellationEffectiveAt: timestamp("cancellation_effective_at"),
+  lastPasswordLinkSentAt: timestamp("last_password_link_sent_at"),
+  lastPasswordLinkEmailStatus: varchar("last_password_link_email_status", { length: 20 }),
+  lastPasswordLinkWhatsappStatus: varchar("last_password_link_whatsapp_status", { length: 20 }),
   phone: varchar("phone", { length: 50 }),
   supabaseUserId: text("supabase_user_id"),
   notes: text("notes"),
@@ -522,9 +525,23 @@ export const emailTemplates = pgTable("email_templates", {
   name: varchar("name", { length: 200 }).notNull(),
   subject: varchar("subject", { length: 500 }).notNull(),
   bodyHtml: text("body_html").notNull(),
+  whatsappBody: text("whatsapp_body"),
   variables: jsonb("variables").default([]).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const notificationLogs = pgTable("notification_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  toEmail: varchar("to_email", { length: 500 }),
+  toPhone: varchar("to_phone", { length: 50 }),
+  channel: varchar("channel", { length: 20 }).notNull(),
+  templateSlug: varchar("template_slug", { length: 100 }),
+  status: varchar("status", { length: 50 }).notNull(),
+  externalId: varchar("external_id", { length: 200 }),
+  error: text("error"),
+  metadata: jsonb("metadata").default({}),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

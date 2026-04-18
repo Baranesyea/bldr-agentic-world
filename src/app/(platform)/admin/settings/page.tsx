@@ -119,6 +119,15 @@ export default function SettingsPage() {
   const [whatsappSaved, setWhatsappSaved] = useState(false);
   const [whatsappSaving, setWhatsappSaving] = useState(false);
 
+  interface GreenApiSettings {
+    instanceId: string;
+    apiToken: string;
+    enabled: boolean;
+  }
+  const [greenApi, setGreenApi] = useState<GreenApiSettings>({ instanceId: "", apiToken: "", enabled: false });
+  const [greenApiSaved, setGreenApiSaved] = useState(false);
+  const [greenApiSaving, setGreenApiSaving] = useState(false);
+
   interface PaymentSettings {
     monthlyPrice: number;
     growWebhookSecret: string;
@@ -180,6 +189,13 @@ export default function SettingsPage() {
           if (stored) setWhatsapp(JSON.parse(stored));
         } catch {}
       });
+
+    fetch("/api/admin-settings?key=green_api_config")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.value) setGreenApi(data.value as GreenApiSettings);
+      })
+      .catch(() => {});
   }, []);
 
   const saveApiKey = (index: number) => {
@@ -742,6 +758,68 @@ export default function SettingsPage() {
           }}
         >
           {whatsappSaved ? "נשמר!" : "שמור הגדרות וואטסאפ"}
+        </button>
+      </div>
+
+      {/* Green API WhatsApp Sender */}
+      <div style={CARD_STYLE}>
+        <h2 style={HEADING_STYLE}>Green API (שליחת וואטסאפ)</h2>
+        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px", lineHeight: 1.7 }}>
+          חיבור ל-Green API לשליחת הודעות וואטסאפ (ברוך הבא, קישור סיסמה, עדכונים).
+          <br />
+          מקבלים את ה-instanceId וה-apiToken מ-<a href="https://console.green-api.com" target="_blank" rel="noopener" style={{ color: "#60a5fa" }}>console.green-api.com</a>.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div>
+            <label style={LABEL_STYLE}>Instance ID</label>
+            <input
+              style={INPUT_STYLE}
+              value={greenApi.instanceId}
+              onChange={(e) => setGreenApi((p) => ({ ...p, instanceId: e.target.value.trim() }))}
+              placeholder="7105xxxxxx"
+              dir="ltr"
+            />
+          </div>
+          <div>
+            <label style={LABEL_STYLE}>API Token</label>
+            <input
+              style={INPUT_STYLE}
+              value={greenApi.apiToken}
+              onChange={(e) => setGreenApi((p) => ({ ...p, apiToken: e.target.value.trim() }))}
+              placeholder="token..."
+              dir="ltr"
+              type="password"
+            />
+          </div>
+          <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 14, color: "rgba(240,240,245,0.9)" }}>
+            <input
+              type="checkbox"
+              checked={greenApi.enabled}
+              onChange={(e) => setGreenApi((p) => ({ ...p, enabled: e.target.checked }))}
+              style={{ width: 16, height: 16 }}
+            />
+            הפעל שליחה דרך Green API
+          </label>
+        </div>
+        <button
+          style={{ ...BTN_STYLE, marginTop: "16px", opacity: greenApiSaving ? 0.6 : 1 }}
+          disabled={greenApiSaving}
+          onClick={async () => {
+            setGreenApiSaving(true);
+            try {
+              await fetch("/api/admin-settings", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ key: "green_api_config", value: greenApi }),
+              });
+              setGreenApiSaved(true);
+              setTimeout(() => setGreenApiSaved(false), 1500);
+            } finally {
+              setGreenApiSaving(false);
+            }
+          }}
+        >
+          {greenApiSaved ? "נשמר!" : "שמור הגדרות Green API"}
         </button>
       </div>
     </div>

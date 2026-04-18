@@ -316,23 +316,25 @@ ${inviteCurl}
 ### Response (201 created, 200 if existed)
 \`\`\`json
 {
-  "user": {
-    "id": "uuid",
-    "email": "user@example.com",
-    "fullName": "שם מלא",
-    "role": "member",
-    "schoolId": "uuid",
-    "courseIds": ["uuid"],
-    "accessExpiresAt": "2026-12-31T23:59:59.000Z",
-    "expiryMode": "full_lock",
-    "priceAmount": 299,
-    "billingCycle": "monthly",
-    "subscriptionStartedAt": "2026-04-18T00:00:00.000Z"
-  },
+  "user": { ... },
   "created": true,
-  "invited": false
+  "setPasswordUrl": "https://app.bldr.co.il/auth/v1/verify?token=...&type=recovery&redirect_to=...",
+  "notifications": {
+    "email": true,
+    "whatsapp": true,
+    "emailError": null,
+    "whatsappError": null
+  }
 }
 \`\`\`
+
+When you create a user **without \`password\`**, the API:
+1. Generates a one-time \`setPasswordUrl\` (Supabase recovery link, valid 24h).
+2. Sends the welcome email (Resend) using the "welcome" template with \`{{setPasswordUrl}}\` available as a variable.
+3. Sends a WhatsApp message (Green API) using the WhatsApp body of the same template — if Green API is configured in admin settings AND the user has a \`phone\`.
+4. Records the send status on the member's row (visible in /admin/users).
+
+Your automation can use \`setPasswordUrl\` directly if you want to send the welcome message yourself. If both the platform AND your automation send, the user will get duplicates.
 
 ---
 
@@ -401,6 +403,31 @@ Set these when creating a monthly-billing user so the user can later cancel from
 - One-time purchases: omit \`billingCycle\` or set \`"one_time"\`. Cancellation flow is disabled for them.
 
 When a user cancels, the system fires the \`subscription.canceled\` webhook (configured under /admin/webhooks) with payload variables: \`fullName\`, \`email\`, \`phone\`, \`priceAmount\`, \`billingCycle\`, \`effectiveAt\`, \`cancelledAt\`.
+
+---
+
+## POST /api/v1/users/:id/send-password-link — Re-send welcome/password link
+
+Generates a fresh one-time password link for the user and sends it via email + WhatsApp. Use when a user says the original link expired or didn't arrive. \`:id\` can be UUID or email.
+
+\`\`\`
+curl -X POST '${baseUrl}/api/v1/users/user@example.com/send-password-link' \\
+  -H 'x-api-key: YOUR_API_KEY'
+\`\`\`
+
+### Response
+\`\`\`json
+{
+  "ok": true,
+  "setPasswordUrl": "...",
+  "notifications": {
+    "email": { "sent": true, "id": "..." },
+    "whatsapp": { "sent": true, "id": "..." }
+  }
+}
+\`\`\`
+
+Also callable from the admin /admin/users page via the "שלח קישור סיסמה" button (requires admin session instead of x-api-key).
 
 ---
 
@@ -507,24 +534,47 @@ PUBLIC_API_KEY=your-long-random-secret-here`} />
         <CodeBlock id="create" code={createCurl} />
         <h4 style={{ color: "#fff", margin: "16px 0 8px", fontSize: 14 }}>דוגמה: שליחת הזמנה</h4>
         <CodeBlock id="invite" code={inviteCurl} />
-        <h4 style={{ color: "#fff", margin: "16px 0 8px", fontSize: 14 }}>תגובה</h4>
+        <h4 style={{ color: "#fff", margin: "16px 0 8px", fontSize: 14 }}>תגובה (עם password)</h4>
         <CodeBlock
           id="create-response"
           code={`{
-  "user": {
-    "id": "uuid",
-    "email": "user@example.com",
-    "fullName": "שם מלא",
-    "role": "member",
-    "schoolId": "uuid",
-    "courseIds": ["uuid"],
-    "accessExpiresAt": "2026-12-31T23:59:59.000Z",
-    "expiryMode": "full_lock"
-  },
+  "user": { "id": "...", "email": "...", ... },
   "created": true,
-  "invited": false
+  "setPasswordUrl": null,
+  "notifications": null
 }`}
         />
+        <h4 style={{ color: "#fff", margin: "16px 0 8px", fontSize: 14 }}>תגובה (בלי password — המערכת שולחת אוטומטית)</h4>
+        <CodeBlock
+          id="create-response-invite"
+          code={`{
+  "user": { "id": "...", "email": "...", ... },
+  "created": true,
+  "setPasswordUrl": "https://.../auth/v1/verify?token=...&type=recovery",
+  "notifications": {
+    "email": true,
+    "whatsapp": true,
+    "emailError": null,
+    "whatsappError": null
+  }
+}`}
+        />
+        <p style={{ color: "#888", fontSize: 12, margin: "8px 0 0", lineHeight: 1.6 }}>
+          כשיוצרים משתמש בלי password, המערכת שולחת אוטומטית מייל (תבנית ״welcome״) + וואצאפ (אם Green API מוגדר ב-/admin/settings ויש phone). הלינק תקף 24 שעות. לוג השליחה נצבע ב-/admin/users בצמוד לסטטוס.
+        </p>
+      </Endpoint>
+
+      <Endpoint
+        method="POST"
+        path="/api/v1/users/:id/send-password-link"
+        title="שליחה חוזרת של קישור סיסמה"
+        description="מייצר לינק חד-פעמי חדש ושולח במייל + וואצאפ. שימוש: כשלקוח פונה ש״לא עובד״ או ״פג תוקף״. ה-:id יכול להיות UUID או מייל."
+      >
+        <CodeBlock id="resend" code={`curl -X POST '${baseUrl}/api/v1/users/user@example.com/send-password-link' \\
+  -H 'x-api-key: YOUR_API_KEY'`} />
+        <p style={{ color: "#888", fontSize: 12, margin: "8px 0 0", lineHeight: 1.6 }}>
+          זמין גם מעמוד /admin/users דרך הכפתור ״שלח קישור סיסמה״ (תחת session של admin במקום x-api-key).
+        </p>
       </Endpoint>
 
       <Endpoint

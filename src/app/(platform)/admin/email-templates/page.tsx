@@ -14,6 +14,7 @@ interface EmailTemplate {
   name: string;
   subject: string;
   bodyHtml: string;
+  whatsappBody?: string | null;
   variables: Variable[];
   isActive: boolean;
   updatedAt: string;
@@ -764,6 +765,29 @@ export default function EmailTemplatesPage() {
                   onChange={(html) => setEditing({ ...editing, bodyHtml: html })}
                 />
               )}
+            </div>
+
+            {/* WhatsApp body */}
+            <div style={CARD}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f0f0f5", margin: "0 0 8px" }}>
+                גרסת וואטסאפ
+              </h3>
+              <p style={{ fontSize: 12, color: "rgba(240,240,245,0.5)", margin: "0 0 12px", lineHeight: 1.6 }}>
+                טקסט רגיל שישלח בוואטסאפ דרך Green API. אותם משתנים כמו במייל ({"{{name}}"}, {"{{loginUrl}}"}, וכו׳). השאר ריק כדי לא לשלוח וואטסאפ לתבנית הזו.
+              </p>
+              <textarea
+                value={editing.whatsappBody ?? ""}
+                onChange={(e) => setEditing({ ...editing, whatsappBody: e.target.value })}
+                style={{
+                  ...INPUT,
+                  minHeight: 140,
+                  fontFamily: "inherit",
+                  fontSize: 14,
+                  lineHeight: 1.7,
+                  resize: "vertical",
+                }}
+                placeholder={`היי {{name}}! ברוך הבא ל-BLDR.\n\nלחץ כאן לבחירת סיסמה וכניסה למערכת:\n{{loginUrl}}`}
+              />
             </div>
 
             {/* Send test */}

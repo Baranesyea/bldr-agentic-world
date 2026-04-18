@@ -6,6 +6,8 @@ import { eq } from "drizzle-orm";
 import { requireApiKey } from "@/lib/api-auth";
 import { addMemberToSchool } from "@/lib/data/schools";
 import { bulkSetUserCourseAccess } from "@/lib/data/user-course-access";
+import { generatePasswordLink } from "@/lib/password-link";
+import { sendPasswordLinkNotifications } from "@/lib/notify";
 
 type ExpiryMode = "full_lock" | "partial_lock";
 type BillingCycle = "monthly" | "one_time";
@@ -84,7 +86,8 @@ export async function POST(req: NextRequest) {
 
   let authUserId: string;
   let created = false;
-  let invited = false;
+  const needsPasswordLink = !body.password;
+  const seedPassword = body.password ?? crypto.randomUUID() + "Aa1!";
 
   if (existingAuthUser) {
     authUserId = existingAuthUser.id;
@@ -95,21 +98,10 @@ export async function POST(req: NextRequest) {
       });
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
     }
-  } else if (body.sendInvite || !body.password) {
-    const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
-      data: { full_name: fullName },
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=invite`,
-    });
-    if (error || !data.user) {
-      return NextResponse.json({ error: error?.message ?? "Invite failed" }, { status: 400 });
-    }
-    authUserId = data.user.id;
-    created = true;
-    invited = true;
   } else {
     const { data, error } = await supabase.auth.admin.createUser({
       email,
-      password: body.password,
+      password: seedPassword,
       email_confirm: true,
       user_metadata: { full_name: fullName },
     });
@@ -191,6 +183,33 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  let setPasswordUrl: string | null = null;
+  let notifications: { email: boolean; whatsapp: boolean; emailError?: string; whatsappError?: string } | null = null;
+
+  if (needsPasswordLink) {
+    const linkResult = await generatePasswordLink(email);
+    if (linkResult.ok && linkResult.url) {
+      setPasswordUrl = linkResult.url;
+      try {
+        const sendResult = await sendPasswordLinkNotifications({
+          email,
+          phone: body.phone ?? null,
+          fullName,
+          setPasswordUrl,
+          templateSlug: "welcome",
+        });
+        notifications = {
+          email: sendResult.email.sent,
+          whatsapp: sendResult.whatsapp.sent,
+          emailError: sendResult.email.error,
+          whatsappError: sendResult.whatsapp.error,
+        };
+      } catch (err) {
+        console.error("Notification send failed:", err);
+      }
+    }
+  }
+
   return NextResponse.json(
     {
       user: {
@@ -207,7 +226,8 @@ export async function POST(req: NextRequest) {
         subscriptionStartedAt: subscriptionStartedAt.toISOString(),
       },
       created,
-      invited,
+      setPasswordUrl,
+      notifications,
     },
     { status: created ? 201 : 200 }
   );
