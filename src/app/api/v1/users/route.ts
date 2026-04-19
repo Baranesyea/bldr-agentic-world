@@ -219,6 +219,10 @@ async function handlePost(req: NextRequest) {
           phone: body.phone ?? null,
           fullName,
           setPasswordUrl,
+          generateExtraLink: async () => {
+            const extra = await generatePasswordLink(email);
+            return extra.ok && extra.url ? extra.url : null;
+          },
           emailTemplateSlug: emailSlug,
           whatsappTemplateSlug: whatsappSlug,
         });

@@ -70,6 +70,10 @@ async function handle(
     phone: member?.phone ?? null,
     fullName: user.fullName,
     setPasswordUrl: linkResult.url,
+    generateExtraLink: async () => {
+      const extra = await generatePasswordLink(user.email);
+      return extra.ok && extra.url ? extra.url : null;
+    },
     emailTemplateSlug: emailSlug,
     whatsappTemplateSlug: whatsappSlug,
   });

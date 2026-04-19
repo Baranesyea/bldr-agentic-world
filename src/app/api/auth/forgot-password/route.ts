@@ -34,6 +34,10 @@ export async function POST(req: NextRequest) {
         phone: member.phone ?? null,
         fullName: member.fullName,
         setPasswordUrl: linkResult.url,
+        generateExtraLink: async () => {
+          const extra = await generatePasswordLink(email);
+          return extra.ok && extra.url ? extra.url : null;
+        },
         emailTemplateSlug: emailSlug,
         whatsappTemplateSlug: whatsappSlug,
       });

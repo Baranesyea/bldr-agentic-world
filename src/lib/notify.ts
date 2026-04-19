@@ -67,11 +67,14 @@ export async function sendPasswordLinkNotifications(params: {
   email: string;
   phone?: string | null;
   fullName: string;
+  /** The URL used for email. A separate link is generated for WhatsApp via generateExtraLink(). */
   setPasswordUrl: string;
+  /** Called to generate a fresh one-time link per channel (Supabase tokens are single-use). */
+  generateExtraLink?: () => Promise<string | null>;
   emailTemplateSlug: string;
   whatsappTemplateSlug: string;
 }): Promise<SendResult> {
-  const variables = {
+  const emailVars = {
     name: params.fullName,
     fullName: params.fullName,
     email: params.email,
@@ -80,7 +83,7 @@ export async function sendPasswordLinkNotifications(params: {
     resetPasswordUrl: params.setPasswordUrl,
   };
 
-  const emailResult = await sendTemplateEmail(params.email, params.emailTemplateSlug, variables);
+  const emailResult = await sendTemplateEmail(params.email, params.emailTemplateSlug, emailVars);
   await db.insert(notificationLogs).values({
     toEmail: params.email,
     channel: "email",
@@ -88,7 +91,7 @@ export async function sendPasswordLinkNotifications(params: {
     status: emailResult.ok ? "sent" : "failed",
     externalId: emailResult.resendId ?? null,
     error: emailResult.error ?? null,
-    metadata: { variables },
+    metadata: { variables: emailVars },
   });
 
   let whatsappResult: { ok: boolean; error?: string; messageId?: string } = {
@@ -96,7 +99,14 @@ export async function sendPasswordLinkNotifications(params: {
     error: "no phone",
   };
   if (params.phone) {
-    whatsappResult = await sendTemplateWhatsapp(params.phone, params.whatsappTemplateSlug, variables);
+    // Generate a second single-use link for WhatsApp so clicking one does not
+    // invalidate the other. Fall back to the email link if generation fails.
+    const whatsappUrl = params.generateExtraLink
+      ? (await params.generateExtraLink()) ?? params.setPasswordUrl
+      : params.setPasswordUrl;
+    const whatsappVars = { ...emailVars, setPasswordUrl: whatsappUrl, loginUrl: whatsappUrl, resetPasswordUrl: whatsappUrl };
+
+    whatsappResult = await sendTemplateWhatsapp(params.phone, params.whatsappTemplateSlug, whatsappVars);
     await db.insert(notificationLogs).values({
       toPhone: params.phone,
       toEmail: params.email,
@@ -105,7 +115,7 @@ export async function sendPasswordLinkNotifications(params: {
       status: whatsappResult.ok ? "sent" : "failed",
       externalId: whatsappResult.messageId ?? null,
       error: whatsappResult.error ?? null,
-      metadata: { variables },
+      metadata: { variables: whatsappVars },
     });
   }
 
