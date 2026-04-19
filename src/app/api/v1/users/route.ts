@@ -125,9 +125,13 @@ async function handlePost(req: NextRequest) {
     created = true;
   }
 
-  // Batch A (parallel): clean stale users row, upsert users row, fetch existing member
-  const [, , existingMember] = await Promise.all([
-    db.delete(users).where(and(eq(users.email, email), ne(users.id, authUserId))),
+  // Must run in order: the stale users row would race the upsert's unique
+  // constraint on email. Delete first, then upsert + member lookup in parallel.
+  await db
+    .delete(users)
+    .where(and(eq(users.email, email), ne(users.id, authUserId)));
+
+  const [, existingMember] = await Promise.all([
     db
       .insert(users)
       .values({
