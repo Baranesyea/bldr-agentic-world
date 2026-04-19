@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { db } from "@/lib/db";
 import { users, members } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, ne } from "drizzle-orm";
 import { requireApiKey } from "@/lib/api-auth";
 import { addMemberToSchool } from "@/lib/data/schools";
 import { bulkSetUserCourseAccess } from "@/lib/data/user-course-access";
@@ -124,6 +124,12 @@ async function handlePost(req: NextRequest) {
     authUserId = data.user.id;
     created = true;
   }
+
+  // Clean up any stale users row with the same email but a different id
+  // (happens if the auth user was previously recreated with a new id).
+  await db
+    .delete(users)
+    .where(and(eq(users.email, email), ne(users.id, authUserId)));
 
   await db
     .insert(users)

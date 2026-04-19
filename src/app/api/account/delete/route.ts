@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { db } from "@/lib/db";
-import { members } from "@/lib/schema";
+import { members, users } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { findAuthUserByEmail } from "@/lib/auth-admin";
 
@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
     if (isHardDelete) {
       // Admin hard-delete: remove row so email is free to be re-registered
       await db.delete(members).where(eq(members.email, normalizedEmail));
+      await db.delete(users).where(eq(users.email, normalizedEmail));
       await sql`DELETE FROM profiles WHERE email = ${normalizedEmail}`;
     } else {
       // User self-delete: keep row for audit, mark inactive + anonymise profile
