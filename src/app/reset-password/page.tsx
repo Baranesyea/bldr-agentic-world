@@ -18,56 +18,92 @@ export default function ResetPasswordPage() {
   //   1. Hash fragment: /#access_token=...&refresh_token=...&type=recovery
   //   2. Query string: ?code=... (PKCE flow)
   //   3. Already consumed into storage by the Supabase client on init
+  const [debugInfo, setDebugInfo] = useState<string>("");
+
   useEffect(() => {
     let cancelled = false;
+    const log = (msg: string) => {
+      console.log("[reset-password]", msg);
+      if (!cancelled) setDebugInfo((prev) => prev + msg + "\n");
+    };
 
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      log(`authStateChange: ${event}`);
       if (!cancelled && (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
         setReady(true);
       }
     });
 
+    // Safety timeout so we never sit on the spinner forever
+    const timeout = setTimeout(() => {
+      if (!cancelled) {
+        setError("הקישור לא אומת תוך 8 שניות. בקש לינק חדש או נסה דפדפן אחר.");
+      }
+    }, 8000);
+
     (async () => {
-      // 1) Hash tokens
-      const hash = window.location.hash.replace(/^#/, "");
-      if (hash) {
-        const hp = new URLSearchParams(hash);
-        const accessToken = hp.get("access_token");
-        const refreshToken = hp.get("refresh_token");
-        if (accessToken && refreshToken) {
+      try {
+        log(`href: ${window.location.href}`);
+        log(`hash: ${window.location.hash}`);
+        log(`search: ${window.location.search}`);
+
+        // 1) Hash tokens
+        const hash = window.location.hash.replace(/^#/, "");
+        if (hash) {
+          const hp = new URLSearchParams(hash);
+          const accessToken = hp.get("access_token");
+          const refreshToken = hp.get("refresh_token");
+          if (accessToken && refreshToken) {
+            log("found hash tokens → setSession");
+            try { await supabase.auth.signOut({ scope: "local" }); } catch {}
+            const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+            log(`setSession result: ${error ? "ERR " + error.message : "ok"}`);
+            if (!cancelled) {
+              clearTimeout(timeout);
+              if (error) setError(error.message || "לא ניתן לאמת את הקישור. בקש לינק חדש.");
+              else setReady(true);
+            }
+            return;
+          }
+        }
+
+        // 2) PKCE code
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get("code");
+        if (code) {
+          log("found ?code → exchangeCodeForSession");
           try { await supabase.auth.signOut({ scope: "local" }); } catch {}
-          const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          log(`exchangeCodeForSession result: ${error ? "ERR " + error.message : "ok"}`);
           if (!cancelled) {
+            clearTimeout(timeout);
             if (error) setError(error.message || "לא ניתן לאמת את הקישור. בקש לינק חדש.");
             else setReady(true);
           }
           return;
         }
-      }
 
-      // 2) PKCE code
-      const url = new URL(window.location.href);
-      const code = url.searchParams.get("code");
-      if (code) {
-        try { await supabase.auth.signOut({ scope: "local" }); } catch {}
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        // 3) Session already established by Supabase client (storage)
+        log("no hash/code → getSession");
+        const { data } = await supabase.auth.getSession();
+        log(`getSession result: ${data.session ? "has session" : "no session"}`);
         if (!cancelled) {
-          if (error) setError(error.message || "לא ניתן לאמת את הקישור. בקש לינק חדש.");
-          else setReady(true);
+          clearTimeout(timeout);
+          if (data.session) setReady(true);
+          else setError("הקישור לא תקין או פג תוקף. בקש לינק חדש.");
         }
-        return;
-      }
-
-      // 3) Session already established by Supabase client (storage)
-      const { data } = await supabase.auth.getSession();
-      if (!cancelled) {
-        if (data.session) setReady(true);
-        else setError("הקישור לא תקין או פג תוקף. בקש לינק חדש.");
+      } catch (err) {
+        log(`EXCEPTION: ${err instanceof Error ? err.message : String(err)}`);
+        if (!cancelled) {
+          clearTimeout(timeout);
+          setError("שגיאה באימות הקישור. בקש לינק חדש.");
+        }
       }
     })();
 
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
       sub.subscription.unsubscribe();
     };
   }, [supabase]);
@@ -161,11 +197,35 @@ export default function ResetPasswordPage() {
           borderRadius: 6,
           padding: "32px 28px",
         }}>
-          {!ready ? (
+          {!ready && error ? (
+            <div style={{
+              background: "rgba(255,59,48,0.1)",
+              border: "1px solid rgba(255,59,48,0.3)",
+              borderRadius: 4,
+              padding: "10px 14px",
+              fontSize: 13,
+              color: "#ff6b6b",
+              textAlign: "center",
+            }}>
+              {error}
+              {debugInfo && (
+                <pre style={{
+                  marginTop: 12, fontSize: 10, color: "rgba(240,240,245,0.5)",
+                  textAlign: "left", direction: "ltr", whiteSpace: "pre-wrap", overflow: "auto", maxHeight: 200,
+                }}>{debugInfo}</pre>
+              )}
+            </div>
+          ) : !ready ? (
             <div style={{ textAlign: "center", color: "rgba(240,240,245,0.7)", padding: "20px 0" }}>
               <div style={{ width: 32, height: 32, border: "3px solid rgba(255,255,255,0.1)", borderTopColor: "#0000FF", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
               מאמת קישור...
+              {debugInfo && (
+                <pre style={{
+                  marginTop: 12, fontSize: 10, color: "rgba(240,240,245,0.4)",
+                  textAlign: "left", direction: "ltr", whiteSpace: "pre-wrap", overflow: "auto", maxHeight: 200,
+                }}>{debugInfo}</pre>
+              )}
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
