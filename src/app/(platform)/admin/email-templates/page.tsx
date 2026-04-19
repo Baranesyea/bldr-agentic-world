@@ -434,6 +434,7 @@ export default function EmailTemplatesPage() {
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [editorMode, setEditorMode] = useState<"visual" | "html">("visual");
+  const [channelTab, setChannelTab] = useState<"email" | "whatsapp">("email");
 
   const fetchTemplates = useCallback(async () => {
     try {
@@ -647,18 +648,52 @@ export default function EmailTemplatesPage() {
                   />
                 </div>
               </div>
-              <div>
-                <label style={LABEL}>נושא המייל (Subject)</label>
-                <input
-                  style={INPUT}
-                  value={editing.subject}
-                  onChange={(e) => setEditing({ ...editing, subject: e.target.value })}
-                  placeholder="למשל: ברוך הבא ל-BLDR, {{name}}!"
-                />
-                <p style={{ fontSize: 11, color: "rgba(240,240,245,0.4)", marginTop: 4 }}>
-                  {"השתמש ב-{{שם_משתנה}} להכנסת ערכים דינמיים"}
-                </p>
-              </div>
+              {channelTab === "email" && (
+                <div>
+                  <label style={LABEL}>נושא המייל (Subject)</label>
+                  <input
+                    style={INPUT}
+                    value={editing.subject}
+                    onChange={(e) => setEditing({ ...editing, subject: e.target.value })}
+                    placeholder="למשל: ברוך הבא ל-BLDR, {{name}}!"
+                  />
+                  <p style={{ fontSize: 11, color: "rgba(240,240,245,0.4)", marginTop: 4 }}>
+                    {"השתמש ב-{{שם_משתנה}} להכנסת ערכים דינמיים"}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Channel tabs */}
+            <div style={{ display: "flex", gap: 4, marginBottom: 16, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <button
+                onClick={() => setChannelTab("email")}
+                style={{
+                  padding: "10px 24px", border: "none", cursor: "pointer",
+                  background: "transparent",
+                  color: channelTab === "email" ? "#8888ff" : "rgba(240,240,245,0.5)",
+                  fontWeight: channelTab === "email" ? 700 : 500,
+                  fontSize: 14,
+                  borderBottom: channelTab === "email" ? "2px solid #8888ff" : "2px solid transparent",
+                  marginBottom: -1,
+                }}
+              >
+                ✉️ מייל
+              </button>
+              <button
+                onClick={() => setChannelTab("whatsapp")}
+                style={{
+                  padding: "10px 24px", border: "none", cursor: "pointer",
+                  background: "transparent",
+                  color: channelTab === "whatsapp" ? "#4ade80" : "rgba(240,240,245,0.5)",
+                  fontWeight: channelTab === "whatsapp" ? 700 : 500,
+                  fontSize: 14,
+                  borderBottom: channelTab === "whatsapp" ? "2px solid #4ade80" : "2px solid transparent",
+                  marginBottom: -1,
+                }}
+              >
+                💬 וואצאפ
+              </button>
             </div>
 
             {/* Variables */}
@@ -714,10 +749,11 @@ export default function EmailTemplatesPage() {
               )}
             </div>
 
-            {/* Content Editor */}
+            {/* Content Editor (Email) */}
+            {channelTab === "email" && (
             <div style={CARD}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f0f0f5", margin: 0 }}>תוכן</h3>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f0f0f5", margin: 0 }}>תוכן המייל</h3>
                 <div style={{ display: "flex", gap: 0, borderRadius: 4, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <button
                     onClick={() => setEditorMode("visual")}
@@ -766,21 +802,23 @@ export default function EmailTemplatesPage() {
                 />
               )}
             </div>
+            )}
 
             {/* WhatsApp body */}
+            {channelTab === "whatsapp" && (
             <div style={CARD}>
               <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f0f0f5", margin: "0 0 8px" }}>
-                גרסת וואטסאפ
+                הודעת וואצאפ
               </h3>
               <p style={{ fontSize: 12, color: "rgba(240,240,245,0.5)", margin: "0 0 12px", lineHeight: 1.6 }}>
-                טקסט רגיל שישלח בוואטסאפ דרך Green API. אותם משתנים כמו במייל ({"{{name}}"}, {"{{loginUrl}}"}, וכו׳). השאר ריק כדי לא לשלוח וואטסאפ לתבנית הזו.
+                טקסט שישלח בוואצאפ דרך Green API. אותם משתנים כמו במייל ({"{{name}}"}, {"{{loginUrl}}"}, וכו׳). השאר ריק אם לא רוצה לשלוח וואצאפ לתבנית הזו.
               </p>
               <textarea
                 value={editing.whatsappBody ?? ""}
                 onChange={(e) => setEditing({ ...editing, whatsappBody: e.target.value })}
                 style={{
                   ...INPUT,
-                  minHeight: 140,
+                  minHeight: 220,
                   fontFamily: "inherit",
                   fontSize: 14,
                   lineHeight: 1.7,
@@ -789,6 +827,7 @@ export default function EmailTemplatesPage() {
                 placeholder={`היי {{name}}! ברוך הבא ל-BLDR.\n\nלחץ כאן לבחירת סיסמה וכניסה למערכת:\n{{loginUrl}}`}
               />
             </div>
+            )}
 
             {/* Send test */}
             <div style={CARD}>
@@ -899,7 +938,7 @@ export default function EmailTemplatesPage() {
   return (
     <div style={{ padding: 32, maxWidth: 900, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <h1 style={{ fontSize: 32, fontWeight: 700, color: "#fff", margin: 0 }}>תבניות אימייל</h1>
+        <h1 style={{ fontSize: 32, fontWeight: 700, color: "#fff", margin: 0 }}>תבניות דיוור</h1>
         <div style={{ display: "flex", gap: 8 }}>
           {tab === "templates" && templates.length === 0 && (
             <button onClick={seedDefaults} style={BTN}>

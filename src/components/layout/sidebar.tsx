@@ -64,7 +64,7 @@ const adminNav = [
   { label: "משימות", href: "/admin/tasks", icon: LightbulbIcon },
   { label: "סטודנטים", href: "/admin/members", icon: UsersIcon },
   { label: "בתי ספר", href: "/admin/schools", icon: GraduationIcon },
-  { label: "תבניות אימייל", href: "/admin/email-templates", icon: LinkIcon },
+  { label: "תבניות דיוור", href: "/admin/email-templates", icon: ChatIcon },
   { label: "הרשמה חופשית", href: "/admin/flogin", icon: UsersIcon },
   { label: "אנליטיקס", href: "/admin/analytics", icon: DashboardIcon },
   { label: "שאלות ממתינות", href: "/admin/pending-questions", icon: QuestionIcon },

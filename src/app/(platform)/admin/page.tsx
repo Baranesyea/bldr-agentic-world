@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { SettingsIcon, GraduationIcon, ImportIcon, LinkIcon, FeedbackIcon, UsersIcon, LightbulbIcon, BrainIcon, TerminalIcon, BeakerIcon, QuestionIcon } from "@/components/ui/icons";
+import { SettingsIcon, GraduationIcon, ImportIcon, LinkIcon, FeedbackIcon, UsersIcon, LightbulbIcon, BrainIcon, TerminalIcon, BeakerIcon, QuestionIcon, ChatIcon } from "@/components/ui/icons";
 
 const iconMap: Record<string, React.ReactNode> = {
   "/admin/settings": <SettingsIcon size={28} />,
@@ -23,7 +23,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "/admin/content-ideas": <LightbulbIcon size={28} />,
   "/admin/subscribers": <UsersIcon size={28} />,
   "/admin/tasks": <LightbulbIcon size={28} />,
-  "/admin/email-templates": <LinkIcon size={28} />,
+  "/admin/email-templates": <ChatIcon size={28} />,
   "/admin/reviews": <FeedbackIcon size={28} />,
   "/admin/entry-video": <ImportIcon size={28} />,
   "/admin/update-video": <ImportIcon size={28} />,
@@ -126,8 +126,8 @@ const sections = [
     href: "/admin/tasks",
   },
   {
-    title: "תבניות אימייל",
-    description: "עיצוב מיילים ממותגים עם משתנים דינמיים — ברוכים הבאים, איפוס סיסמה, עדכונים ועוד",
+    title: "תבניות דיוור",
+    description: "תבניות דיוור למייל ולוואצאפ (Green API) — ברוכים הבאים, איפוס סיסמה, עדכונים ועוד",
     href: "/admin/email-templates",
   },
   {
