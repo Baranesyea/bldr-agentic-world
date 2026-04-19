@@ -555,6 +555,8 @@ export default function EmailTemplatesPage() {
           templateId: editing.id,
           toPhone: testPhone,
           variables: testVars,
+          overrideBody: editing.whatsappBody ?? "",
+          overrideSlug: editing.slug,
         }),
       });
       const data = await res.json();
@@ -912,8 +914,8 @@ export default function EmailTemplatesPage() {
                       />
                       <button
                         onClick={handleSendTestWhatsapp}
-                        disabled={sendingTest || !testPhone || !editing.id || !(editing.whatsappBody ?? "").trim()}
-                        style={{ ...BTN, whiteSpace: "nowrap", opacity: !editing.id || !(editing.whatsappBody ?? "").trim() ? 0.5 : 1 }}
+                        disabled={sendingTest || !testPhone || !(editing.whatsappBody ?? "").trim()}
+                        style={{ ...BTN, whiteSpace: "nowrap", opacity: !(editing.whatsappBody ?? "").trim() ? 0.5 : 1 }}
                       >
                         {sendingTest ? "שולח..." : "שלח וואצאפ בדיקה"}
                       </button>
@@ -923,9 +925,12 @@ export default function EmailTemplatesPage() {
                         מלא את תוכן הוואצאפ למעלה לפני שליחת בדיקה
                       </p>
                     )}
+                    <p style={{ fontSize: 11, color: "rgba(240,240,245,0.5)", marginTop: 4 }}>
+                      הבדיקה שולחת את התוכן הנוכחי שבעורך (אין צורך לשמור קודם).
+                    </p>
                   </div>
                 )}
-                {!editing.id && (
+                {channelTab === "email" && !editing.id && (
                   <p style={{ fontSize: 11, color: "rgba(255,165,0,0.7)", marginTop: 4 }}>שמור את התבנית לפני שליחת בדיקה</p>
                 )}
               </div>
@@ -935,37 +940,44 @@ export default function EmailTemplatesPage() {
           {/* Right: Preview */}
           {showPreview && (
             <div style={{ position: "sticky", top: 20, height: "fit-content" }}>
-              <div style={{
-                ...CARD,
-                padding: 0,
-                overflow: "hidden",
-              }}>
-                {/* Preview header bar */}
-                <div style={{
-                  padding: "10px 16px",
-                  borderBottom: "1px solid rgba(255,255,255,0.06)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ff5f57" }} />
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#febc2e" }} />
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#28c840" }} />
-                  <span style={{ fontSize: 12, color: "rgba(240,240,245,0.5)", marginRight: 8 }}>
-                    {editing.subject.replace(/\{\{(\w+)\}\}/g, (_, key) => testVars[key] || (editing.variables as Variable[]).find((v) => v.key === key)?.defaultValue || `{{${key}}}`)}
-                  </span>
+              {channelTab === "email" ? (
+                <div style={{ ...CARD, padding: 0, overflow: "hidden" }}>
+                  <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ff5f57" }} />
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#febc2e" }} />
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#28c840" }} />
+                    <span style={{ fontSize: 12, color: "rgba(240,240,245,0.5)", marginRight: 8 }}>
+                      {editing.subject.replace(/\{\{(\w+)\}\}/g, (_, key) => testVars[key] || (editing.variables as Variable[]).find((v) => v.key === key)?.defaultValue || `{{${key}}}`)}
+                    </span>
+                  </div>
+                  <iframe
+                    srcDoc={getPreviewHtml()}
+                    style={{ width: "100%", height: 600, border: "none", background: "#050510" }}
+                    title="Email preview"
+                  />
                 </div>
-                <iframe
-                  srcDoc={getPreviewHtml()}
-                  style={{
-                    width: "100%",
-                    height: 600,
-                    border: "none",
-                    background: "#050510",
-                  }}
-                  title="Email preview"
-                />
-              </div>
+              ) : (
+                <div style={{ ...CARD, padding: 16, background: "#0b141a" }}>
+                  <div style={{ fontSize: 12, color: "rgba(240,240,245,0.5)", marginBottom: 12 }}>תצוגה מקדימה וואצאפ</div>
+                  <div style={{
+                    background: "#005c4b",
+                    color: "#f0f2f5",
+                    padding: "10px 14px",
+                    borderRadius: "12px 12px 12px 4px",
+                    maxWidth: "85%",
+                    marginRight: "auto",
+                    whiteSpace: "pre-wrap",
+                    fontSize: 14,
+                    lineHeight: 1.6,
+                    fontFamily: "-apple-system, 'Segoe UI', sans-serif",
+                    direction: "rtl",
+                  }}>
+                    {((editing.whatsappBody ?? "").replace(/\{\{(\w+)\}\}/g, (_, key) =>
+                      testVars[key] || (editing.variables as Variable[]).find((v) => v.key === key)?.defaultValue || `{{${key}}}`
+                    )) || <span style={{ color: "rgba(240,240,245,0.4)" }}>אין תוכן עדיין...</span>}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

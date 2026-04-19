@@ -6,18 +6,25 @@ import { sendWhatsappMessage } from "@/lib/green-api";
 
 export async function POST(req: NextRequest) {
   try {
-    const { templateId, toPhone, variables } = await req.json();
-    if (!templateId || !toPhone) {
-      return NextResponse.json({ error: "Missing templateId or toPhone" }, { status: 400 });
-    }
+    const { templateId, toPhone, variables, overrideBody, overrideSlug } = await req.json();
+    if (!toPhone) return NextResponse.json({ error: "Missing toPhone" }, { status: 400 });
 
-    const [template] = await db.select().from(emailTemplates).where(eq(emailTemplates.id, templateId));
-    if (!template) return NextResponse.json({ error: "Template not found" }, { status: 404 });
-    if (!template.whatsappBody || !template.whatsappBody.trim()) {
-      return NextResponse.json({ error: "No WhatsApp body defined for this template" }, { status: 400 });
-    }
+    let body: string;
+    let slug: string;
 
-    let body = template.whatsappBody;
+    if (overrideBody && overrideBody.trim()) {
+      body = overrideBody;
+      slug = overrideSlug || "preview";
+    } else {
+      if (!templateId) return NextResponse.json({ error: "Missing templateId or overrideBody" }, { status: 400 });
+      const [template] = await db.select().from(emailTemplates).where(eq(emailTemplates.id, templateId));
+      if (!template) return NextResponse.json({ error: "Template not found" }, { status: 404 });
+      if (!template.whatsappBody || !template.whatsappBody.trim()) {
+        return NextResponse.json({ error: "No WhatsApp body defined for this template" }, { status: 400 });
+      }
+      body = template.whatsappBody;
+      slug = template.slug;
+    }
     const vars: Record<string, string> = variables || {};
     for (const [key, value] of Object.entries(vars)) {
       body = body.replace(new RegExp(`{{${key}}}`, "g"), String(value));
@@ -29,7 +36,7 @@ export async function POST(req: NextRequest) {
     await db.insert(notificationLogs).values({
       toPhone,
       channel: "whatsapp",
-      templateSlug: template.slug,
+      templateSlug: slug,
       status: result.ok ? "sent" : "failed",
       externalId: result.messageId ?? null,
       error: result.error ?? null,
