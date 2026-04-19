@@ -270,6 +270,78 @@ const BTN_SECONDARY: React.CSSProperties = {
   background: "rgba(255,255,255,0.06)",
 };
 
+const COMMON_VARS: { key: string; label: string }[] = [
+  { key: "name", label: "שם פרטי" },
+  { key: "fullName", label: "שם מלא" },
+  { key: "email", label: "מייל" },
+  { key: "loginUrl", label: "קישור כניסה" },
+  { key: "setPasswordUrl", label: "קישור לבחירת סיסמה" },
+  { key: "resetPasswordUrl", label: "קישור לאיפוס סיסמה" },
+];
+
+function VariableChips({
+  onInsert,
+  userVars,
+}: {
+  onInsert: (key: string) => void;
+  userVars?: { key: string; label?: string }[];
+}) {
+  const seen = new Set<string>();
+  const list: { key: string; label: string }[] = [];
+  for (const v of COMMON_VARS) {
+    if (!seen.has(v.key)) { list.push(v); seen.add(v.key); }
+  }
+  for (const v of userVars || []) {
+    if (v.key && !seen.has(v.key)) { list.push({ key: v.key, label: v.label || v.key }); seen.add(v.key); }
+  }
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+      <span style={{ fontSize: 11, color: "rgba(240,240,245,0.45)", alignSelf: "center", marginInlineEnd: 4 }}>
+        הכנס משתנה:
+      </span>
+      {list.map((v) => (
+        <button
+          key={v.key}
+          type="button"
+          onMouseDown={(e) => { e.preventDefault(); onInsert(v.key); }}
+          title={v.label}
+          style={{
+            background: "rgba(51,51,255,0.08)",
+            border: "1px solid rgba(51,51,255,0.3)",
+            color: "#8888ff",
+            fontSize: 11,
+            padding: "3px 10px",
+            borderRadius: 4,
+            cursor: "pointer",
+            fontFamily: "ui-monospace, monospace",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {"{{" + v.key + "}}"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function insertAtCursor(
+  el: HTMLInputElement | HTMLTextAreaElement | null,
+  text: string,
+  currentValue: string,
+  onChange: (next: string) => void
+) {
+  if (!el) { onChange(currentValue + text); return; }
+  const start = el.selectionStart ?? currentValue.length;
+  const end = el.selectionEnd ?? currentValue.length;
+  const next = currentValue.slice(0, start) + text + currentValue.slice(end);
+  onChange(next);
+  requestAnimationFrame(() => {
+    el.focus();
+    const pos = start + text.length;
+    try { el.setSelectionRange(pos, pos); } catch {}
+  });
+}
+
 const SLUG_COLORS: Record<string, string> = {
   welcome: "#00C853",
   "password-reset": "#FFA500",
@@ -450,6 +522,9 @@ export default function EmailTemplatesPage() {
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [editorMode, setEditorMode] = useState<"visual" | "html">("visual");
+  const subjectRef = useRef<HTMLInputElement>(null);
+  const htmlTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const whatsappTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [channelTab, setChannelTab] = useState<"email" | "whatsapp">("email");
 
   const fetchTemplates = useCallback(async () => {
@@ -720,14 +795,20 @@ export default function EmailTemplatesPage() {
                 <div>
                   <label style={LABEL}>נושא המייל (Subject)</label>
                   <input
+                    ref={subjectRef}
                     style={INPUT}
                     value={editing.subject}
                     onChange={(e) => setEditing({ ...editing, subject: e.target.value })}
                     placeholder="למשל: ברוך הבא ל-BLDR, {{name}}!"
                   />
-                  <p style={{ fontSize: 11, color: "rgba(240,240,245,0.4)", marginTop: 4 }}>
-                    {"השתמש ב-{{שם_משתנה}} להכנסת ערכים דינמיים"}
-                  </p>
+                  <VariableChips
+                    userVars={editing.variables as Variable[]}
+                    onInsert={(key) =>
+                      insertAtCursor(subjectRef.current, `{{${key}}}`, editing.subject, (next) =>
+                        setEditing({ ...editing, subject: next })
+                      )
+                    }
+                  />
                 </div>
               )}
             </div>
@@ -849,20 +930,31 @@ export default function EmailTemplatesPage() {
               </div>
 
               {editorMode === "html" ? (
-                <textarea
-                  value={editing.bodyHtml}
-                  onChange={(e) => setEditing({ ...editing, bodyHtml: e.target.value })}
-                  style={{
-                    ...INPUT,
-                    minHeight: 400,
-                    fontFamily: "monospace",
-                    fontSize: 13,
-                    direction: "ltr",
-                    textAlign: "left",
-                    lineHeight: 1.6,
-                    resize: "vertical",
-                  }}
-                />
+                <>
+                  <textarea
+                    ref={htmlTextareaRef}
+                    value={editing.bodyHtml}
+                    onChange={(e) => setEditing({ ...editing, bodyHtml: e.target.value })}
+                    style={{
+                      ...INPUT,
+                      minHeight: 400,
+                      fontFamily: "monospace",
+                      fontSize: 13,
+                      direction: "ltr",
+                      textAlign: "left",
+                      lineHeight: 1.6,
+                      resize: "vertical",
+                    }}
+                  />
+                  <VariableChips
+                    userVars={editing.variables as Variable[]}
+                    onInsert={(key) =>
+                      insertAtCursor(htmlTextareaRef.current, `{{${key}}}`, editing.bodyHtml, (next) =>
+                        setEditing({ ...editing, bodyHtml: next })
+                      )
+                    }
+                  />
+                </>
               ) : (
                 <VisualEditor
                   html={editing.bodyHtml}
@@ -882,6 +974,7 @@ export default function EmailTemplatesPage() {
                 טקסט שישלח בוואצאפ דרך Green API. אותם משתנים כמו במייל ({"{{name}}"}, {"{{loginUrl}}"}, וכו׳). השאר ריק אם לא רוצה לשלוח וואצאפ לתבנית הזו.
               </p>
               <textarea
+                ref={whatsappTextareaRef}
                 value={editing.whatsappBody ?? ""}
                 onChange={(e) => setEditing({ ...editing, whatsappBody: e.target.value })}
                 style={{
@@ -893,6 +986,14 @@ export default function EmailTemplatesPage() {
                   resize: "vertical",
                 }}
                 placeholder={`היי {{name}}! ברוך הבא ל-BLDR.\n\nלחץ כאן לבחירת סיסמה וכניסה למערכת:\n{{loginUrl}}`}
+              />
+              <VariableChips
+                userVars={editing.variables as Variable[]}
+                onInsert={(key) =>
+                  insertAtCursor(whatsappTextareaRef.current, `{{${key}}}`, editing.whatsappBody ?? "", (next) =>
+                    setEditing({ ...editing, whatsappBody: next })
+                  )
+                }
               />
             </div>
             )}
