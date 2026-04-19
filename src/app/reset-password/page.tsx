@@ -11,8 +11,12 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
+  const [pasteWarning, setPasteWarning] = useState(false);
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const mismatch = confirm.length > 0 && password !== confirm;
 
   // The recovery link can arrive in three shapes depending on Supabase's mode:
   //   1. Hash fragment: /#access_token=...&refresh_token=...&type=recovery
@@ -180,6 +184,20 @@ export default function ResetPasswordPage() {
     boxSizing: "border-box",
   };
 
+  const eyeButtonStyle: React.CSSProperties = {
+    position: "absolute",
+    top: "50%",
+    insetInlineStart: 10,
+    transform: "translateY(-50%)",
+    background: "transparent",
+    border: "none",
+    color: "rgba(240,240,245,0.7)",
+    cursor: "pointer",
+    fontSize: 18,
+    padding: 6,
+    lineHeight: 1,
+  };
+
   return (
     <div style={{
       minHeight: "100vh",
@@ -260,34 +278,77 @@ export default function ResetPasswordPage() {
                 <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>
                   סיסמה חדשה
                 </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="לפחות 6 תווים"
-                  style={inputStyle}
-                  required
-                  minLength={6}
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="לפחות 6 תווים"
+                    style={{ ...inputStyle, paddingInlineStart: 44 }}
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
+                    style={eyeButtonStyle}
+                  >
+                    {showPassword ? "🙈" : "👁"}
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label style={{ fontSize: 13, color: "rgba(240,240,245,0.7)", marginBottom: 6, display: "block" }}>
                   אימות סיסמה
                 </label>
-                <input
-                  type="password"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  placeholder="הזן שוב את הסיסמה"
-                  style={inputStyle}
-                  required
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      setPasteWarning(true);
+                      setTimeout(() => setPasteWarning(false), 4000);
+                    }}
+                    onDrop={(e) => e.preventDefault()}
+                    autoComplete="new-password"
+                    placeholder="הזן שוב את הסיסמה"
+                    style={{
+                      ...inputStyle,
+                      paddingInlineStart: 44,
+                      borderColor: mismatch
+                        ? "rgba(255,59,48,0.4)"
+                        : "rgba(255,255,255,0.08)",
+                    }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    aria-label={showConfirm ? "הסתר סיסמה" : "הצג סיסמה"}
+                    style={eyeButtonStyle}
+                  >
+                    {showConfirm ? "🙈" : "👁"}
+                  </button>
+                </div>
+                {mismatch && (
+                  <p style={{ fontSize: 12, color: "#ff6b6b", marginTop: 6 }}>
+                    הסיסמאות אינן תואמות
+                  </p>
+                )}
+                {pasteWarning && (
+                  <p style={{ fontSize: 12, color: "#fbbf24", marginTop: 6 }}>
+                    לא ניתן להדביק כאן — יש להקליד את הסיסמה ידנית.
+                  </p>
+                )}
               </div>
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || mismatch || !password || !confirm}
                 style={{
                   padding: "14px 16px",
                   background: "#0000FF",
