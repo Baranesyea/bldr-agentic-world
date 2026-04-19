@@ -62,15 +62,23 @@ export default function LoginPage() {
       // Continue with reset if check fails
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
-    });
-    setLoading(false);
-    if (error) {
-      setError(error.message);
-      return;
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      setLoading(false);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "שגיאה בשליחת הקישור");
+        return;
+      }
+      setSuccess("נשלח אימייל (ואם יש טלפון במערכת — גם וואצאפ) עם קישור לאיפוס הסיסמה");
+    } catch {
+      setLoading(false);
+      setError("שגיאה בשליחת הקישור");
     }
-    setSuccess("נשלח אימייל עם קישור לאיפוס הסיסמה");
   };
 
   const checkMemberAccess = async (userEmail: string): Promise<boolean> => {

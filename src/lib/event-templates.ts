@@ -2,7 +2,11 @@ import { db } from "@/lib/db";
 import { adminSettings } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
-export type EventKey = "user_created" | "password_link_resend" | "subscription_canceled";
+export type EventKey =
+  | "user_created"
+  | "password_link_resend"
+  | "password_reset_request"
+  | "subscription_canceled";
 export type Channel = "email" | "whatsapp";
 
 export interface ChannelMap {

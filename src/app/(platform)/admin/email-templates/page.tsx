@@ -440,6 +440,7 @@ export default function EmailTemplatesPage() {
   interface EventMap {
     user_created?: ChannelMap;
     password_link_resend?: ChannelMap;
+    password_reset_request?: ChannelMap;
     subscription_canceled?: ChannelMap;
   }
   const [eventMap, setEventMap] = useState<EventMap>({});
@@ -1273,7 +1274,8 @@ export default function EmailTemplatesPage() {
       {tab === "mapping" && (() => {
         const EVENTS: [keyof EventMap, string][] = [
           ["user_created", "יצירת משתמש חדש (קישור לבחירת סיסמה)"],
-          ["password_link_resend", "שליחה חוזרת של קישור סיסמה"],
+          ["password_reset_request", "שכחתי סיסמה (בקשה מעמוד login)"],
+          ["password_link_resend", "שליחה חוזרת של קישור סיסמה (אדמין)"],
           ["subscription_canceled", "ביטול מנוי"],
         ];
         const emailTemplates = templates.filter((t) => (t.bodyHtml ?? "").trim() !== "");

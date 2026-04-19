@@ -77,6 +77,7 @@ export async function sendPasswordLinkNotifications(params: {
     email: params.email,
     setPasswordUrl: params.setPasswordUrl,
     loginUrl: params.setPasswordUrl,
+    resetPasswordUrl: params.setPasswordUrl,
   };
 
   const emailResult = await sendTemplateEmail(params.email, params.emailTemplateSlug, variables);
