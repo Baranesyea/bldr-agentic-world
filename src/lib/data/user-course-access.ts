@@ -63,9 +63,26 @@ export async function bulkSetUserCourseAccess(
   courseSettings: { courseId: string; isAvailable: boolean }[],
   schoolId?: string | null
 ) {
-  for (const cs of courseSettings) {
-    await setUserCourseAccess(userId, cs.courseId, cs.isAvailable, schoolId);
-  }
+  if (courseSettings.length === 0) return;
+  // ensureUserExists is idempotent and safe to call once up front instead of
+  // once per course. Saves N-1 round trips.
+  await ensureUserExists(userId);
+  await Promise.all(
+    courseSettings.map((cs) =>
+      db
+        .insert(userCourseAccess)
+        .values({
+          userId,
+          courseId: cs.courseId,
+          schoolId: schoolId ?? null,
+          isAvailable: cs.isAvailable,
+        })
+        .onConflictDoUpdate({
+          target: [userCourseAccess.userId, userCourseAccess.courseId, userCourseAccess.schoolId],
+          set: { isAvailable: cs.isAvailable },
+        })
+    )
+  );
 }
 
 // ============================================

@@ -125,82 +125,85 @@ async function handlePost(req: NextRequest) {
     created = true;
   }
 
-  // Clean up any stale users row with the same email but a different id
-  // (happens if the auth user was previously recreated with a new id).
-  await db
-    .delete(users)
-    .where(and(eq(users.email, email), ne(users.id, authUserId)));
+  // Batch A (parallel): clean stale users row, upsert users row, fetch existing member
+  const [, , existingMember] = await Promise.all([
+    db.delete(users).where(and(eq(users.email, email), ne(users.id, authUserId))),
+    db
+      .insert(users)
+      .values({
+        id: authUserId,
+        email,
+        fullName,
+        passwordHash: body.password ? "supabase" : "invite",
+        role: body.role ?? "member",
+      })
+      .onConflictDoUpdate({
+        target: users.id,
+        set: { email, fullName, updatedAt: new Date() },
+      }),
+    db.select().from(members).where(eq(members.email, email)),
+  ]);
 
-  await db
-    .insert(users)
-    .values({
-      id: authUserId,
-      email,
-      fullName,
-      passwordHash: body.password ? "supabase" : "invite",
-      role: body.role ?? "member",
-    })
-    .onConflictDoUpdate({
-      target: users.id,
-      set: { email, fullName, updatedAt: new Date() },
-    });
-
-  const existingMember = await db.select().from(members).where(eq(members.email, email));
-  if (existingMember.length > 0) {
-    await db
-      .update(members)
-      .set({
+  // Batch B: members upsert (needs existingMember result from A)
+  const memberUpsert = existingMember.length > 0
+    ? db
+        .update(members)
+        .set({
+          fullName,
+          status: "active",
+          supabaseUserId: authUserId,
+          phone: body.phone ?? existingMember[0].phone,
+          schoolId: body.schoolId ?? existingMember[0].schoolId,
+          accessExpiresAt: accessExpiresAt ?? existingMember[0].accessExpiresAt,
+          expiryMode,
+          pricePaid: priceAmount || existingMember[0].pricePaid,
+          billingCycle,
+          type: billingCycle === "monthly" || priceAmount > 0 ? "paid" : existingMember[0].type,
+          subscriptionStartedAt:
+            body.subscriptionStartedAt || !existingMember[0].subscriptionStartedAt
+              ? subscriptionStartedAt
+              : existingMember[0].subscriptionStartedAt,
+          updatedAt: new Date(),
+        })
+        .where(eq(members.email, email))
+    : db.insert(members).values({
+        email,
         fullName,
         status: "active",
-        supabaseUserId: authUserId,
-        phone: body.phone ?? existingMember[0].phone,
-        schoolId: body.schoolId ?? existingMember[0].schoolId,
-        accessExpiresAt: accessExpiresAt ?? existingMember[0].accessExpiresAt,
-        expiryMode,
-        pricePaid: priceAmount || existingMember[0].pricePaid,
+        type: billingCycle === "monthly" || priceAmount > 0 ? "paid" : "free",
+        pricePaid: priceAmount,
         billingCycle,
-        type: billingCycle === "monthly" || priceAmount > 0 ? "paid" : existingMember[0].type,
-        subscriptionStartedAt:
-          body.subscriptionStartedAt || !existingMember[0].subscriptionStartedAt
-            ? subscriptionStartedAt
-            : existingMember[0].subscriptionStartedAt,
-        updatedAt: new Date(),
-      })
-      .where(eq(members.email, email));
-  } else {
-    await db.insert(members).values({
-      email,
-      fullName,
-      status: "active",
-      type: billingCycle === "monthly" || priceAmount > 0 ? "paid" : "free",
-      pricePaid: priceAmount,
-      billingCycle,
-      subscriptionStartedAt,
-      phone: body.phone ?? null,
-      supabaseUserId: authUserId,
-      schoolId: body.schoolId ?? null,
-      accessExpiresAt,
-      expiryMode,
-      notes: "api v1 create",
-    });
-  }
+        subscriptionStartedAt,
+        phone: body.phone ?? null,
+        supabaseUserId: authUserId,
+        schoolId: body.schoolId ?? null,
+        accessExpiresAt,
+        expiryMode,
+        notes: "api v1 create",
+      });
 
+  // Batch C (parallel): members upsert + school membership + course access
+  const parallel: Promise<unknown>[] = [memberUpsert];
   if (body.schoolId) {
-    await addMemberToSchool({
-      userId: authUserId,
-      schoolId: body.schoolId,
-      accessExpiresAt,
-      expiryMode,
-    });
-  }
-
-  if (body.courseIds && body.courseIds.length > 0) {
-    await bulkSetUserCourseAccess(
-      authUserId,
-      body.courseIds.map((courseId) => ({ courseId, isAvailable: true })),
-      body.schoolId ?? null
+    parallel.push(
+      addMemberToSchool({
+        userId: authUserId,
+        schoolId: body.schoolId,
+        accessExpiresAt,
+        expiryMode,
+      })
     );
   }
+  if (body.courseIds && body.courseIds.length > 0) {
+    parallel.push(
+      bulkSetUserCourseAccess(
+        authUserId,
+        body.courseIds.map((courseId) => ({ courseId, isAvailable: true })),
+        body.schoolId ?? null
+      )
+    );
+  }
+  await Promise.all(parallel);
 
   let setPasswordUrl: string | null = null;
 
