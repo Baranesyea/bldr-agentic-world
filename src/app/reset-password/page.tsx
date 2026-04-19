@@ -14,51 +14,62 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
 
-  // Always use the tokens from the recovery URL hash, even if the browser
-  // already had a session (e.g. the admin is logged in in the same window).
-  // Using an existing session would update the wrong user / fail silently.
+  // The recovery link can arrive in three shapes depending on Supabase's mode:
+  //   1. Hash fragment: /#access_token=...&refresh_token=...&type=recovery
+  //   2. Query string: ?code=... (PKCE flow)
+  //   3. Already consumed into storage by the Supabase client on init
   useEffect(() => {
     let cancelled = false;
 
-    (async () => {
-      const hash = window.location.hash.replace(/^#/, "");
-      const params = new URLSearchParams(hash);
-      const accessToken = params.get("access_token");
-      const refreshToken = params.get("refresh_token");
-      const type = params.get("type");
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (!cancelled && (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
+        setReady(true);
+      }
+    });
 
-      if (!accessToken || !refreshToken) {
-        // No hash — maybe Supabase already consumed it into storage. Fall back
-        // to getSession, but still require it to exist.
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          if (!cancelled) setReady(true);
-        } else if (!cancelled) {
-          setError("הקישור לא תקין או פג תוקף. בקש לינק חדש.");
+    (async () => {
+      // 1) Hash tokens
+      const hash = window.location.hash.replace(/^#/, "");
+      if (hash) {
+        const hp = new URLSearchParams(hash);
+        const accessToken = hp.get("access_token");
+        const refreshToken = hp.get("refresh_token");
+        if (accessToken && refreshToken) {
+          try { await supabase.auth.signOut({ scope: "local" }); } catch {}
+          const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (!cancelled) {
+            if (error) setError(error.message || "לא ניתן לאמת את הקישור. בקש לינק חדש.");
+            else setReady(true);
+          }
+          return;
+        }
+      }
+
+      // 2) PKCE code
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get("code");
+      if (code) {
+        try { await supabase.auth.signOut({ scope: "local" }); } catch {}
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!cancelled) {
+          if (error) setError(error.message || "לא ניתן לאמת את הקישור. בקש לינק חדש.");
+          else setReady(true);
         }
         return;
       }
 
-      if (type && type !== "recovery") {
-        if (!cancelled) setError("הקישור אינו קישור לאיפוס סיסמה.");
-        return;
-      }
-
-      // Drop any existing session first so updateUser targets the recovery
-      // session's user, not whoever was already logged in.
-      try { await supabase.auth.signOut({ scope: "local" }); } catch {}
-
-      const { error } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      });
+      // 3) Session already established by Supabase client (storage)
+      const { data } = await supabase.auth.getSession();
       if (!cancelled) {
-        if (error) setError("לא ניתן לאמת את הקישור. בקש לינק חדש.");
-        else setReady(true);
+        if (data.session) setReady(true);
+        else setError("הקישור לא תקין או פג תוקף. בקש לינק חדש.");
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
   }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
