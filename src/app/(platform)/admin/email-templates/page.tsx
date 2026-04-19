@@ -431,6 +431,7 @@ export default function EmailTemplatesPage() {
   const [testVars, setTestVars] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState("");
   const [tab, setTab] = useState<"templates" | "logs">("templates");
+  const [channelFilter, setChannelFilter] = useState<"all" | "email" | "whatsapp">("all");
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [editorMode, setEditorMode] = useState<"visual" | "html">("visual");
@@ -1013,6 +1014,29 @@ export default function EmailTemplatesPage() {
       {/* ─── Templates Tab ─── */}
       {tab === "templates" && (
         <>
+          {templates.length > 0 && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+              {([
+                ["all", "הכל", templates.length],
+                ["email", "✉️ מייל", templates.filter((t) => (t.bodyHtml ?? "").trim() !== "").length],
+                ["whatsapp", "💬 וואצאפ", templates.filter((t) => (t.whatsappBody ?? "").trim() !== "").length],
+              ] as const).map(([key, label, count]) => (
+                <button
+                  key={key}
+                  onClick={() => setChannelFilter(key)}
+                  style={{
+                    padding: "8px 16px", borderRadius: 4,
+                    border: channelFilter === key ? "1px solid rgba(51,51,255,0.4)" : "1px solid rgba(255,255,255,0.08)",
+                    background: channelFilter === key ? "rgba(51,51,255,0.12)" : "rgba(255,255,255,0.03)",
+                    color: channelFilter === key ? "#8888ff" : "rgba(240,240,245,0.6)",
+                    cursor: "pointer", fontSize: 13, fontWeight: 600,
+                  }}
+                >
+                  {label} ({count})
+                </button>
+              ))}
+            </div>
+          )}
           {templates.length === 0 ? (
             <div style={{
               ...CARD,
@@ -1031,7 +1055,13 @@ export default function EmailTemplatesPage() {
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {templates.map((t) => (
+              {templates
+                .filter((t) => {
+                  if (channelFilter === "all") return true;
+                  if (channelFilter === "email") return (t.bodyHtml ?? "").trim() !== "";
+                  return (t.whatsappBody ?? "").trim() !== "";
+                })
+                .map((t) => (
                 <div
                   key={t.id}
                   style={{
@@ -1069,6 +1099,30 @@ export default function EmailTemplatesPage() {
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    {(t.bodyHtml ?? "").trim() !== "" && (
+                      <span style={{
+                        fontSize: 11,
+                        padding: "3px 10px",
+                        borderRadius: 20,
+                        background: "rgba(68,136,255,0.1)",
+                        color: "#8888ff",
+                        border: "1px solid rgba(68,136,255,0.25)",
+                      }}>
+                        ✉️ מייל
+                      </span>
+                    )}
+                    {(t.whatsappBody ?? "").trim() !== "" && (
+                      <span style={{
+                        fontSize: 11,
+                        padding: "3px 10px",
+                        borderRadius: 20,
+                        background: "rgba(74,222,128,0.1)",
+                        color: "#4ade80",
+                        border: "1px solid rgba(74,222,128,0.25)",
+                      }}>
+                        💬 וואצאפ
+                      </span>
+                    )}
                     <span style={{
                       fontSize: 11,
                       padding: "3px 10px",
