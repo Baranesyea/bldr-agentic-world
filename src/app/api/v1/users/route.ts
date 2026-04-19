@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { db } from "@/lib/db";
 import { users, members } from "@/lib/schema";
@@ -203,38 +203,35 @@ async function handlePost(req: NextRequest) {
   }
 
   let setPasswordUrl: string | null = null;
-  let notifications: { email: boolean; whatsapp: boolean; emailError?: string; whatsappError?: string } | null = null;
 
   if (needsPasswordLink) {
     const linkResult = await generatePasswordLink(email);
     if (linkResult.ok && linkResult.url) {
       setPasswordUrl = linkResult.url;
-      try {
-        const [emailSlug, whatsappSlug] = await Promise.all([
-          resolveTemplateSlug("user_created", "email"),
-          resolveTemplateSlug("user_created", "whatsapp"),
-        ]);
-        const sendResult = await sendPasswordLinkNotifications({
-          email,
-          phone: body.phone ?? null,
-          fullName,
-          setPasswordUrl,
-          generateExtraLink: async () => {
-            const extra = await generatePasswordLink(email);
-            return extra.ok && extra.url ? extra.url : null;
-          },
-          emailTemplateSlug: emailSlug,
-          whatsappTemplateSlug: whatsappSlug,
-        });
-        notifications = {
-          email: sendResult.email.sent,
-          whatsapp: sendResult.whatsapp.sent,
-          emailError: sendResult.email.error,
-          whatsappError: sendResult.whatsapp.error,
-        };
-      } catch (err) {
-        console.error("Notification send failed:", err);
-      }
+      // Notifications (Resend + Green API) can each take 1-2s. Run them after
+      // the response so the caller's timeout (3s from bldr-academy) never hits.
+      after(async () => {
+        try {
+          const [emailSlug, whatsappSlug] = await Promise.all([
+            resolveTemplateSlug("user_created", "email"),
+            resolveTemplateSlug("user_created", "whatsapp"),
+          ]);
+          await sendPasswordLinkNotifications({
+            email,
+            phone: body.phone ?? null,
+            fullName,
+            setPasswordUrl: linkResult.url!,
+            generateExtraLink: async () => {
+              const extra = await generatePasswordLink(email);
+              return extra.ok && extra.url ? extra.url : null;
+            },
+            emailTemplateSlug: emailSlug,
+            whatsappTemplateSlug: whatsappSlug,
+          });
+        } catch (err) {
+          console.error("Notification send failed:", err);
+        }
+      });
     }
   }
 
@@ -255,7 +252,7 @@ async function handlePost(req: NextRequest) {
       },
       created,
       setPasswordUrl,
-      notifications,
+      notificationsQueued: needsPasswordLink,
     },
     { status: created ? 201 : 200 }
   );
