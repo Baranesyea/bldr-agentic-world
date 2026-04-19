@@ -491,13 +491,20 @@ export default function EmailTemplatesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editing),
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         await fetchTemplates();
         setEditing(null);
         setMsg("התבנית נשמרה!");
         setTimeout(() => setMsg(""), 3000);
+      } else {
+        setMsg(`שגיאה בשמירה: ${data.error || res.statusText}`);
+        setTimeout(() => setMsg(""), 6000);
       }
-    } catch {}
+    } catch (err) {
+      setMsg(`שגיאה בשמירה: ${err instanceof Error ? err.message : "Network error"}`);
+      setTimeout(() => setMsg(""), 6000);
+    }
     setSaving(false);
   };
 

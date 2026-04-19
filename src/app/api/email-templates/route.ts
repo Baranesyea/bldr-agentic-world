@@ -20,21 +20,39 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { id, slug, name, subject, bodyHtml, whatsappBody, variables, isActive } = body;
 
-    if (!slug || !name || !subject || !bodyHtml) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!slug || !name) {
+      return NextResponse.json({ error: "חסרים שדות חובה: slug, name" }, { status: 400 });
     }
+    const hasEmail = (bodyHtml ?? "").trim() !== "";
+    const hasWhatsapp = (whatsappBody ?? "").trim() !== "";
+    if (!hasEmail && !hasWhatsapp) {
+      return NextResponse.json({ error: "יש למלא תוכן מייל או תוכן וואצאפ (לפחות אחד)" }, { status: 400 });
+    }
+    if (hasEmail && !(subject ?? "").trim()) {
+      return NextResponse.json({ error: "תבנית מייל חייבת נושא (Subject)" }, { status: 400 });
+    }
+
+    const values = {
+      slug,
+      name,
+      subject: subject ?? "",
+      bodyHtml: bodyHtml ?? "",
+      whatsappBody: whatsappBody ?? null,
+      variables: variables || [],
+      isActive: isActive ?? true,
+    };
 
     if (id) {
       const [updated] = await db
         .update(emailTemplates)
-        .set({ slug, name, subject, bodyHtml, whatsappBody: whatsappBody ?? null, variables: variables || [], isActive: isActive ?? true, updatedAt: new Date() })
+        .set({ ...values, updatedAt: new Date() })
         .where(eq(emailTemplates.id, id))
         .returning();
       return NextResponse.json(updated);
     } else {
       const [created] = await db
         .insert(emailTemplates)
-        .values({ slug, name, subject, bodyHtml, whatsappBody: whatsappBody ?? null, variables: variables || [], isActive: isActive ?? true })
+        .values(values)
         .returning();
       return NextResponse.json(created);
     }
