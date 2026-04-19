@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 export default function ResetPasswordPage() {
@@ -187,15 +188,16 @@ export default function ResetPasswordPage() {
   const eyeButtonStyle: React.CSSProperties = {
     position: "absolute",
     top: "50%",
-    insetInlineStart: 10,
+    insetInlineEnd: 12,
     transform: "translateY(-50%)",
     background: "transparent",
     border: "none",
-    color: "rgba(240,240,245,0.7)",
+    color: "rgba(240,240,245,0.55)",
     cursor: "pointer",
-    fontSize: 18,
-    padding: 6,
-    lineHeight: 1,
+    padding: 4,
+    lineHeight: 0,
+    display: "flex",
+    alignItems: "center",
   };
 
   return (
@@ -284,7 +286,7 @@ export default function ResetPasswordPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="לפחות 6 תווים"
-                    style={{ ...inputStyle, paddingInlineStart: 44 }}
+                    style={{ ...inputStyle, paddingInlineEnd: 44 }}
                     required
                     minLength={6}
                   />
@@ -294,7 +296,7 @@ export default function ResetPasswordPage() {
                     aria-label={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
                     style={eyeButtonStyle}
                   >
-                    {showPassword ? "🙈" : "👁"}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
@@ -318,7 +320,7 @@ export default function ResetPasswordPage() {
                     placeholder="הזן שוב את הסיסמה"
                     style={{
                       ...inputStyle,
-                      paddingInlineStart: 44,
+                      paddingInlineEnd: 44,
                       borderColor: mismatch
                         ? "rgba(255,59,48,0.4)"
                         : "rgba(255,255,255,0.08)",
@@ -331,7 +333,7 @@ export default function ResetPasswordPage() {
                     aria-label={showConfirm ? "הסתר סיסמה" : "הצג סיסמה"}
                     style={eyeButtonStyle}
                   >
-                    {showConfirm ? "🙈" : "👁"}
+                    {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
                 {mismatch && (
