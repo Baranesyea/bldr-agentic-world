@@ -28,6 +28,19 @@ async function isAdminSession(): Promise<boolean> {
 
 export async function POST(
   req: NextRequest,
+  ctx: { params: Promise<{ id: string }> }
+) {
+  try {
+    return await handle(req, ctx);
+  } catch (err) {
+    console.error("POST /api/v1/users/:id/send-password-link crashed:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: "Internal server error", detail: message }, { status: 500 });
+  }
+}
+
+async function handle(
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const hasApiKey = !requireApiKey(req);

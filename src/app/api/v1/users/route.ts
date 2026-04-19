@@ -31,6 +31,20 @@ interface CreateUserBody {
 }
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handlePost(req);
+  } catch (err) {
+    console.error("POST /api/v1/users crashed:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    const stack = err instanceof Error ? err.stack : undefined;
+    return NextResponse.json(
+      { error: "Internal server error", detail: message, stack: process.env.NODE_ENV === "production" ? undefined : stack },
+      { status: 500 }
+    );
+  }
+}
+
+async function handlePost(req: NextRequest) {
   const authError = requireApiKey(req);
   if (authError) return authError;
 
