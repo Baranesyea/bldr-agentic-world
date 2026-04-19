@@ -78,9 +78,14 @@ export async function sendPasswordLinkNotifications(params: {
     name: params.fullName,
     fullName: params.fullName,
     email: params.email,
+    // Aliases — any of these keys resolves to the password link so templates
+    // written with different conventions all work.
     setPasswordUrl: params.setPasswordUrl,
     loginUrl: params.setPasswordUrl,
+    resetUrl: params.setPasswordUrl,
     resetPasswordUrl: params.setPasswordUrl,
+    link: params.setPasswordUrl,
+    url: params.setPasswordUrl,
   };
 
   const emailResult = await sendTemplateEmail(params.email, params.emailTemplateSlug, emailVars);
@@ -104,7 +109,15 @@ export async function sendPasswordLinkNotifications(params: {
     const whatsappUrl = params.generateExtraLink
       ? (await params.generateExtraLink()) ?? params.setPasswordUrl
       : params.setPasswordUrl;
-    const whatsappVars = { ...emailVars, setPasswordUrl: whatsappUrl, loginUrl: whatsappUrl, resetPasswordUrl: whatsappUrl };
+    const whatsappVars = {
+      ...emailVars,
+      setPasswordUrl: whatsappUrl,
+      loginUrl: whatsappUrl,
+      resetUrl: whatsappUrl,
+      resetPasswordUrl: whatsappUrl,
+      link: whatsappUrl,
+      url: whatsappUrl,
+    };
 
     whatsappResult = await sendTemplateWhatsapp(params.phone, params.whatsappTemplateSlug, whatsappVars);
     await db.insert(notificationLogs).values({
