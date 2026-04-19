@@ -51,7 +51,10 @@ const DEFAULT_SETTINGS: OnboardingSettings = {
 function getStepsFromCache(): TourStep[] {
   try {
     const stored = localStorage.getItem("bldr_onboarding_steps");
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) return parsed;
+    }
   } catch {}
   return DEFAULT_STEPS;
 }
@@ -68,7 +71,7 @@ async function loadOnboardingFromDB(): Promise<{ steps: TourStep[]; settings: On
   try {
     const res = await fetch("/api/onboarding-settings");
     const data = await res.json();
-    const steps = (data.steps as TourStep[]) || getStepsFromCache();
+    const steps = Array.isArray(data.steps) ? (data.steps as TourStep[]) : getStepsFromCache();
     const settings = (data.settings as OnboardingSettings) || getSettingsFromCache();
     // Cache in localStorage
     localStorage.setItem("bldr_onboarding_steps", JSON.stringify(steps));
@@ -466,7 +469,10 @@ export function OnboardingTour() {
   };
 
   // Calculate total duration estimate (placeholder: 7s per step with audio, 3s without)
-  const totalDuration = steps.reduce((acc, s) => acc + (s.audioUrl ? 7 : 3), 0);
+  const totalDuration = (Array.isArray(steps) ? steps : []).reduce(
+    (acc, s) => acc + (s.audioUrl ? 7 : 3),
+    0
+  );
   const durationLabel = totalDuration < 60 ? `${totalDuration} שניות` : `${Math.round(totalDuration / 60)} דקות`;
 
   const getTooltipPosition = (rect: DOMRect, position: string): React.CSSProperties => {
