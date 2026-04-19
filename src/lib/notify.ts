@@ -68,7 +68,8 @@ export async function sendPasswordLinkNotifications(params: {
   phone?: string | null;
   fullName: string;
   setPasswordUrl: string;
-  templateSlug: string;
+  emailTemplateSlug: string;
+  whatsappTemplateSlug: string;
 }): Promise<SendResult> {
   const variables = {
     name: params.fullName,
@@ -78,11 +79,11 @@ export async function sendPasswordLinkNotifications(params: {
     loginUrl: params.setPasswordUrl,
   };
 
-  const emailResult = await sendTemplateEmail(params.email, params.templateSlug, variables);
+  const emailResult = await sendTemplateEmail(params.email, params.emailTemplateSlug, variables);
   await db.insert(notificationLogs).values({
     toEmail: params.email,
     channel: "email",
-    templateSlug: params.templateSlug,
+    templateSlug: params.emailTemplateSlug,
     status: emailResult.ok ? "sent" : "failed",
     externalId: emailResult.resendId ?? null,
     error: emailResult.error ?? null,
@@ -94,12 +95,12 @@ export async function sendPasswordLinkNotifications(params: {
     error: "no phone",
   };
   if (params.phone) {
-    whatsappResult = await sendTemplateWhatsapp(params.phone, params.templateSlug, variables);
+    whatsappResult = await sendTemplateWhatsapp(params.phone, params.whatsappTemplateSlug, variables);
     await db.insert(notificationLogs).values({
       toPhone: params.phone,
       toEmail: params.email,
       channel: "whatsapp",
-      templateSlug: params.templateSlug,
+      templateSlug: params.whatsappTemplateSlug,
       status: whatsappResult.ok ? "sent" : "failed",
       externalId: whatsappResult.messageId ?? null,
       error: whatsappResult.error ?? null,

@@ -431,7 +431,20 @@ export default function EmailTemplatesPage() {
   const [sendingTest, setSendingTest] = useState(false);
   const [testVars, setTestVars] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState("");
-  const [tab, setTab] = useState<"templates" | "logs">("templates");
+  const [tab, setTab] = useState<"templates" | "logs" | "mapping">("templates");
+
+  interface ChannelMap {
+    email?: string;
+    whatsapp?: string;
+  }
+  interface EventMap {
+    user_created?: ChannelMap;
+    password_link_resend?: ChannelMap;
+    subscription_canceled?: ChannelMap;
+  }
+  const [eventMap, setEventMap] = useState<EventMap>({});
+  const [mappingSaved, setMappingSaved] = useState(false);
+  const [mappingSaving, setMappingSaving] = useState(false);
   const [channelFilter, setChannelFilter] = useState<"all" | "email" | "whatsapp">("all");
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
@@ -466,6 +479,23 @@ export default function EmailTemplatesPage() {
   useEffect(() => {
     if (tab === "logs" && logs.length === 0) fetchLogs();
   }, [tab, logs.length, fetchLogs]);
+
+  useEffect(() => {
+    fetch("/api/event-templates")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.map) {
+          const raw = data.map as Record<string, string | ChannelMap>;
+          const normalized: EventMap = {};
+          for (const [key, val] of Object.entries(raw)) {
+            normalized[key as keyof EventMap] =
+              typeof val === "string" ? { email: val, whatsapp: val } : val;
+          }
+          setEventMap(normalized);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const seedDefaults = async () => {
     for (const t of DEFAULT_TEMPLATES) {
@@ -1053,7 +1083,7 @@ export default function EmailTemplatesPage() {
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: 0, marginBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        {([["templates", "תבניות"], ["logs", "לוג שליחות"]] as const).map(([key, label]) => (
+        {([["templates", "תבניות"], ["mapping", "מיפוי דיוור"], ["logs", "לוג שליחות"]] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -1238,6 +1268,100 @@ export default function EmailTemplatesPage() {
           )}
         </>
       )}
+
+      {/* ─── Mapping Tab ─── */}
+      {tab === "mapping" && (() => {
+        const EVENTS: [keyof EventMap, string][] = [
+          ["user_created", "יצירת משתמש חדש (קישור לבחירת סיסמה)"],
+          ["password_link_resend", "שליחה חוזרת של קישור סיסמה"],
+          ["subscription_canceled", "ביטול מנוי"],
+        ];
+        const emailTemplates = templates.filter((t) => (t.bodyHtml ?? "").trim() !== "");
+        const whatsappTemplates = templates.filter((t) => (t.whatsappBody ?? "").trim() !== "");
+        return (
+          <div>
+            <p style={{ color: "rgba(240,240,245,0.6)", fontSize: 13, marginBottom: 20, lineHeight: 1.7 }}>
+              בחר איזו תבנית תישלח אוטומטית בכל אירוע. אפשר לבחור תבנית שונה למייל ולוואצאפ.
+              אם לא נבחר — נשלח את ברירת המחדל (<code style={{ color: "#60a5fa" }}>welcome</code>).
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {EVENTS.map(([key, label]) => (
+                <div key={key} style={{ ...CARD }}>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: "#f0f0f5", margin: "0 0 12px" }}>{label}</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div>
+                      <label style={{ fontSize: 12, color: "#8888ff", marginBottom: 6, display: "block", fontWeight: 600 }}>
+                        ✉️ תבנית מייל
+                      </label>
+                      <select
+                        style={{ ...INPUT, cursor: "pointer" }}
+                        value={eventMap[key]?.email ?? ""}
+                        onChange={(e) => setEventMap((p) => ({
+                          ...p,
+                          [key]: { ...(p[key] ?? {}), email: e.target.value || undefined },
+                        }))}
+                      >
+                        <option value="">— welcome (ברירת מחדל) —</option>
+                        {emailTemplates.map((t) => (
+                          <option key={t.id} value={t.slug}>
+                            {t.name} ({t.slug})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, color: "#4ade80", marginBottom: 6, display: "block", fontWeight: 600 }}>
+                        💬 תבנית וואצאפ
+                      </label>
+                      <select
+                        style={{ ...INPUT, cursor: "pointer" }}
+                        value={eventMap[key]?.whatsapp ?? ""}
+                        onChange={(e) => setEventMap((p) => ({
+                          ...p,
+                          [key]: { ...(p[key] ?? {}), whatsapp: e.target.value || undefined },
+                        }))}
+                      >
+                        <option value="">— welcome (ברירת מחדל) —</option>
+                        {whatsappTemplates.map((t) => (
+                          <option key={t.id} value={t.slug}>
+                            {t.name} ({t.slug})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={async () => {
+                setMappingSaving(true);
+                try {
+                  const res = await fetch("/api/event-templates", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ map: eventMap }),
+                  });
+                  if (res.ok) {
+                    setMappingSaved(true);
+                    setMsg("המיפוי נשמר!");
+                    setTimeout(() => { setMappingSaved(false); setMsg(""); }, 3000);
+                  } else {
+                    const data = await res.json().catch(() => ({}));
+                    setMsg(`שגיאה: ${data.error || res.statusText}`);
+                  }
+                } finally {
+                  setMappingSaving(false);
+                }
+              }}
+              disabled={mappingSaving}
+              style={{ ...BTN, marginTop: 20, opacity: mappingSaving ? 0.6 : 1 }}
+            >
+              {mappingSaved ? "נשמר!" : mappingSaving ? "שומר..." : "שמור מיפוי"}
+            </button>
+          </div>
+        );
+      })()}
 
       {/* ─── Logs Tab ─── */}
       {tab === "logs" && (

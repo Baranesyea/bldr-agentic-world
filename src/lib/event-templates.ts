@@ -3,18 +3,22 @@ import { adminSettings } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
 export type EventKey = "user_created" | "password_link_resend" | "subscription_canceled";
+export type Channel = "email" | "whatsapp";
 
-export interface EventTemplateMap {
-  user_created?: string;
-  password_link_resend?: string;
-  subscription_canceled?: string;
+export interface ChannelMap {
+  email?: string;
+  whatsapp?: string;
 }
 
-const FALLBACKS: Record<EventKey, string> = {
-  user_created: "welcome",
-  password_link_resend: "welcome",
-  subscription_canceled: "welcome",
-};
+export type EventTemplateMap = Partial<Record<EventKey, ChannelMap | string>>;
+
+const FALLBACK_SLUG = "welcome";
+
+function coerce(entry: ChannelMap | string | undefined, channel: Channel): string | undefined {
+  if (!entry) return undefined;
+  if (typeof entry === "string") return entry;
+  return entry[channel];
+}
 
 export async function loadEventTemplates(): Promise<EventTemplateMap> {
   const [row] = await db
@@ -39,7 +43,7 @@ export async function saveEventTemplates(map: EventTemplateMap): Promise<void> {
   }
 }
 
-export async function resolveTemplateSlug(event: EventKey): Promise<string> {
+export async function resolveTemplateSlug(event: EventKey, channel: Channel): Promise<string> {
   const map = await loadEventTemplates();
-  return map[event] || FALLBACKS[event];
+  return coerce(map[event], channel) || FALLBACK_SLUG;
 }

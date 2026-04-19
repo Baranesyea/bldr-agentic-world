@@ -48,13 +48,17 @@ export async function POST(
     return NextResponse.json({ error: linkResult.error ?? "Failed to generate link" }, { status: 500 });
   }
 
-  const templateSlug = await resolveTemplateSlug("password_link_resend");
+  const [emailSlug, whatsappSlug] = await Promise.all([
+    resolveTemplateSlug("password_link_resend", "email"),
+    resolveTemplateSlug("password_link_resend", "whatsapp"),
+  ]);
   const sendResult = await sendPasswordLinkNotifications({
     email: user.email,
     phone: member?.phone ?? null,
     fullName: user.fullName,
     setPasswordUrl: linkResult.url,
-    templateSlug,
+    emailTemplateSlug: emailSlug,
+    whatsappTemplateSlug: whatsappSlug,
   });
 
   return NextResponse.json({

@@ -192,13 +192,17 @@ export async function POST(req: NextRequest) {
     if (linkResult.ok && linkResult.url) {
       setPasswordUrl = linkResult.url;
       try {
-        const templateSlug = await resolveTemplateSlug("user_created");
+        const [emailSlug, whatsappSlug] = await Promise.all([
+          resolveTemplateSlug("user_created", "email"),
+          resolveTemplateSlug("user_created", "whatsapp"),
+        ]);
         const sendResult = await sendPasswordLinkNotifications({
           email,
           phone: body.phone ?? null,
           fullName,
           setPasswordUrl,
-          templateSlug,
+          emailTemplateSlug: emailSlug,
+          whatsappTemplateSlug: whatsappSlug,
         });
         notifications = {
           email: sendResult.email.sent,
