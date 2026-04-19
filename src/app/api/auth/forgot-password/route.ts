@@ -7,6 +7,16 @@ import { sendPasswordLinkNotifications } from "@/lib/notify";
 import { resolveTemplateSlug } from "@/lib/event-templates";
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handle(req);
+  } catch (err) {
+    console.error("POST /api/auth/forgot-password crashed:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: "Internal server error", detail: message }, { status: 500 });
+  }
+}
+
+async function handle(req: NextRequest) {
   let body: { email?: string };
   try {
     body = await req.json();
