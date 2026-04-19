@@ -51,6 +51,20 @@ export default function ResetPasswordPage() {
         const hash = window.location.hash.replace(/^#/, "");
         if (hash) {
           const hp = new URLSearchParams(hash);
+          const hashError = hp.get("error") || hp.get("error_code");
+          const hashErrorDesc = hp.get("error_description");
+          if (hashError) {
+            log(`hash error: ${hashError} / ${hashErrorDesc}`);
+            if (!cancelled) {
+              clearTimeout(timeout);
+              if (hashError === "otp_expired" || hashError === "access_denied") {
+                setError("הקישור פג תוקף או כבר היה בשימוש. בקש קישור חדש (שכחתי סיסמה בעמוד הכניסה).");
+              } else {
+                setError(hashErrorDesc || hashError);
+              }
+            }
+            return;
+          }
           const accessToken = hp.get("access_token");
           const refreshToken = hp.get("refresh_token");
           if (accessToken && refreshToken) {
