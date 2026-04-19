@@ -427,6 +427,7 @@ export default function EmailTemplatesPage() {
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testEmail, setTestEmail] = useState("");
+  const [testPhone, setTestPhone] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
   const [testVars, setTestVars] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState("");
@@ -531,6 +532,32 @@ export default function EmailTemplatesPage() {
       }
     } catch {
       setMsg("שגיאה בשליחת מייל בדיקה");
+    }
+    setSendingTest(false);
+    setTimeout(() => setMsg(""), 4000);
+  };
+
+  const handleSendTestWhatsapp = async () => {
+    if (!editing || !testPhone) return;
+    setSendingTest(true);
+    try {
+      const res = await fetch("/api/email-templates/send-test-whatsapp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          templateId: editing.id,
+          toPhone: testPhone,
+          variables: testVars,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMsg("וואצאפ בדיקה נשלח!");
+      } else {
+        setMsg(`שגיאה: ${data.error}`);
+      }
+    } catch {
+      setMsg("שגיאה בשליחת וואצאפ בדיקה");
     }
     setSendingTest(false);
     setTimeout(() => setMsg(""), 4000);
@@ -845,28 +872,55 @@ export default function EmailTemplatesPage() {
                     />
                   </div>
                 ))}
-                <div>
-                  <label style={LABEL}>שלח לכתובת</label>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <input
-                      style={{ ...INPUT, direction: "ltr" }}
-                      type="email"
-                      value={testEmail}
-                      onChange={(e) => setTestEmail(e.target.value)}
-                      placeholder="your@email.com"
-                    />
-                    <button
-                      onClick={handleSendTest}
-                      disabled={sendingTest || !testEmail || !editing.id}
-                      style={{ ...BTN, whiteSpace: "nowrap", opacity: !editing.id ? 0.5 : 1 }}
-                    >
-                      {sendingTest ? "שולח..." : "שלח בדיקה"}
-                    </button>
+                {channelTab === "email" ? (
+                  <div>
+                    <label style={LABEL}>שלח מייל בדיקה לכתובת</label>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        style={{ ...INPUT, direction: "ltr" }}
+                        type="email"
+                        value={testEmail}
+                        onChange={(e) => setTestEmail(e.target.value)}
+                        placeholder="your@email.com"
+                      />
+                      <button
+                        onClick={handleSendTest}
+                        disabled={sendingTest || !testEmail || !editing.id}
+                        style={{ ...BTN, whiteSpace: "nowrap", opacity: !editing.id ? 0.5 : 1 }}
+                      >
+                        {sendingTest ? "שולח..." : "שלח בדיקה"}
+                      </button>
+                    </div>
                   </div>
-                  {!editing.id && (
-                    <p style={{ fontSize: 11, color: "rgba(255,165,0,0.7)", marginTop: 4 }}>שמור את התבנית לפני שליחת בדיקה</p>
-                  )}
-                </div>
+                ) : (
+                  <div>
+                    <label style={LABEL}>שלח וואצאפ בדיקה למספר</label>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        style={{ ...INPUT, direction: "ltr" }}
+                        type="tel"
+                        value={testPhone}
+                        onChange={(e) => setTestPhone(e.target.value)}
+                        placeholder="0501234567"
+                      />
+                      <button
+                        onClick={handleSendTestWhatsapp}
+                        disabled={sendingTest || !testPhone || !editing.id || !(editing.whatsappBody ?? "").trim()}
+                        style={{ ...BTN, whiteSpace: "nowrap", opacity: !editing.id || !(editing.whatsappBody ?? "").trim() ? 0.5 : 1 }}
+                      >
+                        {sendingTest ? "שולח..." : "שלח וואצאפ בדיקה"}
+                      </button>
+                    </div>
+                    {!(editing.whatsappBody ?? "").trim() && (
+                      <p style={{ fontSize: 11, color: "rgba(255,165,0,0.7)", marginTop: 4 }}>
+                        מלא את תוכן הוואצאפ למעלה לפני שליחת בדיקה
+                      </p>
+                    )}
+                  </div>
+                )}
+                {!editing.id && (
+                  <p style={{ fontSize: 11, color: "rgba(255,165,0,0.7)", marginTop: 4 }}>שמור את התבנית לפני שליחת בדיקה</p>
+                )}
               </div>
             </div>
           </div>
