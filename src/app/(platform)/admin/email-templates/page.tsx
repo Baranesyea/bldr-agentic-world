@@ -1015,7 +1015,7 @@ export default function EmailTemplatesPage() {
                   slug: "",
                   name: "",
                   subject: "",
-                  bodyHtml: DEFAULT_TEMPLATES[0]!.bodyHtml!,
+                  bodyHtml: "",
                   variables: [],
                   isActive: true,
                   updatedAt: "",
