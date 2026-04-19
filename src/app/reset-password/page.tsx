@@ -14,48 +14,51 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
 
-  // Supabase sets the session from the URL hash on load.
-  // Race: the hash can be processed before our listener is registered,
-  // so also check an existing session + consume the hash manually if needed.
+  // Always use the tokens from the recovery URL hash, even if the browser
+  // already had a session (e.g. the admin is logged in in the same window).
+  // Using an existing session would update the wrong user / fail silently.
   useEffect(() => {
     let cancelled = false;
 
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
-        if (!cancelled) setReady(true);
-      }
-    });
-
     (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        if (!cancelled) setReady(true);
-        return;
-      }
-      // Manual hash parse as a last resort
       const hash = window.location.hash.replace(/^#/, "");
-      if (!hash) {
-        if (!cancelled) setError("הקישור לא תקין או פג תוקף. בקש לינק חדש.");
-        return;
-      }
       const params = new URLSearchParams(hash);
       const accessToken = params.get("access_token");
       const refreshToken = params.get("refresh_token");
-      if (accessToken && refreshToken) {
-        const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-        if (!cancelled) {
-          if (error) setError("לא ניתן לאמת את הקישור. בקש לינק חדש.");
-          else setReady(true);
+      const type = params.get("type");
+
+      if (!accessToken || !refreshToken) {
+        // No hash — maybe Supabase already consumed it into storage. Fall back
+        // to getSession, but still require it to exist.
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          if (!cancelled) setReady(true);
+        } else if (!cancelled) {
+          setError("הקישור לא תקין או פג תוקף. בקש לינק חדש.");
         }
-      } else if (!cancelled) {
-        setError("הקישור לא תקין או פג תוקף. בקש לינק חדש.");
+        return;
+      }
+
+      if (type && type !== "recovery") {
+        if (!cancelled) setError("הקישור אינו קישור לאיפוס סיסמה.");
+        return;
+      }
+
+      // Drop any existing session first so updateUser targets the recovery
+      // session's user, not whoever was already logged in.
+      try { await supabase.auth.signOut({ scope: "local" }); } catch {}
+
+      const { error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+      if (!cancelled) {
+        if (error) setError("לא ניתן לאמת את הקישור. בקש לינק חדש.");
+        else setReady(true);
       }
     })();
 
-    return () => {
-      cancelled = true;
-      sub.subscription.unsubscribe();
-    };
+    return () => { cancelled = true; };
   }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,11 +75,33 @@ export default function ResetPasswordPage() {
     }
 
     setLoading(true);
+    const { data: { user: currentUser }, error: getErr } = await supabase.auth.getUser();
+    if (getErr || !currentUser) {
+      setError("הסשן פג. בקש קישור חדש.");
+      setLoading(false);
+      return;
+    }
+    const email = currentUser.email;
+
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
       setError(error.message);
       setLoading(false);
       return;
+    }
+
+    // Re-authenticate with the fresh password to prove it works + get a normal
+    // (non-recovery) session before heading into the app.
+    if (email) {
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInErr) {
+          setError(signInErr.message);
+          setLoading(false);
+          return;
+        }
+      } catch {}
     }
 
     router.push("/dashboard");
