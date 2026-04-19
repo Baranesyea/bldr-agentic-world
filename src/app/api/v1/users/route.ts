@@ -8,6 +8,7 @@ import { addMemberToSchool } from "@/lib/data/schools";
 import { bulkSetUserCourseAccess } from "@/lib/data/user-course-access";
 import { generatePasswordLink } from "@/lib/password-link";
 import { sendPasswordLinkNotifications } from "@/lib/notify";
+import { resolveTemplateSlug } from "@/lib/event-templates";
 
 type ExpiryMode = "full_lock" | "partial_lock";
 type BillingCycle = "monthly" | "one_time";
@@ -191,12 +192,13 @@ export async function POST(req: NextRequest) {
     if (linkResult.ok && linkResult.url) {
       setPasswordUrl = linkResult.url;
       try {
+        const templateSlug = await resolveTemplateSlug("user_created");
         const sendResult = await sendPasswordLinkNotifications({
           email,
           phone: body.phone ?? null,
           fullName,
           setPasswordUrl,
-          templateSlug: "welcome",
+          templateSlug,
         });
         notifications = {
           email: sendResult.email.sent,

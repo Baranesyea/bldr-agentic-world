@@ -1167,7 +1167,18 @@ export default function EmailTemplatesPage() {
                     <div>
                       <div style={{ fontSize: 15, fontWeight: 600, color: "#f0f0f5" }}>{t.name}</div>
                       <div style={{ fontSize: 12, color: "rgba(240,240,245,0.4)", marginTop: 2, direction: "ltr", textAlign: "right" }}>
-                        {t.slug} · {(t.variables as Variable[]).length} משתנים
+                        {(() => {
+                          const declared = new Set((t.variables as Variable[]).map((v) => v.key));
+                          const detected = new Set<string>();
+                          const pattern = /\{\{?\s*(\w+)\s*\}?\}/g;
+                          for (const src of [t.subject, t.bodyHtml, t.whatsappBody]) {
+                            if (!src) continue;
+                            let m: RegExpExecArray | null;
+                            while ((m = pattern.exec(src)) !== null) detected.add(m[1]);
+                          }
+                          const all = new Set<string>([...declared, ...detected]);
+                          return `${t.slug} · ${all.size} משתנים`;
+                        })()}
                       </div>
                     </div>
                   </div>

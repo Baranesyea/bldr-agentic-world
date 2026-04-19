@@ -128,6 +128,17 @@ export default function SettingsPage() {
   const [greenApiSaved, setGreenApiSaved] = useState(false);
   const [greenApiSaving, setGreenApiSaving] = useState(false);
 
+  interface EventTemplateMap {
+    user_created?: string;
+    password_link_resend?: string;
+    subscription_canceled?: string;
+  }
+  interface TemplateOption { id: string; slug: string; name: string }
+  const [eventTemplates, setEventTemplates] = useState<EventTemplateMap>({});
+  const [templateOptions, setTemplateOptions] = useState<TemplateOption[]>([]);
+  const [eventTemplatesSaved, setEventTemplatesSaved] = useState(false);
+  const [eventTemplatesSaving, setEventTemplatesSaving] = useState(false);
+
   interface PaymentSettings {
     monthlyPrice: number;
     growWebhookSecret: string;
@@ -194,6 +205,22 @@ export default function SettingsPage() {
       .then((r) => r.json())
       .then((data) => {
         if (data.value) setGreenApi(data.value as GreenApiSettings);
+      })
+      .catch(() => {});
+
+    fetch("/api/event-templates")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.map) setEventTemplates(data.map as EventTemplateMap);
+      })
+      .catch(() => {});
+
+    fetch("/api/email-templates")
+      .then((r) => r.json())
+      .then((list) => {
+        if (Array.isArray(list)) {
+          setTemplateOptions(list.map((t: { id: string; slug: string; name: string }) => ({ id: t.id, slug: t.slug, name: t.name })));
+        }
       })
       .catch(() => {});
   }, []);
@@ -820,6 +847,57 @@ export default function SettingsPage() {
           }}
         >
           {greenApiSaved ? "נשמר!" : "שמור הגדרות Green API"}
+        </button>
+      </div>
+
+      {/* Event → Template mapping */}
+      <div style={CARD_STYLE}>
+        <h2 style={HEADING_STYLE}>תבנית לכל אירוע</h2>
+        <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px", lineHeight: 1.7 }}>
+          בחר איזו תבנית (מייל + וואצאפ) תישלח באופן אוטומטי בכל אירוע. ערוך את התוכן ב-<a href="/admin/email-templates" style={{ color: "#60a5fa" }}>תבניות דיוור</a>.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {([
+            ["user_created", "יצירת משתמש חדש (קישור לבחירת סיסמה)"],
+            ["password_link_resend", "שליחה חוזרת של קישור סיסמה"],
+            ["subscription_canceled", "ביטול מנוי"],
+          ] as const).map(([key, label]) => (
+            <div key={key}>
+              <label style={LABEL_STYLE}>{label}</label>
+              <select
+                style={SELECT_STYLE}
+                value={eventTemplates[key] ?? ""}
+                onChange={(e) => setEventTemplates((p) => ({ ...p, [key]: e.target.value || undefined }))}
+              >
+                <option value="">— ברירת מחדל (welcome) —</option>
+                {templateOptions.map((t) => (
+                  <option key={t.id} value={t.slug}>
+                    {t.name} ({t.slug})
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+        <button
+          style={{ ...BTN_STYLE, marginTop: "16px", opacity: eventTemplatesSaving ? 0.6 : 1 }}
+          disabled={eventTemplatesSaving}
+          onClick={async () => {
+            setEventTemplatesSaving(true);
+            try {
+              await fetch("/api/event-templates", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ map: eventTemplates }),
+              });
+              setEventTemplatesSaved(true);
+              setTimeout(() => setEventTemplatesSaved(false), 1500);
+            } finally {
+              setEventTemplatesSaving(false);
+            }
+          }}
+        >
+          {eventTemplatesSaved ? "נשמר!" : "שמור מיפוי אירועים"}
         </button>
       </div>
     </div>

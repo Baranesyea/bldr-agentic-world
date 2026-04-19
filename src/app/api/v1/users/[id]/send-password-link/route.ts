@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { requireApiKey } from "@/lib/api-auth";
 import { generatePasswordLink } from "@/lib/password-link";
 import { sendPasswordLinkNotifications } from "@/lib/notify";
+import { resolveTemplateSlug } from "@/lib/event-templates";
 
 function isUuid(v: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
@@ -47,12 +48,13 @@ export async function POST(
     return NextResponse.json({ error: linkResult.error ?? "Failed to generate link" }, { status: 500 });
   }
 
+  const templateSlug = await resolveTemplateSlug("password_link_resend");
   const sendResult = await sendPasswordLinkNotifications({
     email: user.email,
     phone: member?.phone ?? null,
     fullName: user.fullName,
     setPasswordUrl: linkResult.url,
-    templateSlug: "welcome",
+    templateSlug,
   });
 
   return NextResponse.json({
