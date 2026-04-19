@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { adminSettings, members } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { createClient } from "@supabase/supabase-js";
+import { findAuthUserByEmail } from "@/lib/auth-admin";
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,11 +47,7 @@ export async function POST(req: NextRequest) {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Check if user already exists
-    const { data: existingUsers } = await supabase.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(
-      (u) => u.email?.toLowerCase() === email.toLowerCase()
-    );
+    const existingUser = await findAuthUserByEmail(supabase, email);
 
     if (existingUser) {
       // User already exists — update password and confirm email

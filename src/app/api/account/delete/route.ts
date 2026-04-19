@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { db } from "@/lib/db";
 import { members } from "@/lib/schema";
 import { eq } from "drizzle-orm";
+import { findAuthUserByEmail } from "@/lib/auth-admin";
 
 export async function POST(req: NextRequest) {
   try {
@@ -48,8 +49,7 @@ export async function POST(req: NextRequest) {
         { auth: { autoRefreshToken: false, persistSession: false } }
       );
 
-      const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
-      const authUser = users.find((u: { email?: string }) => u.email?.toLowerCase() === normalizedEmail);
+      const authUser = await findAuthUserByEmail(supabaseAdmin, normalizedEmail);
       if (authUser) {
         if (isHardDelete) {
           await supabaseAdmin.auth.admin.deleteUser(authUser.id);

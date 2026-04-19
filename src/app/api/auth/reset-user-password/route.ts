@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { findAuthUserByEmail } from "@/lib/auth-admin";
 
 export async function POST(req: NextRequest) {
   const { email } = await req.json();
@@ -19,11 +20,7 @@ export async function POST(req: NextRequest) {
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
-  // Find the user to check provider
-  const { data } = await supabase.auth.admin.listUsers();
-  const user = data?.users?.find(
-    (u) => u.email?.toLowerCase() === email.toLowerCase()
-  );
+  const user = await findAuthUserByEmail(supabase, email);
 
   if (!user) {
     return NextResponse.json({ error: "משתמש לא נמצא" }, { status: 404 });

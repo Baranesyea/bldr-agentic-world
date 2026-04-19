@@ -9,6 +9,7 @@ import { bulkSetUserCourseAccess } from "@/lib/data/user-course-access";
 import { generatePasswordLink } from "@/lib/password-link";
 import { sendPasswordLinkNotifications } from "@/lib/notify";
 import { resolveTemplateSlug } from "@/lib/event-templates";
+import { findAuthUserByEmail } from "@/lib/auth-admin";
 
 type ExpiryMode = "full_lock" | "partial_lock";
 type BillingCycle = "monthly" | "one_time";
@@ -80,10 +81,7 @@ export async function POST(req: NextRequest) {
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
-  const { data: existingUsers } = await supabase.auth.admin.listUsers();
-  const existingAuthUser = existingUsers?.users?.find(
-    (u: { email?: string | null }) => u.email?.toLowerCase() === email
-  );
+  const existingAuthUser = await findAuthUserByEmail(supabase, email);
 
   let authUserId: string;
   let created = false;
