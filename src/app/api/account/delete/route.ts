@@ -16,24 +16,30 @@ export async function POST(req: NextRequest) {
     const postgres = (await import("postgres")).default;
     const sql = postgres(process.env.DATABASE_URL!);
 
+    const normalizedEmail = email.toLowerCase().trim();
+    const isHardDelete = deletedBy === "admin";
+
     // Log the deletion
     await sql`
       INSERT INTO deleted_accounts (email, full_name, user_type, deleted_by)
       VALUES (${email}, ${fullName || ""}, ${userType || "member"}, ${deletedBy || "user"})
     `;
 
-    // Deactivate member record
-    await db
-      .update(members)
-      .set({ status: "inactive", updatedAt: new Date() })
-      .where(eq(members.email, email.toLowerCase().trim()));
-
-    // Mark profile as deleted (keep role valid, clear name)
-    await sql`UPDATE profiles SET bio = 'DELETED', full_name = '[deleted]' WHERE email = ${email}`;
+    if (isHardDelete) {
+      // Admin hard-delete: remove row so email is free to be re-registered
+      await db.delete(members).where(eq(members.email, normalizedEmail));
+      await sql`DELETE FROM profiles WHERE email = ${normalizedEmail}`;
+    } else {
+      // User self-delete: keep row for audit, mark inactive + anonymise profile
+      await db
+        .update(members)
+        .set({ status: "inactive", updatedAt: new Date() })
+        .where(eq(members.email, normalizedEmail));
+      await sql`UPDATE profiles SET bio = 'DELETED', full_name = '[deleted]' WHERE email = ${normalizedEmail}`;
+    }
 
     await sql.end();
 
-    // Invalidate all sessions for this user via Supabase Admin API
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (serviceRoleKey) {
       const supabaseAdmin = createClient(
@@ -42,15 +48,18 @@ export async function POST(req: NextRequest) {
         { auth: { autoRefreshToken: false, persistSession: false } }
       );
 
-      // Find the auth user by email and sign them out globally
       const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
-      const authUser = users.find((u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase().trim());
+      const authUser = users.find((u: { email?: string }) => u.email?.toLowerCase() === normalizedEmail);
       if (authUser) {
-        await supabaseAdmin.auth.admin.signOut(authUser.id, "global");
+        if (isHardDelete) {
+          await supabaseAdmin.auth.admin.deleteUser(authUser.id);
+        } else {
+          await supabaseAdmin.auth.admin.signOut(authUser.id, "global");
+        }
       }
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, hardDeleted: isHardDelete });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("Delete account error:", message);
