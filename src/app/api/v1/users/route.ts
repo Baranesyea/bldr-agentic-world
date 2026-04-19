@@ -45,8 +45,16 @@ export async function POST(req: NextRequest) {
 }
 
 async function handlePost(req: NextRequest) {
+  const t0 = Date.now();
+  const timings: Record<string, number> = {};
+  const mark = (label: string) => {
+    timings[label] = Date.now() - t0;
+    console.log(`[v1/users] ${label}: ${timings[label]}ms`);
+  };
+
   const authError = requireApiKey(req);
   if (authError) return authError;
+  mark("auth_key_ok");
 
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceRoleKey) {
@@ -96,6 +104,7 @@ async function handlePost(req: NextRequest) {
   );
 
   const existingAuthUser = await findAuthUserByEmail(supabase, email);
+  mark("findAuthUserByEmail");
 
   let authUserId: string;
   let created = false;
@@ -110,6 +119,7 @@ async function handlePost(req: NextRequest) {
         email_confirm: true,
       });
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      mark("updateUserById");
     }
   } else {
     const { data, error } = await supabase.auth.admin.createUser({
@@ -118,6 +128,7 @@ async function handlePost(req: NextRequest) {
       email_confirm: true,
       user_metadata: { full_name: fullName },
     });
+    mark("createUser");
     if (error || !data.user) {
       return NextResponse.json({ error: error?.message ?? "User creation failed" }, { status: 400 });
     }
@@ -130,6 +141,7 @@ async function handlePost(req: NextRequest) {
   await db
     .delete(users)
     .where(and(eq(users.email, email), ne(users.id, authUserId)));
+  mark("delete_stale_users");
 
   const [, existingMember] = await Promise.all([
     db
@@ -147,6 +159,7 @@ async function handlePost(req: NextRequest) {
       }),
     db.select().from(members).where(eq(members.email, email)),
   ]);
+  mark("upsert_users_and_select_members");
 
   // Batch B: members upsert (needs existingMember result from A)
   const memberUpsert = existingMember.length > 0
@@ -208,6 +221,7 @@ async function handlePost(req: NextRequest) {
     );
   }
   await Promise.all(parallel);
+  mark("parallel_member_school_courses");
 
   let setPasswordUrl: string | null = null;
 
@@ -260,6 +274,8 @@ async function handlePost(req: NextRequest) {
       created,
       setPasswordUrl,
       notificationsQueued: needsPasswordLink,
+      timings,
+      totalMs: Date.now() - t0,
     },
     { status: created ? 201 : 200 }
   );
