@@ -7,10 +7,18 @@ import { GradientDots } from "@/components/ui/gradient-dots";
 import { ParticleTextEffect } from "@/components/ui/particle-text-effect";
 
 export function AuthLayout({ children }: { children: ReactNode }) {
-  const [isMobile, setIsMobile] = useState(false);
+  // Start as true so the heavy 3D scene never mounts on phones — the
+  // in-app WebView on iPhone (WhatsApp, etc.) crashes when Spline tries
+  // to boot there. We flip to false on larger screens after mount.
+  const [isMobile, setIsMobile] = useState(true);
+  const [showDecor, setShowDecor] = useState(false);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 768);
+    const check = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      setShowDecor(!mobile);
+    };
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -63,7 +71,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        {!isMobile && (
+        {showDecor && !isMobile && (
           <div
             className="auth-hero-left"
             style={{
