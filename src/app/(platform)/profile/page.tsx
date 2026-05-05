@@ -781,9 +781,6 @@ export default function ProfilePage() {
               </h2>
               <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px", lineHeight: 1.7 }}>
                 בקשת הביטול התקבלה. החיוב הבא לא ירד, ותקבל הודעת וואצאפ ברגע שהביטול יושלם סופית.
-                {subscription.daysRemaining != null && subscription.daysRemaining > 0 && (
-                  <> נשארו עוד {subscription.daysRemaining} ימים של גישה.</>
-                )}
               </p>
               <button
                 onClick={handleUncancel}
