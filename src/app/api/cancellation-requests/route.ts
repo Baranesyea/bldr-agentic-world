@@ -34,6 +34,7 @@ export async function GET() {
       subscriptionStartedAt: m.subscriptionStartedAt,
       cancellationRequestedAt: m.cancellationRequestedAt,
       cancellationEffectiveAt: m.cancellationEffectiveAt,
+      cancellationCompletedAt: m.cancellationCompletedAt,
     })),
   });
 }

@@ -81,8 +81,10 @@ export default function ProfilePage() {
     daysRemaining: number | null;
   } | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [cancelConfirmText, setCancelConfirmText] = useState("");
   const [showStaySuccess, setShowStaySuccess] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const CANCEL_PHRASE = "אני רוצה לבטל";
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -113,6 +115,7 @@ export default function ProfilePage() {
           ),
         }));
         setShowCancelConfirm(false);
+        setCancelConfirmText("");
       }
     } finally {
       setCancelling(false);
@@ -755,8 +758,9 @@ export default function ProfilePage() {
           {!subscription.cancellationRequestedAt ? (
             <>
               <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#ef4444", marginBottom: "8px" }}>ביטול מנוי</h2>
-              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px" }}>
-                ביטול יעצור את החיוב החודשי בסוף תקופת החיוב הנוכחית.
+              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px", lineHeight: 1.7 }}>
+                ביטול המנוי יעצור את החיוב החודשי הבא וימחק את המידע שנשמר במערכת
+                (השיעורים שסימנת, ההתקדמות וההערות שלך).
               </p>
               <button
                 onClick={() => setShowCancelConfirm(true)}
@@ -773,10 +777,13 @@ export default function ProfilePage() {
           ) : (
             <>
               <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#ef4444", marginBottom: "8px" }}>
-                המנוי בוטל
+                המנוי בתהליך ביטול
               </h2>
-              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px" }}>
-                נשארו עוד {subscription.daysRemaining ?? 0} ימים לשימוש. אחרי זה הגישה תיחסם ולא יתבצע חיוב נוסף.
+              <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.7)", marginBottom: "16px", lineHeight: 1.7 }}>
+                בקשת הביטול התקבלה. החיוב הבא לא ירד, ותקבל הודעת וואצאפ ברגע שהביטול יושלם סופית.
+                {subscription.daysRemaining != null && subscription.daysRemaining > 0 && (
+                  <> נשארו עוד {subscription.daysRemaining} ימים של גישה.</>
+                )}
               </p>
               <button
                 onClick={handleUncancel}
@@ -797,7 +804,7 @@ export default function ProfilePage() {
       {/* Cancel Subscription Confirmation Modal */}
       {showCancelConfirm && (
         <div
-          onClick={() => setShowCancelConfirm(false)}
+          onClick={() => { setShowCancelConfirm(false); setCancelConfirmText(""); }}
           style={{
             position: "fixed", inset: 0, zIndex: 9999,
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -810,26 +817,40 @@ export default function ProfilePage() {
             style={{
               background: "#0e0e22", borderRadius: "12px",
               border: "1px solid rgba(239,68,68,0.2)",
-              padding: "36px 32px", maxWidth: "480px", width: "100%",
+              padding: "36px 32px", maxWidth: "520px", width: "100%",
               direction: "rtl",
               boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
             }}
           >
-            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "16px", textAlign: "center" }}>
-              חשוב לקרוא!
+            <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "20px", textAlign: "center" }}>
+              חשוב לקרוא לפני שמבטלים
             </h2>
-            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.85)", lineHeight: 1.8, textAlign: "center", marginBottom: "12px" }}>
-              המערכת שלנו מתחדשת עם תכנים מעודכנים בכל שבוע.
+            <ul style={{ fontSize: "14px", color: "rgba(240,240,245,0.85)", lineHeight: 1.9, marginBottom: "20px", paddingInlineStart: "20px" }}>
+              <li>החיוב החודשי הבא לא ירד.</li>
+              <li>אחרי הביטול כל המידע שנשמר במערכת יימחק — השיעורים שסימנת, ההתקדמות שלך וההערות שכתבת על שיעורים.</li>
+              <li>המחיר עולה כל הזמן. אם תחליט לחזור בעתיד — תהיה כפוף למחיר החדש בתאריך ההצטרפות מחדש.</li>
+            </ul>
+            <p style={{ fontSize: "13px", color: "rgba(240,240,245,0.75)", marginBottom: "8px" }}>
+              כדי להמשיך, הקלד את המשפט: <span style={{ color: "#fff", fontWeight: 700 }}>{CANCEL_PHRASE}</span>
             </p>
-            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.85)", lineHeight: 1.8, textAlign: "center", marginBottom: "12px" }}>
-              ביטול המנוי לא יאפשר לך לגשת לתכנים האלו.
-            </p>
-            <p style={{ fontSize: "14px", color: "rgba(240,240,245,0.85)", lineHeight: 1.8, textAlign: "center", marginBottom: "28px" }}>
-              בביטול מנוי מחזור החיוב הבא לא יתבצע (חיוב חודשי).
-            </p>
+            <input
+              type="text"
+              value={cancelConfirmText}
+              onChange={(e) => setCancelConfirmText(e.target.value)}
+              placeholder={CANCEL_PHRASE}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                padding: "12px 14px", borderRadius: "8px",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                color: "#fff", fontSize: "14px",
+                marginBottom: "20px", outline: "none",
+                direction: "rtl",
+              }}
+            />
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <button
-                onClick={() => setShowCancelConfirm(false)}
+                onClick={() => { setShowCancelConfirm(false); setCancelConfirmText(""); }}
                 style={{
                   padding: "12px", borderRadius: "8px",
                   border: "1px solid rgba(59,130,246,0.4)",
@@ -840,17 +861,18 @@ export default function ProfilePage() {
                 התחרטתי
               </button>
               <button
-                disabled={cancelling}
+                disabled={cancelling || cancelConfirmText.trim() !== CANCEL_PHRASE}
                 onClick={handleCancel}
                 style={{
                   padding: "12px", borderRadius: "8px",
                   border: "1px solid rgba(239,68,68,0.4)",
                   background: "rgba(239,68,68,0.12)", color: "#ef4444",
-                  fontSize: "14px", fontWeight: 700, cursor: cancelling ? "wait" : "pointer",
-                  opacity: cancelling ? 0.5 : 1,
+                  fontSize: "14px", fontWeight: 700,
+                  cursor: cancelling ? "wait" : (cancelConfirmText.trim() !== CANCEL_PHRASE ? "not-allowed" : "pointer"),
+                  opacity: cancelling || cancelConfirmText.trim() !== CANCEL_PHRASE ? 0.45 : 1,
                 }}
               >
-                {cancelling ? "מבטל..." : "הבנתי ובכל זאת אני רוצה לבטל"}
+                {cancelling ? "מבטל..." : "המשך"}
               </button>
             </div>
           </div>

@@ -12,54 +12,53 @@ interface CancellationRequest {
   subscriptionStartedAt: string | null;
   cancellationRequestedAt: string;
   cancellationEffectiveAt: string | null;
+  cancellationCompletedAt: string | null;
 }
 
-type Filter = "all" | "today" | "week";
+type Tab = "requested" | "completed";
 
 function formatDate(d: string | null): string {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-function isToday(d: string): boolean {
-  const target = new Date(d);
-  const now = new Date();
-  return (
-    target.getFullYear() === now.getFullYear() &&
-    target.getMonth() === now.getMonth() &&
-    target.getDate() === now.getDate()
-  );
-}
-
-function isThisWeek(d: string): boolean {
-  const target = new Date(d).getTime();
-  const now = Date.now();
-  const weekMs = 7 * 24 * 60 * 60 * 1000;
-  return now - target <= weekMs;
-}
-
 export default function CancellationRequestsPage() {
   const [requests, setRequests] = useState<CancellationRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<Filter>("all");
+  const [tab, setTab] = useState<Tab>("requested");
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  async function load() {
+    const r = await fetch("/api/cancellation-requests");
+    const d = await r.json();
+    if (Array.isArray(d.requests)) setRequests(d.requests);
+  }
 
   useEffect(() => {
-    fetch("/api/cancellation-requests")
-      .then((r) => r.json())
-      .then((d) => {
-        if (Array.isArray(d.requests)) setRequests(d.requests);
-      })
-      .finally(() => setLoading(false));
+    load().finally(() => setLoading(false));
   }, []);
 
-  const filtered = useMemo(() => {
-    if (filter === "today") return requests.filter((r) => isToday(r.cancellationRequestedAt));
-    if (filter === "week") return requests.filter((r) => isThisWeek(r.cancellationRequestedAt));
-    return requests;
-  }, [requests, filter]);
+  const requested = useMemo(() => requests.filter((r) => !r.cancellationCompletedAt), [requests]);
+  const completed = useMemo(() => requests.filter((r) => !!r.cancellationCompletedAt), [requests]);
+
+  const visible = tab === "requested" ? requested : completed;
+
+  async function move(id: string, action: "complete" | "uncomplete") {
+    setBusyId(id);
+    try {
+      const res = await fetch("/api/cancellation-requests/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action }),
+      });
+      if (res.ok) await load();
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
-    padding: "8px 16px",
+    padding: "10px 18px",
     borderRadius: 4,
     border: active ? "1px solid rgba(51,51,255,0.4)" : "1px solid rgba(255,255,255,0.08)",
     background: active ? "rgba(51,51,255,0.12)" : "rgba(255,255,255,0.03)",
@@ -69,53 +68,100 @@ export default function CancellationRequestsPage() {
     fontWeight: 600,
   });
 
+  const cellStyle: React.CSSProperties = {
+    padding: "12px 16px",
+    color: "#ccc",
+    borderBottom: "1px solid rgba(255,255,255,0.04)",
+  };
+
   return (
-    <div style={{ padding: "32px 24px", maxWidth: 1100, margin: "0 auto", direction: "rtl" }}>
+    <div style={{ padding: "32px 24px", maxWidth: 1200, margin: "0 auto", direction: "rtl" }}>
       <h1 style={{ fontSize: 28, color: "#fff", margin: "0 0 8px" }}>בקשות לביטול</h1>
       <p style={{ color: "#aaa", marginBottom: 24 }}>
-        משתמשים שביקשו לבטל מנוי. מיון לפי הקרוב לרחוק.
+        כשמשתמש מבקש לבטל הוא מופיע כאן. אחרי שביצעת את הביטול בפועל במערכת התשלומים — העבר אותו לטאב &quot;בוטלו&quot; כדי לסמן ולשלוח לו הודעת וואצאפ.
       </p>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        <button style={tabStyle(filter === "all")} onClick={() => setFilter("all")}>
-          הכל ({requests.length})
+        <button style={tabStyle(tab === "requested")} onClick={() => setTab("requested")}>
+          ביקשו לבטל ({requested.length})
         </button>
-        <button style={tabStyle(filter === "today")} onClick={() => setFilter("today")}>
-          היום ({requests.filter((r) => isToday(r.cancellationRequestedAt)).length})
-        </button>
-        <button style={tabStyle(filter === "week")} onClick={() => setFilter("week")}>
-          השבוע ({requests.filter((r) => isThisWeek(r.cancellationRequestedAt)).length})
+        <button style={tabStyle(tab === "completed")} onClick={() => setTab("completed")}>
+          בוטלו ({completed.length})
         </button>
       </div>
 
       {loading ? (
         <p style={{ color: "#888" }}>טוען...</p>
-      ) : filtered.length === 0 ? (
-        <p style={{ color: "#888" }}>אין בקשות בטווח הזה.</p>
+      ) : visible.length === 0 ? (
+        <p style={{ color: "#888" }}>אין בקשות בטאב הזה.</p>
       ) : (
         <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 4, overflow: "hidden" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ background: "rgba(255,255,255,0.02)" }}>
-                <th style={{ padding: "12px 16px", textAlign: "start", color: "#888", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>שם</th>
-                <th style={{ padding: "12px 16px", textAlign: "start", color: "#888", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>מייל</th>
-                <th style={{ padding: "12px 16px", textAlign: "start", color: "#888", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>טלפון</th>
-                <th style={{ padding: "12px 16px", textAlign: "start", color: "#888", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>סכום</th>
-                <th style={{ padding: "12px 16px", textAlign: "start", color: "#888", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>מתי התחיל</th>
-                <th style={{ padding: "12px 16px", textAlign: "start", color: "#888", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>מתי ביקש לבטל</th>
-                <th style={{ padding: "12px 16px", textAlign: "start", color: "#888", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>סיום גישה</th>
+                <th style={{ ...cellStyle, color: "#888", textAlign: "start" }}>שם</th>
+                <th style={{ ...cellStyle, color: "#888", textAlign: "start" }}>מייל</th>
+                <th style={{ ...cellStyle, color: "#888", textAlign: "start" }}>טלפון</th>
+                <th style={{ ...cellStyle, color: "#888", textAlign: "start" }}>סכום</th>
+                <th style={{ ...cellStyle, color: "#888", textAlign: "start" }}>הצטרף</th>
+                <th style={{ ...cellStyle, color: "#888", textAlign: "start" }}>ביקש לבטל</th>
+                <th style={{ ...cellStyle, color: "#888", textAlign: "start" }}>סיום גישה</th>
+                {tab === "completed" && (
+                  <th style={{ ...cellStyle, color: "#888", textAlign: "start" }}>בוטל בפועל</th>
+                )}
+                <th style={{ ...cellStyle, color: "#888", textAlign: "start" }}>פעולה</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((r) => (
+              {visible.map((r) => (
                 <tr key={r.id}>
-                  <td style={{ padding: "12px 16px", color: "#fff", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>{r.fullName}</td>
-                  <td style={{ padding: "12px 16px", color: "#ccc", borderBottom: "1px solid rgba(255,255,255,0.04)", direction: "ltr", textAlign: "start" }}>{r.email}</td>
-                  <td style={{ padding: "12px 16px", color: "#ccc", borderBottom: "1px solid rgba(255,255,255,0.04)", direction: "ltr", textAlign: "start" }}>{r.phone ?? "—"}</td>
-                  <td style={{ padding: "12px 16px", color: "#ccc", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>{r.priceAmount ?? 0} ₪</td>
-                  <td style={{ padding: "12px 16px", color: "#ccc", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>{formatDate(r.subscriptionStartedAt)}</td>
-                  <td style={{ padding: "12px 16px", color: "#fca5a5", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>{formatDate(r.cancellationRequestedAt)}</td>
-                  <td style={{ padding: "12px 16px", color: "#ccc", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>{formatDate(r.cancellationEffectiveAt)}</td>
+                  <td style={{ ...cellStyle, color: "#fff" }}>{r.fullName}</td>
+                  <td style={{ ...cellStyle, direction: "ltr", textAlign: "start" }}>{r.email}</td>
+                  <td style={{ ...cellStyle, direction: "ltr", textAlign: "start" }}>{r.phone ?? "—"}</td>
+                  <td style={cellStyle}>{r.priceAmount ?? 0} ₪</td>
+                  <td style={cellStyle}>{formatDate(r.subscriptionStartedAt)}</td>
+                  <td style={{ ...cellStyle, color: "#fca5a5" }}>{formatDate(r.cancellationRequestedAt)}</td>
+                  <td style={cellStyle}>{formatDate(r.cancellationEffectiveAt)}</td>
+                  {tab === "completed" && (
+                    <td style={{ ...cellStyle, color: "#86efac" }}>{formatDate(r.cancellationCompletedAt)}</td>
+                  )}
+                  <td style={cellStyle}>
+                    {tab === "requested" ? (
+                      <button
+                        disabled={busyId === r.id}
+                        onClick={() => move(r.id, "complete")}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: 4,
+                          border: "1px solid rgba(239,68,68,0.4)",
+                          background: "rgba(239,68,68,0.12)",
+                          color: "#fca5a5",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: busyId === r.id ? "wait" : "pointer",
+                        }}
+                      >
+                        {busyId === r.id ? "..." : "סמן כבוטל"}
+                      </button>
+                    ) : (
+                      <button
+                        disabled={busyId === r.id}
+                        onClick={() => move(r.id, "uncomplete")}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: 4,
+                          border: "1px solid rgba(255,255,255,0.12)",
+                          background: "rgba(255,255,255,0.04)",
+                          color: "#ccc",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: busyId === r.id ? "wait" : "pointer",
+                        }}
+                      >
+                        {busyId === r.id ? "..." : "החזר לבקשות"}
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

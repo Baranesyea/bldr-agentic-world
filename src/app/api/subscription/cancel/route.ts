@@ -50,7 +50,7 @@ export async function POST() {
     .where(eq(members.email, email));
 
   try {
-    await sendServerWebhook("subscription.canceled", {
+    await sendServerWebhook("subscription.cancel_requested", {
       email: member.email,
       fullName: member.fullName,
       phone: member.phone ?? "",

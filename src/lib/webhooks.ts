@@ -49,12 +49,12 @@ const DEFAULT_WEBHOOKS: Webhook[] = [
   },
   {
     id: "default_subscription_canceled",
-    name: "ביטול מנוי",
+    name: "בקשה לביטול מנוי (התראה לאדמין)",
     url: "",
     enabled: false,
-    event: "subscription.canceled",
+    event: "subscription.cancel_requested",
     messageTemplate:
-      "המשתמש {fullName} ביטל את המנוי.\nמייל: {email}\nטלפון: {phone}\nסכום: {priceAmount}\nהגישה תיפסק ב-{effectiveAt}.",
+      "המשתמש {fullName} ביקש לבטל את המנוי.\nמייל: {email}\nטלפון: {phone}\nסכום: {priceAmount}\nהגישה תיפסק ב-{effectiveAt}.\n\nכנס לעמוד 'בקשות לביטול' כדי לאשר את הביטול בפועל.",
     variables: [
       { key: "fullName", description: "שם מלא של המשתמש" },
       { key: "email", description: "מייל" },
@@ -63,6 +63,22 @@ const DEFAULT_WEBHOOKS: Webhook[] = [
       { key: "billingCycle", description: "סוג חיוב (monthly/one_time)" },
       { key: "effectiveAt", description: "תאריך סיום הגישה" },
       { key: "cancelledAt", description: "תאריך הבקשה לביטול" },
+    ],
+  },
+  {
+    id: "default_subscription_cancel_completed",
+    name: "ביטול מנוי בוצע (וואצאפ למשתמש)",
+    url: "",
+    enabled: false,
+    event: "subscription.cancel_completed",
+    messageTemplate:
+      "היי {firstName},\nביטול המנוי שלך בוצע בהצלחה. החיוב הבא לא יתבצע ולא תהיה גישה לתכנים החדשים.\nאם תרצה לחזור בעתיד, המחיר שיחול עליך יהיה המחיר העדכני באותו זמן.\nתודה שהיית איתנו 💙",
+    variables: [
+      { key: "fullName", description: "שם מלא של המשתמש" },
+      { key: "firstName", description: "שם פרטי" },
+      { key: "email", description: "מייל" },
+      { key: "phone", description: "טלפון של המשתמש (לשליחת וואצאפ)" },
+      { key: "completedAt", description: "תאריך אישור הביטול הסופי" },
     ],
   },
 ];

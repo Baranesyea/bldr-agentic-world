@@ -361,6 +361,7 @@ export const members = pgTable("members", {
   subscriptionStartedAt: timestamp("subscription_started_at"),
   cancellationRequestedAt: timestamp("cancellation_requested_at"),
   cancellationEffectiveAt: timestamp("cancellation_effective_at"),
+  cancellationCompletedAt: timestamp("cancellation_completed_at"),
   lastPasswordLinkSentAt: timestamp("last_password_link_sent_at"),
   lastPasswordLinkEmailStatus: varchar("last_password_link_email_status", { length: 20 }),
   lastPasswordLinkWhatsappStatus: varchar("last_password_link_whatsapp_status", { length: 20 }),
