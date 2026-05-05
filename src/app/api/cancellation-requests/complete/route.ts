@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
-import { members, users } from "@/lib/schema";
+import { members } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { sendServerWebhook } from "@/lib/webhooks-server";
 
-async function requireAdmin() {
+async function requireAuth() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,15 +14,12 @@ async function requireAdmin() {
     { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
   );
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user?.email) return null;
-  const [me] = await db.select().from(users).where(eq(users.email, user.email.toLowerCase().trim()));
-  if (!me || me.role !== "admin") return null;
-  return me;
+  return user?.email ? user : null;
 }
 
 export async function POST(req: Request) {
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const auth = await requireAuth();
+  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id, action } = await req.json();
   if (!id || !["complete", "uncomplete"].includes(action)) {
