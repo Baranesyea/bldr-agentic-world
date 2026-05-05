@@ -29,9 +29,6 @@ export async function POST() {
   if (!member) {
     return NextResponse.json({ error: "Member not found" }, { status: 404 });
   }
-  if (member.billingCycle !== "monthly") {
-    return NextResponse.json({ error: "No recurring subscription to cancel" }, { status: 400 });
-  }
   if (member.cancellationRequestedAt) {
     return NextResponse.json({ error: "Cancellation already requested" }, { status: 400 });
   }

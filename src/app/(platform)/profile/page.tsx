@@ -750,7 +750,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Subscription Cancellation */}
-      {subscription?.billingCycle === "monthly" && (
+      {subscription && subscription.billingCycle && (
         <div style={{
           background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.15)",
           borderRadius: "4px", padding: "24px", marginTop: "24px",
